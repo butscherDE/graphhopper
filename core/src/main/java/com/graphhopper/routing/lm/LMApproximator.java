@@ -21,7 +21,9 @@ import com.graphhopper.coll.GHIntObjectHashMap;
 import com.graphhopper.routing.QueryGraph;
 import com.graphhopper.routing.weighting.BeelineWeightApproximator;
 import com.graphhopper.routing.weighting.WeightApproximator;
+import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
+import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
 import java.util.Arrays;
@@ -34,7 +36,7 @@ import java.util.Arrays;
 public class LMApproximator implements WeightApproximator {
     private static class VirtEntry {
         private int node;
-        private int weight;
+        private double weight;
 
         @Override
         public String toString() {
@@ -45,14 +47,12 @@ public class LMApproximator implements WeightApproximator {
     private final LandmarkStorage lms;
     // store node ids
     private int[] activeLandmarks;
-    // store weights as int
-    private int[] activeFromIntWeights;
-    private int[] activeToIntWeights;
+    private double[] activeFromWeights;
+    private double[] activeToWeights;
     private double epsilon = 1;
     private int to = -1;
     // do activate landmark recalculation
     private boolean doALMRecalc = true;
-    private final double factor;
     private final boolean reverse;
     private final int maxBaseNodes;
     private final Graph graph;
@@ -60,24 +60,23 @@ public class LMApproximator implements WeightApproximator {
     private boolean fallback = false;
     private final GHIntObjectHashMap<VirtEntry> virtNodeMap;
 
-    public LMApproximator(Graph graph, int maxBaseNodes, LandmarkStorage lms, int activeCount,
-                          double factor, boolean reverse) {
+    public LMApproximator(Graph graph, int maxBaseNodes, LandmarkStorage lms, int activeCount, boolean reverse) {
         this.reverse = reverse;
         this.lms = lms;
-        this.factor = factor;
         if (activeCount > lms.getLandmarkCount())
             throw new IllegalArgumentException("Active landmarks " + activeCount
                     + " should be lower or equals to landmark count " + lms.getLandmarkCount());
 
         activeLandmarks = new int[activeCount];
         Arrays.fill(activeLandmarks, -1);
-        activeFromIntWeights = new int[activeCount];
-        activeToIntWeights = new int[activeCount];
+        activeFromWeights = new double[activeCount];
+        activeToWeights = new double[activeCount];
 
         this.graph = graph;
         this.fallBackApproximation = new BeelineWeightApproximator(graph.getNodeAccess(), lms.getWeighting());
         this.maxBaseNodes = maxBaseNodes;
         int idxVirtNode = maxBaseNodes;
+        Weighting w = lms.getWeighting();
         virtNodeMap = new GHIntObjectHashMap(graph.getNodes() - idxVirtNode, 0.5f);
         // virtual nodes handling: calculate the minimum weight for the virtual nodes, i.e. pick the correct neighbouring node
         if (graph instanceof QueryGraph) {
@@ -87,10 +86,10 @@ public class LMApproximator implements WeightApproximator {
                 // we need the real underlying edge as neighboring nodes could be virtual too
                 EdgeIteratorState edge = qGraph.getOriginalEdgeFromVirtNode(idxVirtNode);
 
-                int weight = lms.calcWeight(edge, reverse);
-                int reverseWeight = lms.calcWeight(edge, !reverse);
+                double weight = w.calcWeight(edge, reverse, EdgeIterator.NO_EDGE);
+                double reverseWeight = w.calcWeight(edge, !reverse, EdgeIterator.NO_EDGE);
                 VirtEntry virtEntry = new VirtEntry();
-                if (weight < Integer.MAX_VALUE && (reverseWeight >= Integer.MAX_VALUE || weight < reverseWeight)) {
+                if (weight < Double.MAX_VALUE && (reverseWeight >= Double.MAX_VALUE || weight < reverseWeight)) {
                     virtEntry.weight = weight;
                     virtEntry.node = reverse ? edge.getBaseNode() : edge.getAdjNode();
                 } else {
@@ -120,12 +119,12 @@ public class LMApproximator implements WeightApproximator {
             return fallBackApproximation.approximate(queryNode);
 
         int node = queryNode;
-        int virtEdgeWeightInt = 0;
+        double virtEdgeWeight = 0;
         if (queryNode >= maxBaseNodes) {
             // handle virtual node
             VirtEntry virtEntry = virtNodeMap.get(queryNode);
             node = virtEntry.node;
-            virtEdgeWeightInt = virtEntry.weight;
+            virtEdgeWeight = virtEntry.weight;
         }
 
         if (node == to)
@@ -135,7 +134,7 @@ public class LMApproximator implements WeightApproximator {
         // we have to update the priority queues and the maps if done in the middle of the search http://cstheory.stackexchange.com/q/36355/13229
         if (doALMRecalc) {
             doALMRecalc = false;
-            boolean res = lms.initActiveLandmarks(node, to, activeLandmarks, activeFromIntWeights, activeToIntWeights, reverse);
+            boolean res = lms.initActiveLandmarks(node, to, activeLandmarks, activeFromWeights, activeToWeights, reverse);
             if (!res) {
                 // note: fallback==true means forever true!
                 fallback = true;
@@ -143,8 +142,8 @@ public class LMApproximator implements WeightApproximator {
             }
         }
 
-        int maxWeightInt = getMaxWeight(node, virtEdgeWeightInt, activeLandmarks, activeFromIntWeights, activeToIntWeights);
-        if (maxWeightInt < 0) {
+        double maxWeight = getMaxWeight(node, virtEdgeWeight, activeLandmarks, activeFromWeights, activeToWeights);
+        if (maxWeight < 0) {
             // allow negative weight for now until we have more precise approximation (including query graph)
             return 0;
 //                throw new IllegalStateException("Maximum approximation weight cannot be negative. "
@@ -152,11 +151,11 @@ public class LMApproximator implements WeightApproximator {
 //                        + "queryNode:" + queryNode + ", node:" + node + ", reverse:" + reverse);
         }
 
-        return maxWeightInt * factor * epsilon;
+        return maxWeight * epsilon;
     }
 
-    int getMaxWeight(int node, int virtEdgeWeightInt, int[] activeLandmarks, int[] activeFromIntWeights, int[] activeToIntWeights) {
-        int maxWeightInt = -1;
+    double getMaxWeight(int node, double virtEdgeWeight, int[] activeLandmarks, double[] activeFromWeights, double[] activeToWeights) {
+        double maxWeight = -1;
         for (int activeLMIdx = 0; activeLMIdx < activeLandmarks.length; activeLMIdx++) {
             int landmarkIndex = activeLandmarks[activeLMIdx];
 
@@ -167,17 +166,17 @@ public class LMApproximator implements WeightApproximator {
             // 2. for the case a->v the sign is reverse as we need to know the vector av not va => if(reverse) "-weight"
             // 3. as weight is the full edge weight for now (and not the precise weight to the virt node) we can only add it to the subtrahend
             //    to avoid overestimating (keep the result strictly lower)
-            int fromWeightInt = activeFromIntWeights[activeLMIdx] - (lms.getFromWeight(landmarkIndex, node) + virtEdgeWeightInt);
-            int toWeightInt = lms.getToWeight(landmarkIndex, node) - activeToIntWeights[activeLMIdx];
+            double fromWeight = activeFromWeights[activeLMIdx] - (lms.getFromWeight(landmarkIndex, node) + virtEdgeWeight);
+            double toWeight = lms.getToWeight(landmarkIndex, node) - activeToWeights[activeLMIdx];
             if (reverse) {
-                fromWeightInt = -fromWeightInt;
+                fromWeight = -fromWeight;
                 // we need virtEntryWeight for the minuend
-                toWeightInt = -toWeightInt - virtEdgeWeightInt;
+                toWeight = -toWeight - virtEdgeWeight;
             } else {
-                toWeightInt -= virtEdgeWeightInt;
+                toWeight -= virtEdgeWeight;
             }
 
-            int tmpMaxWeightInt = Math.max(fromWeightInt, toWeightInt);
+            double tmpMaxWeight = Math.max(fromWeight, toWeight);
 //                if (tmpMaxWeightInt < 0)
 //                {
 //                    int lm = lms.getLandmarks()[landmarkIndex];
@@ -188,10 +187,10 @@ public class LMApproximator implements WeightApproximator {
 //                            + ", lm:" + lm + " (" + getCoord(lm) + ")"
 //                            + ", queryNode:" + queryNode + " , node:" + node + " (" + getCoord(node) + "), reverse:" + reverse);
 //                }
-            if (tmpMaxWeightInt > maxWeightInt)
-                maxWeightInt = tmpMaxWeightInt;
+            if (tmpMaxWeight > maxWeight)
+                maxWeight = tmpMaxWeight;
         }
-        return maxWeightInt;
+        return maxWeight;
     }
 
     final int getNode(int node) {
@@ -205,7 +204,7 @@ public class LMApproximator implements WeightApproximator {
 
     @Override
     public WeightApproximator reverse() {
-        return new LMApproximator(graph, maxBaseNodes, lms, activeLandmarks.length, factor, !reverse);
+        return new LMApproximator(graph, maxBaseNodes, lms, activeLandmarks.length, !reverse);
     }
 
     /**
