@@ -38,6 +38,10 @@ public class GHRequest {
     // List of favored start (1st element) and arrival heading (all other).
     // Headings are north based azimuth (clockwise) in (0, 360) or NaN for equal preference
     private final List<Double> favoredHeadings;
+    // List of points that build a polygon the route shall orient at.
+    private List<GHPoint> polygon;
+    // Whether the route shall go through the above polygon or besides (e.g. through germany, or by a lake)
+    private boolean polygonThrough = true;
     private List<String> pointHints = new ArrayList<>();
     private List<String> snapPreventions = new ArrayList<>();
     private List<String> pathDetails = new ArrayList<>();
@@ -297,5 +301,21 @@ public class GHRequest {
             res += " (Hints:" + hints + ")";
 
         return res;
+    }
+
+    public List<GHPoint> getPolygon() {
+        return polygon;
+    }
+
+    public void setPolygon(List<GHPoint> polygon) {
+        this.polygon = polygon;
+    }
+
+    public boolean isPolygonThrough() {
+        return polygonThrough;
+    }
+
+    public void setPolygonThrough(boolean polygonThrough) {
+        this.polygonThrough = polygonThrough;
     }
 }
