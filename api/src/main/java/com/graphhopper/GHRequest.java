@@ -307,15 +307,17 @@ public class GHRequest {
         return polygon;
     }
 
-    public void setPolygon(List<GHPoint> polygon) {
+    public GHRequest setPolygon(List<GHPoint> polygon) {
         this.polygon = polygon;
+        return this;
     }
 
     public boolean isPolygonThrough() {
         return polygonThrough;
     }
 
-    public void setPolygonThrough(boolean polygonThrough) {
+    public GHRequest setPolygonThrough(boolean polygonThrough) {
         this.polygonThrough = polygonThrough;
+        return this;
     }
 }

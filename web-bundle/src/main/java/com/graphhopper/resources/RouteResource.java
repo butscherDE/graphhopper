@@ -131,6 +131,7 @@ public class RouteResource {
                 setPointHints(pointHints).
                 setSnapPreventions(snapPreventions).
                 setPathDetails(pathDetails).
+                setPolygon(polygon).
                 getHints().
                 put(CALC_POINTS, calcPoints).
                 put(INSTRUCTIONS, instructions).

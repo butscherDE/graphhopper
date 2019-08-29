@@ -994,9 +994,11 @@ public class GraphHopper implements GraphHopperAPI {
                 algoStr = chFactoryDecorator.isEnabled() && !disableCH ? DIJKSTRA_BI : ASTAR_BI;
 
             List<GHPoint> points = request.getPoints();
+            List<GHPoint> polygon = request.getPolygon();
             // TODO Maybe we should think about a isRequestValid method that checks all that stuff that we could do to fail fast
             // For example see #734
             checkIfPointsAreInBounds(points);
+            checkIfPointsAreInBounds(polygon);
 
             RoutingTemplate routingTemplate;
             if (ROUND_TRIP.equalsIgnoreCase(algoStr))
