@@ -420,4 +420,5 @@ public class RouteResourceTest {
         assertEquals("The number of 'heading' parameters must be <= 1 or equal to the number of points (1)", json.get("message").asText());
     }
 
+    // TODO test for points and polygon points outside of the boundary
 }
