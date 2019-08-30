@@ -19,6 +19,7 @@ package com.graphhopper.util;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.util.shapes.GHPoint;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -31,6 +32,20 @@ import static org.junit.Assert.assertEquals;
  * @author Peter Karich
  */
 public class GHRequestTest {
+    private static double LAT0 = 51, LON0 = 1, LAT1 = 52, LON1 = 2, LAT2 = 53, LON2 = 3;
+    private ArrayList<GHPoint> points;
+    private List<Double> favoredHeadings;
+    private List<Double> emptyHeadings;
+
+
+    @Before
+
+    public void setupPointsAndHeadings() {
+        points = createTestPoints(LAT0, LON0, LAT1, LON1, LAT2, LON2);
+        favoredHeadings = Arrays.asList(3.14, 4.15, Double.NaN);
+        emptyHeadings = Arrays.asList(Double.NaN, Double.NaN, Double.NaN);
+    }
+
     @Test
     public void testGetHint() {
         GHRequest instance = new GHRequest(10, 12, 12, 10);
@@ -42,57 +57,89 @@ public class GHRequestTest {
 
     @Test
     public void testCorrectInit() {
-        double lat0 = 51, lon0 = 1, lat1 = 52, lon1 = 2, lat2 = 53, lon2 = 3;
+        correctInitWithHeadings();
+        correctInitWithoutHeadings();
+    }
 
+    private void correctInitWithoutHeadings() {
+        correctInitWithAllPointsButNoHeadings();
+        correctInitWithFirstTwoPointsAndNoHeadings();
+        correctInitWithFirstTwoLatLongButNoHeadings();
+        correctInitWithoutConstructorAndNoHeadingsAndSizeHint();
+    }
+
+    private void correctInitWithHeadings() {
+        correctInitWithAllPointsAndHeadings();
+        correctInitWithFirstTwoPointsAndHeadings();
+        correctInitWithFirstTwoLatLongAndHeadings();
+        correctInitWithoutConstructorWithAllPointsAndHeadingsWithSizeHint();
+        correctInitWithoutConstructorWithAllPointsAndHeadingsWithoutSizeHint();
+    }
+
+    private void correctInitWithoutConstructorAndNoHeadingsAndSizeHint() {
+        GHRequest instance = new GHRequest().addPoint(points.get(0)).addPoint(points.get(1)).addPoint(points.get(2));
+        assertEquals("Points not initialized correct", points, instance.getPoints());
+        compareFavoredHeadings(instance, emptyHeadings);
+    }
+
+    private void correctInitWithFirstTwoLatLongButNoHeadings() {
+        GHRequest instance = new GHRequest(LAT0, LON0, LAT1, LON1);
+        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
+        compareFavoredHeadings(instance, emptyHeadings.subList(0, 2));
+    }
+
+    private void correctInitWithFirstTwoPointsAndNoHeadings() {
+        GHRequest instance = new GHRequest(points.get(0), points.get(1));
+        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
+        compareFavoredHeadings(instance, emptyHeadings.subList(0, 2));
+    }
+
+    private void correctInitWithAllPointsButNoHeadings() {
+        GHRequest instance = new GHRequest(points);
+        assertEquals("Points not initialized correct", points, instance.getPoints());
+        compareFavoredHeadings(instance, emptyHeadings);
+    }
+
+    private void correctInitWithoutConstructorWithAllPointsAndHeadingsWithoutSizeHint() {
+        GHRequest instance = new GHRequest().addPoint(points.get(0), favoredHeadings.get(0)).
+                addPoint(points.get(1), favoredHeadings.get(1)).
+                addPoint(points.get(2), favoredHeadings.get(2));
+        assertEquals("Points not initialized correct", points, instance.getPoints());
+        compareFavoredHeadings(instance, favoredHeadings);
+    }
+
+    private void correctInitWithoutConstructorWithAllPointsAndHeadingsWithSizeHint() {
+        GHRequest instance = new GHRequest(3).addPoint(points.get(0), favoredHeadings.get(0)).
+                addPoint(points.get(1), favoredHeadings.get(1)).
+                addPoint(points.get(2), favoredHeadings.get(2));
+        compareFavoredHeadings(instance, favoredHeadings);
+        assertEquals("Points not initialized correct", points, instance.getPoints());
+    }
+
+    private void correctInitWithFirstTwoLatLongAndHeadings() {
+        GHRequest instance = new GHRequest(LAT0, LON0, LAT1, LON1, favoredHeadings.get(0), favoredHeadings.get(1));
+        compareFavoredHeadings(instance, favoredHeadings.subList(0, 2));
+        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
+    }
+
+    private void correctInitWithFirstTwoPointsAndHeadings() {
+        GHRequest instance = new GHRequest(points.get(0), points.get(1), favoredHeadings.get(0), favoredHeadings.get(1));
+        compareFavoredHeadings(instance, favoredHeadings.subList(0, 2));
+        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
+    }
+
+    private void correctInitWithAllPointsAndHeadings() {
+        GHRequest instance = new GHRequest(points, favoredHeadings);
+        compareFavoredHeadings(instance, favoredHeadings);
+        assertEquals("Points not initialized correct", points, instance.getPoints());
+    }
+
+    private ArrayList<GHPoint> createTestPoints(double lat0, double lon0, double lat1, double lon1, double lat2, double lon2) {
         ArrayList<GHPoint> points = new ArrayList<>(3);
         points.add(new GHPoint(lat0, lon0));
         points.add(new GHPoint(lat1, lon1));
         points.add(new GHPoint(lat2, lon2));
-        List<Double> favoredHeadings = Arrays.asList(3.14, 4.15, Double.NaN);
-        List<Double> emptyHeadings = Arrays.asList(Double.NaN, Double.NaN, Double.NaN);
-
-        GHRequest instance;
-
-        instance = new GHRequest(points, favoredHeadings);
-        compareFavoredHeadings(instance, favoredHeadings);
-        assertEquals("Points not initialized correct", points, instance.getPoints());
-
-        instance = new GHRequest(points.get(0), points.get(1), favoredHeadings.get(0), favoredHeadings.get(1));
-        compareFavoredHeadings(instance, favoredHeadings.subList(0, 2));
-        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
-
-        instance = new GHRequest(lat0, lon0, lat1, lon1, favoredHeadings.get(0), favoredHeadings.get(1));
-        compareFavoredHeadings(instance, favoredHeadings.subList(0, 2));
-        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
-
-        instance = new GHRequest(3).addPoint(points.get(0), favoredHeadings.get(0)).
-                addPoint(points.get(1), favoredHeadings.get(1)).
-                addPoint(points.get(2), favoredHeadings.get(2));
-        compareFavoredHeadings(instance, favoredHeadings);
-        assertEquals("Points not initialized correct", points, instance.getPoints());
-
-        instance = new GHRequest().addPoint(points.get(0), favoredHeadings.get(0)).
-                addPoint(points.get(1), favoredHeadings.get(1)).
-                addPoint(points.get(2), favoredHeadings.get(2));
-        assertEquals("Points not initialized correct", points, instance.getPoints());
-        compareFavoredHeadings(instance, favoredHeadings);
-
-        // check init without favoredHeadings
-        instance = new GHRequest(points);
-        assertEquals("Points not initialized correct", points, instance.getPoints());
-        compareFavoredHeadings(instance, emptyHeadings);
-
-        instance = new GHRequest(points.get(0), points.get(1));
-        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
-        compareFavoredHeadings(instance, emptyHeadings.subList(0, 2));
-
-        instance = new GHRequest(lat0, lon0, lat1, lon1);
-        assertEquals("Points not initialized correct", points.subList(0, 2), instance.getPoints());
-        compareFavoredHeadings(instance, emptyHeadings.subList(0, 2));
-
-        instance = new GHRequest().addPoint(points.get(0)).addPoint(points.get(1)).addPoint(points.get(2));
-        assertEquals("Points not initialized correct", points, instance.getPoints());
-        compareFavoredHeadings(instance, emptyHeadings);
+        return points;
     }
 
     private void compareFavoredHeadings(GHRequest request, List<Double> expected) {
