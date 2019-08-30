@@ -39,7 +39,6 @@ public class GHRequestTest {
 
 
     @Before
-
     public void setupPointsAndHeadings() {
         points = createTestPoints(LAT0, LON0, LAT1, LON1, LAT2, LON2);
         favoredHeadings = Arrays.asList(3.14, 4.15, Double.NaN);
