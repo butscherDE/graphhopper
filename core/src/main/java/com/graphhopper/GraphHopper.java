@@ -980,7 +980,7 @@ public class GraphHopper implements GraphHopperAPI {
 
         String algoStr = request.getAlgorithm();
         if (algoStr.isEmpty())
-            algoStr = chFactoryDecorator.isEnabled() && !disableCH ? DIJKSTRA_BI : ASTAR_BI;
+            algoStr = isCHUsageGranted(disableCH) ? DIJKSTRA_BI : ASTAR_BI;
 
         List<GHPoint> points = request.getPoints();
         List<GHPoint> polygon = request.getPolygon();
@@ -1004,20 +1004,14 @@ public class GraphHopper implements GraphHopperAPI {
                     return Collections.emptyList();
 
                 RoutingAlgorithmFactory tmpAlgoFactory = getAlgorithmFactory(hints);
+
                 Weighting weighting;
                 QueryGraph queryGraph;
-
-                if (chFactoryDecorator.isEnabled() && !disableCH) {
-                    BuilderForQueryGraphAndWeightingWithCHEnabled builderForQueryGraphAndWeightingWithCHEnabled = new BuilderForQueryGraphAndWeightingWithCHEnabled(request, ghRsp, hints, qResults, tmpAlgoFactory).invoke();
-                    if (builderForQueryGraphAndWeightingWithCHEnabled.is())
-                        return addIllegalArgumentExceptionAndReturnEmptyCollection(ghRsp, "Heading is not (fully) supported for CHGraph. See issue #483");
-                    weighting = builderForQueryGraphAndWeightingWithCHEnabled.getWeighting();
-                    queryGraph = builderForQueryGraphAndWeightingWithCHEnabled.getQueryGraph();
-                } else {
-                    BuilderForQueryGraphAndWeightingWithCHDisabled builderForQueryGraphAndWeightingWithCHDisabled = new BuilderForQueryGraphAndWeightingWithCHDisabled(hints, encoder, points, qResults).invoke();
-                    weighting = builderForQueryGraphAndWeightingWithCHDisabled.getWeighting();
-                    queryGraph = builderForQueryGraphAndWeightingWithCHDisabled.getQueryGraph();
-                }
+                BuilderForWeightingAndQueryGraph builderForWeightingAndQueryGraph = new BuilderForWeightingAndQueryGraph(request, ghRsp, hints, encoder, disableCH, points, qResults, tmpAlgoFactory).invoke();
+                if (builderForWeightingAndQueryGraph.is())
+                    return addIllegalArgumentExceptionAndReturnEmptyCollection(ghRsp, "Heading is not (fully) supported for CHGraph. See issue #483");
+                weighting = builderForWeightingAndQueryGraph.getWeighting();
+                queryGraph = builderForWeightingAndQueryGraph.getQueryGraph();
                 ghRsp.addDebugInfo("tmode:" + tMode.toString());
 
                 int maxVisitedNodesForRequest = hints.getInt(Routing.MAX_VISITED_NODES, maxVisitedNodes);
@@ -1053,6 +1047,10 @@ public class GraphHopper implements GraphHopperAPI {
         } finally {
             readLock.unlock();
         }
+    }
+
+    private boolean isCHUsageGranted(boolean disableCH) {
+        return chFactoryDecorator.isEnabled() && !disableCH;
     }
 
     private boolean failOnMaxVisitedNodesForRequestExceedsLimit(int maxVisitedNodesForRequest) {
@@ -1382,6 +1380,61 @@ public class GraphHopper implements GraphHopperAPI {
                 }
                 lastPoint = point;
             }
+        }
+    }
+
+    private class BuilderForWeightingAndQueryGraph {
+        private boolean myResult;
+        private GHRequest request;
+        private GHResponse ghRsp;
+        private HintsMap hints;
+        private FlagEncoder encoder;
+        private boolean disableCH;
+        private List<GHPoint> points;
+        private List<QueryResult> qResults;
+        private RoutingAlgorithmFactory tmpAlgoFactory;
+        private Weighting weighting;
+        private QueryGraph queryGraph;
+
+        public BuilderForWeightingAndQueryGraph(GHRequest request, GHResponse ghRsp, HintsMap hints, FlagEncoder encoder, boolean disableCH, List<GHPoint> points, List<QueryResult> qResults, RoutingAlgorithmFactory tmpAlgoFactory) {
+            this.request = request;
+            this.ghRsp = ghRsp;
+            this.hints = hints;
+            this.encoder = encoder;
+            this.disableCH = disableCH;
+            this.points = points;
+            this.qResults = qResults;
+            this.tmpAlgoFactory = tmpAlgoFactory;
+        }
+
+        boolean is() {
+            return myResult;
+        }
+
+        public Weighting getWeighting() {
+            return weighting;
+        }
+
+        public QueryGraph getQueryGraph() {
+            return queryGraph;
+        }
+
+        public BuilderForWeightingAndQueryGraph invoke() {
+            if (isCHUsageGranted(disableCH)) {
+                BuilderForQueryGraphAndWeightingWithCHEnabled builderForQueryGraphAndWeightingWithCHEnabled = new BuilderForQueryGraphAndWeightingWithCHEnabled(request, ghRsp, hints, qResults, tmpAlgoFactory).invoke();
+                if (builderForQueryGraphAndWeightingWithCHEnabled.is()) {
+                    myResult = true;
+                    return this;
+                }
+                weighting = builderForQueryGraphAndWeightingWithCHEnabled.getWeighting();
+                queryGraph = builderForQueryGraphAndWeightingWithCHEnabled.getQueryGraph();
+            } else {
+                BuilderForQueryGraphAndWeightingWithCHDisabled builderForQueryGraphAndWeightingWithCHDisabled = new BuilderForQueryGraphAndWeightingWithCHDisabled(hints, encoder, points, qResults).invoke();
+                weighting = builderForQueryGraphAndWeightingWithCHDisabled.getWeighting();
+                queryGraph = builderForQueryGraphAndWeightingWithCHDisabled.getQueryGraph();
+            }
+            myResult = false;
+            return this;
         }
     }
 }
