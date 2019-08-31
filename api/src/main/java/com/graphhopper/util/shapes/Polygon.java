@@ -17,6 +17,8 @@
  */
 package com.graphhopper.util.shapes;
 
+import java.util.List;
+
 /**
  * This class represents a polygon that is defined by a set of points.
  * Every point i is connected to point i-1 and i+1.
@@ -77,6 +79,21 @@ public class Polygon implements Shape {
 
     public Polygon(double[] lat, double[] lon) {
         this(lat, lon, 0);
+    }
+
+    public static Polygon createPolygonFromGHPoints(List<GHPoint> points) {
+        int pointsLength = points.size();
+        double[] lat = new double[pointsLength];
+        double[] lon = new double[pointsLength];
+
+        for (int i = 0; i < pointsLength; i++) {
+            GHPoint point = points.get(i);
+
+            lat[i] = point.getLat();
+            lon[i] = point.getLon();
+        }
+
+        return new Polygon(lat,lon);
     }
 
     /**
