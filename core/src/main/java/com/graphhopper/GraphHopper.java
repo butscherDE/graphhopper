@@ -954,26 +954,15 @@ public class GraphHopper implements GraphHopperAPI {
      * This method calculates the alternative path list using the low level Path objects.
      */
     public List<Path> calcPaths(GHRequest request, GHResponse ghRsp) {
-        if (ghStorage == null || !fullyLoaded)
-            throw new IllegalStateException("Do a successful call to load or importOrLoad before routing");
+        failOnIllegalStorageStates();
 
-        if (ghStorage.isClosed())
-            throw new IllegalStateException("You need to create a new GraphHopper instance as it is already closed");
-
-        // default handling
-        String vehicle = request.getVehicle();
-        if (vehicle.isEmpty()) {
-            vehicle = getDefaultVehicle().toString();
-            request.setVehicle(vehicle);
-        }
+        String vehicle = buildVehicle(request);
+        HintsMap hints = request.getHints();
 
         Lock readLock = readWriteLock.readLock();
         readLock.lock();
         try {
-            if (!encodingManager.hasEncoder(vehicle))
-                throw new IllegalArgumentException("Vehicle not supported: " + vehicle + ". Supported are: " + encodingManager.toString());
 
-            HintsMap hints = request.getHints();
             String tModeStr = hints.get("traversal_mode", traversalMode.toString());
             TraversalMode tMode = TraversalMode.fromString(tModeStr);
             if (hints.has(Routing.EDGE_BASED))
@@ -1000,13 +989,7 @@ public class GraphHopper implements GraphHopperAPI {
             checkIfPointsAreInBounds(points);
             checkIfPointsAreInBounds(polygon);
 
-            RoutingTemplate routingTemplate;
-            if (ROUND_TRIP.equalsIgnoreCase(algoStr))
-                routingTemplate = new RoundTripRoutingTemplate(request, ghRsp, locationIndex, encodingManager, maxRoundTripRetries);
-            else if (ALT_ROUTE.equalsIgnoreCase(algoStr))
-                routingTemplate = new AlternativeRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
-            else
-                routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+            RoutingTemplate routingTemplate = buildRoutingTemplate(request, ghRsp, algoStr);
 
             List<Path> altPaths = null;
             int maxRetries = routingTemplate.getMaxRetries();
@@ -1054,11 +1037,7 @@ public class GraphHopper implements GraphHopperAPI {
 
                 weighting = createTurnWeighting(queryGraph, weighting, tMode);
 
-                AlgorithmOptions algoOpts = AlgorithmOptions.start().
-                        algorithm(algoStr).traversalMode(tMode).weighting(weighting).
-                        maxVisitedNodes(maxVisitedNodesForRequest).
-                        hints(hints).
-                        build();
+                AlgorithmOptions algoOpts = buildAlgorithmOptions(hints, tMode, algoStr, weighting, maxVisitedNodesForRequest);
 
                 // do the actual route calculation !
                 altPaths = routingTemplate.calcPaths(queryGraph, tmpAlgoFactory, algoOpts);
@@ -1068,12 +1047,7 @@ public class GraphHopper implements GraphHopperAPI {
                 double wayPointMaxDistance = hints.getDouble(Routing.WAY_POINT_MAX_DISTANCE, 1d);
 
                 DouglasPeucker peucker = new DouglasPeucker().setMaxDistance(wayPointMaxDistance);
-                PathMerger pathMerger = new PathMerger().
-                        setCalcPoints(tmpCalcPoints).
-                        setDouglasPeucker(peucker).
-                        setEnableInstructions(tmpEnableInstructions).
-                        setPathDetailsBuilders(pathBuilderFactory, request.getPathDetails()).
-                        setSimplifyResponse(simplifyResponse && wayPointMaxDistance > 0);
+                PathMerger pathMerger = buildPathMerger(request, tmpEnableInstructions, tmpCalcPoints, wayPointMaxDistance, peucker);
 
                 if (request.hasFavoredHeading(0))
                     pathMerger.setFavoredHeading(request.getFavoredHeading(0));
@@ -1090,6 +1064,53 @@ public class GraphHopper implements GraphHopperAPI {
         } finally {
             readLock.unlock();
         }
+    }
+
+    private String buildVehicle(GHRequest request) {
+        String vehicle = request.getVehicle();
+        if (vehicle.isEmpty()) {
+            vehicle = getDefaultVehicle().toString();
+            request.setVehicle(vehicle);
+        }
+        if (!encodingManager.hasEncoder(vehicle))
+            throw new IllegalArgumentException("Vehicle not supported: " + vehicle + ". Supported are: " + encodingManager.toString());
+        return vehicle;
+    }
+
+    private void failOnIllegalStorageStates() {
+        if (ghStorage == null || !fullyLoaded)
+            throw new IllegalStateException("Do a successful call to load or importOrLoad before routing");
+
+        if (ghStorage.isClosed())
+            throw new IllegalStateException("You need to create a new GraphHopper instance as it is already closed");
+    }
+
+    private PathMerger buildPathMerger(GHRequest request, boolean tmpEnableInstructions, boolean tmpCalcPoints, double wayPointMaxDistance, DouglasPeucker peucker) {
+        return new PathMerger().
+                            setCalcPoints(tmpCalcPoints).
+                            setDouglasPeucker(peucker).
+                            setEnableInstructions(tmpEnableInstructions).
+                            setPathDetailsBuilders(pathBuilderFactory, request.getPathDetails()).
+                            setSimplifyResponse(simplifyResponse && wayPointMaxDistance > 0);
+    }
+
+    private AlgorithmOptions buildAlgorithmOptions(HintsMap hints, TraversalMode tMode, String algoStr, Weighting weighting, int maxVisitedNodesForRequest) {
+        return AlgorithmOptions.start().
+                            algorithm(algoStr).traversalMode(tMode).weighting(weighting).
+                            maxVisitedNodes(maxVisitedNodesForRequest).
+                            hints(hints).
+                            build();
+    }
+
+    private RoutingTemplate buildRoutingTemplate(GHRequest request, GHResponse ghRsp, String algoStr) {
+        RoutingTemplate routingTemplate;
+        if (ROUND_TRIP.equalsIgnoreCase(algoStr))
+            routingTemplate = new RoundTripRoutingTemplate(request, ghRsp, locationIndex, encodingManager, maxRoundTripRetries);
+        else if (ALT_ROUTE.equalsIgnoreCase(algoStr))
+            routingTemplate = new AlternativeRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+        else
+            routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+        return routingTemplate;
     }
 
     /**
@@ -1118,6 +1139,10 @@ public class GraphHopper implements GraphHopperAPI {
     }
 
     private void checkIfPointsAreInBounds(List<GHPoint> points) {
+        if (points == null) {
+            return;
+        }
+
         BBox bounds = getGraphHopperStorage().getBounds();
         for (int i = 0; i < points.size(); i++) {
             GHPoint point = points.get(i);
