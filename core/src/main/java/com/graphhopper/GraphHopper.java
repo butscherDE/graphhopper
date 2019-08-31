@@ -958,39 +958,36 @@ public class GraphHopper implements GraphHopperAPI {
 
         String vehicle = buildVehicle(request);
         HintsMap hints = request.getHints();
+        String tModeStr = hints.get("traversal_mode", traversalMode.toString());
+        TraversalMode tMode = TraversalMode.fromString(tModeStr);
+        if (hints.has(Routing.EDGE_BASED))
+            tMode = hints.getBool(Routing.EDGE_BASED, false) ? TraversalMode.EDGE_BASED : TraversalMode.NODE_BASED;
+        FlagEncoder encoder = encodingManager.getEncoder(vehicle);
+
+        boolean disableCH = hints.getBool(CH.DISABLE, false);
+        if (!chFactoryDecorator.isDisablingAllowed() && disableCH)
+            throw new IllegalArgumentException("Disabling CH not allowed on the server-side");
+
+        boolean disableLM = hints.getBool(Landmark.DISABLE, false);
+        if (!lmFactoryDecorator.isDisablingAllowed() && disableLM)
+            throw new IllegalArgumentException("Disabling LM not allowed on the server-side");
+
+        String algoStr = request.getAlgorithm();
+        if (algoStr.isEmpty())
+            algoStr = chFactoryDecorator.isEnabled() && !disableCH ? DIJKSTRA_BI : ASTAR_BI;
+
+        List<GHPoint> points = request.getPoints();
+        List<GHPoint> polygon = request.getPolygon();
+        // TODO Maybe we should think about a isRequestValid method that checks all that stuff that we could do to fail fast
+        // For example see #734
+        checkIfPointsAreInBounds(points);
+        checkIfPointsAreInBounds(polygon);
+
+        RoutingTemplate routingTemplate = buildRoutingTemplate(request, ghRsp, algoStr);
 
         Lock readLock = readWriteLock.readLock();
         readLock.lock();
         try {
-
-            String tModeStr = hints.get("traversal_mode", traversalMode.toString());
-            TraversalMode tMode = TraversalMode.fromString(tModeStr);
-            if (hints.has(Routing.EDGE_BASED))
-                tMode = hints.getBool(Routing.EDGE_BASED, false) ? TraversalMode.EDGE_BASED : TraversalMode.NODE_BASED;
-
-            FlagEncoder encoder = encodingManager.getEncoder(vehicle);
-
-            boolean disableCH = hints.getBool(CH.DISABLE, false);
-            if (!chFactoryDecorator.isDisablingAllowed() && disableCH)
-                throw new IllegalArgumentException("Disabling CH not allowed on the server-side");
-
-            boolean disableLM = hints.getBool(Landmark.DISABLE, false);
-            if (!lmFactoryDecorator.isDisablingAllowed() && disableLM)
-                throw new IllegalArgumentException("Disabling LM not allowed on the server-side");
-
-            String algoStr = request.getAlgorithm();
-            if (algoStr.isEmpty())
-                algoStr = chFactoryDecorator.isEnabled() && !disableCH ? DIJKSTRA_BI : ASTAR_BI;
-
-            List<GHPoint> points = request.getPoints();
-            List<GHPoint> polygon = request.getPolygon();
-            // TODO Maybe we should think about a isRequestValid method that checks all that stuff that we could do to fail fast
-            // For example see #734
-            checkIfPointsAreInBounds(points);
-            checkIfPointsAreInBounds(polygon);
-
-            RoutingTemplate routingTemplate = buildRoutingTemplate(request, ghRsp, algoStr);
-
             List<Path> altPaths = null;
             int maxRetries = routingTemplate.getMaxRetries();
             Locale locale = request.getLocale();
