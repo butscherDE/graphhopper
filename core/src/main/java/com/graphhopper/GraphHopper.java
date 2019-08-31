@@ -957,6 +957,10 @@ public class GraphHopper implements GraphHopperAPI {
         failOnIllegalStorageStates();
 
         String vehicle = buildVehicle(request);
+
+        Lock readLock = readWriteLock.readLock();
+        readLock.lock();
+
         HintsMap hints = request.getHints();
         String tModeStr = hints.get("traversal_mode", traversalMode.toString());
         TraversalMode tMode = TraversalMode.fromString(tModeStr);
@@ -965,12 +969,17 @@ public class GraphHopper implements GraphHopperAPI {
         FlagEncoder encoder = encodingManager.getEncoder(vehicle);
 
         boolean disableCH = hints.getBool(CH.DISABLE, false);
-        if (!chFactoryDecorator.isDisablingAllowed() && disableCH)
-            throw new IllegalArgumentException("Disabling CH not allowed on the server-side");
+        try {
+            if (!chFactoryDecorator.isDisablingAllowed() && disableCH)
+                throw new IllegalArgumentException("Disabling CH not allowed on the server-side");
 
-        boolean disableLM = hints.getBool(Landmark.DISABLE, false);
-        if (!lmFactoryDecorator.isDisablingAllowed() && disableLM)
-            throw new IllegalArgumentException("Disabling LM not allowed on the server-side");
+            boolean disableLM = hints.getBool(Landmark.DISABLE, false);
+            if (!lmFactoryDecorator.isDisablingAllowed() && disableLM)
+                throw new IllegalArgumentException("Disabling LM not allowed on the server-side");
+        } catch (IllegalArgumentException ex) {
+            ghRsp.addError(ex);
+            return Collections.emptyList();
+        }
 
         String algoStr = request.getAlgorithm();
         if (algoStr.isEmpty())
@@ -985,8 +994,6 @@ public class GraphHopper implements GraphHopperAPI {
 
         RoutingTemplate routingTemplate = buildRoutingTemplate(request, ghRsp, algoStr);
 
-        Lock readLock = readWriteLock.readLock();
-        readLock.lock();
         try {
             List<Path> altPaths = null;
             int maxRetries = routingTemplate.getMaxRetries();
