@@ -52,6 +52,7 @@ import com.graphhopper.util.exceptions.PointDistanceExceededException;
 import com.graphhopper.util.exceptions.PointOutOfBoundsException;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.GHPoint;
+import com.graphhopper.util.shapes.Polygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -983,11 +984,13 @@ public class GraphHopper implements GraphHopperAPI {
             algoStr = isCHUsageGranted(disableCH) ? DIJKSTRA_BI : ASTAR_BI;
 
         List<GHPoint> points = request.getPoints();
-        List<GHPoint> polygon = request.getPolygon();
+        Polygon polygon = request.getPolygon();
         // TODO Maybe we should think about a isRequestValid method that checks all that stuff that we could do to fail fast
         // For example see #734
         checkIfPointsAreInBounds(points);
-        checkIfPointsAreInBounds(polygon);
+        if (polygon != null) {
+            checkIfPointsAreInBounds(polygon.getCoordinatesAsGHPoints());
+        }
 
         RoutingTemplate routingTemplate = buildRoutingTemplate(request, ghRsp, algoStr);
 
@@ -1139,10 +1142,6 @@ public class GraphHopper implements GraphHopperAPI {
     }
 
     private void checkIfPointsAreInBounds(List<GHPoint> points) {
-        if (points == null) {
-            return;
-        }
-
         BBox bounds = getGraphHopperStorage().getBounds();
         for (int i = 0; i < points.size(); i++) {
             GHPoint point = points.get(i);

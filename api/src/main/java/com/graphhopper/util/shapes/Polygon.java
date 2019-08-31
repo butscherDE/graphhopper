@@ -17,6 +17,7 @@
  */
 package com.graphhopper.util.shapes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -264,5 +265,21 @@ public class Polygon implements Shape {
         }
 
         return new Polygon(lats, lons, growFactor);
+    }
+
+    public List<GHPoint> getCoordinatesAsGHPoints() {
+        int numPoints = this.lat.length;
+        List<GHPoint> points = new ArrayList<>(numPoints);
+
+        addAllLatLonToPoints(numPoints, points);
+
+        return points;
+    }
+
+    private void addAllLatLonToPoints(int numPoints, List<GHPoint> points) {
+        for (int i = 0; i < numPoints; i++) {
+            final GHPoint point = new GHPoint(lat[i], lon[i]);
+            points.add(point);
+        }
     }
 }

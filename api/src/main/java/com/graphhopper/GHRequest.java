@@ -20,6 +20,7 @@ package com.graphhopper;
 import com.graphhopper.routing.util.HintsMap;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.shapes.GHPoint;
+import com.graphhopper.util.shapes.Polygon;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +40,7 @@ public class GHRequest {
     // Headings are north based azimuth (clockwise) in (0, 360) or NaN for equal preference
     private final List<Double> favoredHeadings;
     // List of points that build a polygon the route shall orient at.
-    private List<GHPoint> polygon;
+    private Polygon polygon;
     // Whether the route shall go through the above polygon or besides (e.g. through germany, or by a lake)
     private boolean polygonThrough = true;
     private List<String> pointHints = new ArrayList<>();
@@ -303,11 +304,11 @@ public class GHRequest {
         return res;
     }
 
-    public List<GHPoint> getPolygon() {
+    public Polygon getPolygon() {
         return polygon;
     }
 
-    public GHRequest setPolygon(List<GHPoint> polygon) {
+    public GHRequest setPolygon(Polygon polygon) {
         this.polygon = polygon;
         return this;
     }

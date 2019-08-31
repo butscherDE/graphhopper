@@ -28,6 +28,7 @@ import com.graphhopper.util.InstructionList;
 import com.graphhopper.util.StopWatch;
 import com.graphhopper.util.gpx.GpxFromInstructions;
 import com.graphhopper.util.shapes.GHPoint;
+import com.graphhopper.util.shapes.Polygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,7 @@ public class RouteResource {
             @Context ContainerRequestContext rc,
             @QueryParam(WAY_POINT_MAX_DISTANCE) @DefaultValue("1") double minPathPrecision,
             @QueryParam("point") List<GHPoint> requestPoints,
-            @QueryParam("polygon") List<GHPoint> polygon,
+            @QueryParam("polygon") List<GHPoint> polygonPoints,
             @QueryParam("type") @DefaultValue("json") String type,
             @QueryParam(INSTRUCTIONS) @DefaultValue("true") boolean instructions,
             @QueryParam(CALC_POINTS) @DefaultValue("true") boolean calcPoints,
@@ -101,8 +102,9 @@ public class RouteResource {
 
         getRequestErrorHandling(requestPoints, enableElevation, pointHints, favoredHeadings);
 
-        GHRequest request = buildRequest(requestPoints, favoredHeadings);
+        Polygon polygon = Polygon.createPolygonFromGHPoints(polygonPoints);
 
+        GHRequest request = buildRequest(requestPoints, favoredHeadings);
         initHints(request.getHints(), uriInfo.getQueryParameters());
         setRequestParams(minPathPrecision, polygon, instructions, calcPoints, vehicleStr, weighting, algoStr, localeStr, pointHints, snapPreventions, pathDetails, request);
 
@@ -172,7 +174,7 @@ public class RouteResource {
         return httpReq.getRemoteAddr() + " " + httpReq.getLocale() + " " + httpReq.getHeader("User-Agent");
     }
 
-    private void setRequestParams(@DefaultValue("1") @QueryParam(WAY_POINT_MAX_DISTANCE) double minPathPrecision, @QueryParam("polygon") List<GHPoint> polygon,
+    private void setRequestParams(@DefaultValue("1") @QueryParam(WAY_POINT_MAX_DISTANCE) double minPathPrecision, @QueryParam("polygon") Polygon polygon,
                                   @DefaultValue("true") @QueryParam(INSTRUCTIONS) boolean instructions, @DefaultValue("true") @QueryParam(CALC_POINTS) boolean calcPoints,
                                   @DefaultValue("car") @QueryParam("vehicle") String vehicleStr, @DefaultValue("fastest") @QueryParam("weighting") String weighting,
                                   @DefaultValue("") @QueryParam("algorithm") String algoStr, @DefaultValue("en") @QueryParam("locale") String localeStr,
