@@ -81,6 +81,10 @@ public class BBox implements Shape, Cloneable {
         }
     }
 
+    public static BBox createMinimalBoundingBoxFromPolygon(final Polygon polygon) {
+        return new BBox(polygon.getMinLon(), polygon.getMaxLon(), polygon.getMinLat(), polygon.getMaxLat());
+    }
+
     public boolean hasElevation() {
         return elevation;
     }
