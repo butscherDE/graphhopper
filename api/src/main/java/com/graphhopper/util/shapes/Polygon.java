@@ -282,4 +282,8 @@ public class Polygon implements Shape {
             points.add(point);
         }
     }
+
+    public int size() {
+        return this.lat.length;
+    }
 }
