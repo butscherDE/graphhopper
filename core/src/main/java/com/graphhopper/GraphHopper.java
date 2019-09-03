@@ -1131,12 +1131,7 @@ public class GraphHopper implements GraphHopperAPI {
         return subgraphNodes;
     }
 
-    /**
-     * According to Prof. Storandts paper Region-Aware Route Planning Definition 2.
-     *
-     * @param subGraphNodes nodes that induce a subgraph.
-     * @return A reduced set of nodes that induce the path skeleton subgraph.
-     */
+    // According to Prof. Storandts paper Region-Aware Route Planning Definition 2.
     private List<Integer> calculatePathSkeleton(final List<Integer>  subGraphNodes) {
         throw new NotImplementedException();
     }
