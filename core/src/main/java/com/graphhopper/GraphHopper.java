@@ -29,10 +29,7 @@ import com.graphhopper.routing.profiles.EncodedValueFactory;
 import com.graphhopper.routing.profiles.EnumEncodedValue;
 import com.graphhopper.routing.profiles.RoadEnvironment;
 import com.graphhopper.routing.subnetwork.PrepareRoutingSubnetworks;
-import com.graphhopper.routing.template.AlternativeRoutingTemplate;
-import com.graphhopper.routing.template.RoundTripRoutingTemplate;
-import com.graphhopper.routing.template.RoutingTemplate;
-import com.graphhopper.routing.template.ViaRoutingTemplate;
+import com.graphhopper.routing.template.*;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.util.parsers.DefaultTagParserFactory;
 import com.graphhopper.routing.util.parsers.TagParserFactory;
@@ -1074,7 +1071,7 @@ public class GraphHopper implements GraphHopperAPI {
             AlgorithmOptions algoOpts = buildAlgorithmOptions(hints, tMode, algoStr, weighting, maxVisitedNodesForRequest);
 
             // do the actual route calculation !
-            altPaths = routePointsAndPolygons(routingTemplate, tmpAlgoFactory, queryGraph, algoOpts);
+            altPaths = routingTemplate.calcPaths(queryGraph, tmpAlgoFactory, algoOpts);
 
             boolean tmpEnableInstructions = hints.getBool(Routing.INSTRUCTIONS, getEncodingManager().isEnableInstructions());
             boolean tmpCalcPoints = hints.getBool(Routing.CALC_POINTS, calcPoints);
@@ -1093,115 +1090,6 @@ public class GraphHopper implements GraphHopperAPI {
         }
 
         readLock.unlock();
-        return altPaths;
-
-
-    }
-
-    private List<Path> routePointsAndPolygons(RoutingTemplate routingTemplate, RoutingAlgorithmFactory tmpAlgoFactory, QueryGraph queryGraph, AlgorithmOptions algoOpts) {
-        List<Path> altPaths;
-
-        if (routingTemplate.getGhRequest().getPolygon().size() <= 0) {
-            altPaths = routeWithoutPolygon(routingTemplate, tmpAlgoFactory, queryGraph, algoOpts);
-        } else {
-            altPaths = routeWithPolygon(routingTemplate, tmpAlgoFactory, queryGraph, algoOpts);
-        }
-        return altPaths;
-    }
-
-    private List<Path> routeWithPolygon(RoutingTemplate routingTemplate, RoutingAlgorithmFactory tmpAlgoFactory, QueryGraph queryGraph, AlgorithmOptions algoOpts) {
-        List<QueryResult> additionalPoints = this.findViaPointsToFullfillPolygonOrientedRouting(routingTemplate);
-
-        throw new NotImplementedException();
-    }
-
-    private List<QueryResult> findViaPointsToFullfillPolygonOrientedRouting(RoutingTemplate routingTemplate) {
-        List<Integer> nodesInPolygon = getNodesInPolygon(routingTemplate);
-        List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
-        List<Integer> subgraphNodes = nodeUnion(nodesInPolygon, polygonEntryExitPoints);
-        List<Integer> pathSkeleton = calculatePathSkeleton(subgraphNodes);
-
-        throw new NotImplementedException();
-    }
-
-    private List<Integer> nodeUnion(List<Integer> nodesInPolygon, List<Integer> polygonEntryExitPoints) {
-        List<Integer> subgraphNodes = new ArrayList<>(nodesInPolygon.size() + polygonEntryExitPoints.size());
-        subgraphNodes.addAll(nodesInPolygon);
-        subgraphNodes.addAll(polygonEntryExitPoints);
-        return subgraphNodes;
-    }
-
-    // According to Prof. Storandts paper Region-Aware Route Planning Definition 2.
-    private List<Integer> calculatePathSkeleton(final List<Integer>  subGraphNodes) {
-        throw new NotImplementedException();
-    }
-
-    private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
-        final List<Integer> entryExitPoints = new LinkedList<>();
-        final EdgeExplorer edgeExplorer = ghStorage.getBaseGraph().createEdgeExplorer();
-
-        addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(nodesInPolygon, entryExitPoints, edgeExplorer);
-
-        return entryExitPoints;
-    }
-
-    private void addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(List<Integer> nodesInPolygon, List<Integer> entryExitPoints, EdgeExplorer edgeExplorer) {
-        for (int node : nodesInPolygon) {
-            final EdgeIterator edgeIterator = edgeExplorer.setBaseNode(node);
-
-            do {
-                addToEntryExitIfNotExistentAndNotInPolygon(nodesInPolygon, entryExitPoints, edgeIterator);
-            } while (edgeIterator.next());
-        }
-    }
-
-    private void addToEntryExitIfNotExistentAndNotInPolygon(List<Integer> nodesInPolygon, List<Integer> entryExitPoints, EdgeIterator edgeIterator) {
-        final int adjacentNode = edgeIterator.getAdjNode();
-        if (!nodesInPolygon.contains(adjacentNode) && !entryExitPoints.contains(adjacentNode)) {
-            entryExitPoints.add(adjacentNode);
-        }
-    }
-
-    private List<Integer> filterOutNodesNotInPolygon(final List<Integer> nodes, final Polygon polygon) {
-        final List<Integer> filterResult = new LinkedList<>();
-
-        while (!nodes.isEmpty()) {
-            filterNextNode(nodes, polygon, filterResult);
-        }
-
-        return filterResult;
-    }
-
-    private void filterNextNode(List<Integer> nodes, Polygon polygon, List<Integer> filterResult) {
-        int nodeToFilter = popNode(nodes);
-        final NodeAccess nodeAccess = ghStorage.getNodeAccess();
-        final double lat = nodeAccess.getLat(nodeToFilter);
-        final double lon = nodeAccess.getLon(nodeToFilter);
-
-        if (polygon.contains(lat, lon)) {
-            filterResult.add(nodeToFilter);
-        }
-    }
-
-    private int popNode(List<Integer> nodes) {
-        final int nodeToFilter = nodes.get(0);
-        nodes.remove(0);
-        return nodeToFilter;
-    }
-
-    private List<Integer> getNodesInPolygon(RoutingTemplate routingTemplate) {
-        final Polygon polygon = routingTemplate.getGhRequest().getPolygon();
-        final NodeAccess nodeAccess = this.ghStorage.getNodeAccess();
-
-        BBox minimumPolygonBoundingBox = BBox.createMinimalBoundingBoxFromPolygon(polygon);
-        final NodesInPolygonFindingVisitor visitor =new NodesInPolygonFindingVisitor(polygon, nodeAccess);
-        this.locationIndex.query(minimumPolygonBoundingBox, visitor);
-        return visitor.getNodesInPolygon();
-    }
-
-    private List<Path> routeWithoutPolygon(RoutingTemplate routingTemplate, RoutingAlgorithmFactory tmpAlgoFactory, QueryGraph queryGraph, AlgorithmOptions algoOpts) {
-        List<Path> altPaths;
-        altPaths = routingTemplate.calcPaths(queryGraph, tmpAlgoFactory, algoOpts);
         return altPaths;
     }
 
@@ -1264,10 +1152,16 @@ public class GraphHopper implements GraphHopperAPI {
             routingTemplate = new RoundTripRoutingTemplate(request, ghRsp, locationIndex, encodingManager, maxRoundTripRetries);
         } else if (ALT_ROUTE.equalsIgnoreCase(algoStr)) {
             routingTemplate = new AlternativeRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+        } else if (validPolygonInRequest(request)) {
+            routingTemplate = new PolygonRoutingTemplate(request, ghRsp, locationIndex, this, encodingManager);
         } else {
-            routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+                routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
         }
         return routingTemplate;
+    }
+
+    private boolean validPolygonInRequest(GHRequest request) {
+        return request.getPolygon().size() > 2;
     }
 
     /**
@@ -1603,27 +1497,4 @@ public class GraphHopper implements GraphHopperAPI {
             return this;
         }
     }
-
-    private class NodesInPolygonFindingVisitor extends LocationIndex.Visitor {
-        private final List<Integer> nodesInPolygon = new LinkedList<>();
-        private final Polygon polygon;
-        private final NodeAccess nodeAccess;
-
-        public NodesInPolygonFindingVisitor(final Polygon polygon, final NodeAccess nodeAccess) {
-            this.polygon = polygon;
-            this.nodeAccess = nodeAccess;
-        }
-
-        @Override
-        public void onNode(int nodeId) {
-            final double lat = nodeAccess.getLat(nodeId);
-            final double lon = nodeAccess.getLon(nodeId);
-
-            if (polygon.contains(lat, lon)) {
-                this.nodesInPolygon.add(nodeId);
-            }
-        }
-
-        public List<Integer> getNodesInPolygon() { return this.nodesInPolygon; }
-    };
 }
