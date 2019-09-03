@@ -97,6 +97,7 @@ public class GHRequest {
         favoredHeadings.add(startHeading);
         validateAzimuthValue(endHeading);
         favoredHeadings.add(endHeading);
+        this.polygon = new Polygon(new double[] {}, new double[] {});
     }
 
     public GHRequest(GHPoint startPlace, GHPoint endPlace) {
@@ -121,6 +122,7 @@ public class GHRequest {
         }
         this.points = points;
         this.favoredHeadings = favoredHeadings;
+        this.polygon = new Polygon(new double[] {}, new double[] {});
     }
 
     /**

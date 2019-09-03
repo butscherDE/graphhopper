@@ -60,7 +60,7 @@ final public class AlternativeRoutingTemplate extends ViaRoutingTemplate {
 
     @Override
     public List<Path> calcPaths(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
-        boolean withViaTurnPenalty = ghRequest.getHints().getBool(Routing.PASS_THROUGH, false);
+        boolean withViaTurnPenalty = getGhRequest().getHints().getBool(Routing.PASS_THROUGH, false);
         if (withViaTurnPenalty)
             throw new IllegalArgumentException("Alternative paths and " + PASS_THROUGH + " at the same time is currently not supported");
 
@@ -72,7 +72,7 @@ final public class AlternativeRoutingTemplate extends ViaRoutingTemplate {
         if (pathList.isEmpty())
             throw new RuntimeException("Empty paths for alternative route calculation not expected");
 
-        // if alternative route calculation was done then create the responses from single paths        
+        // if alternative route calculation was done then create the responses from single paths
         PointList wpList = getWaypoints();
         altResponse.setWaypoints(wpList);
         ghResponse.add(altResponse);

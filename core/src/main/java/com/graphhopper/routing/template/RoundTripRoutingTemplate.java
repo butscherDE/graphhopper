@@ -70,12 +70,12 @@ public class RoundTripRoutingTemplate extends AbstractRoutingTemplate implements
 
     @Override
     public List<QueryResult> lookup(List<GHPoint> points, FlagEncoder encoder) {
-        if (points.size() != 1 || ghRequest.getPoints().size() != 1)
+        if (points.size() != 1 || getGhRequest().getPoints().size() != 1)
             throw new IllegalArgumentException("For round trip calculation exactly one point is required");
-        final double distanceInMeter = ghRequest.getHints().getDouble(RoundTrip.DISTANCE, 10000);
-        final long seed = ghRequest.getHints().getLong(RoundTrip.SEED, 0L);
-        double initialHeading = ghRequest.getFavoredHeading(0);
-        final int roundTripPointCount = Math.min(20, ghRequest.getHints().getInt(RoundTrip.POINTS, 2 + (int) (distanceInMeter / 50000)));
+        final double distanceInMeter = getGhRequest().getHints().getDouble(RoundTrip.DISTANCE, 10000);
+        final long seed = getGhRequest().getHints().getLong(RoundTrip.SEED, 0L);
+        double initialHeading = getGhRequest().getFavoredHeading(0);
+        final int roundTripPointCount = Math.min(20, getGhRequest().getHints().getInt(RoundTrip.POINTS, 2 + (int) (distanceInMeter / 50000)));
         final GHPoint start = points.get(0);
 
         TourStrategy strategy = new MultiPointTour(new Random(seed), distanceInMeter, roundTripPointCount, initialHeading);
@@ -180,5 +180,10 @@ public class RoundTripRoutingTemplate extends AbstractRoutingTemplate implements
     public int getMaxRetries() {
         // with potentially retrying, including generating new route points, for now disabled
         return 1;
+    }
+
+    @Override
+    public GHRequest getGhRequest() {
+        return ghRequest;
     }
 }

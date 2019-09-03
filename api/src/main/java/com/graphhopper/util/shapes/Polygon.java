@@ -44,9 +44,7 @@ public class Polygon implements Shape {
         if (lat.length != lon.length) {
             throw new IllegalArgumentException("Points must be of equal length but was " + lat.length + " vs. " + lon.length);
         }
-        if (lat.length == 0) {
-            throw new IllegalArgumentException("Points must not be empty");
-        }
+
         this.lat = lat;
         this.lon = lon;
 

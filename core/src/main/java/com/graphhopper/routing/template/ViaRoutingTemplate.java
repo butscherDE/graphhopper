@@ -43,7 +43,7 @@ import java.util.List;
  * @author Peter Karich
  */
 public class ViaRoutingTemplate extends AbstractRoutingTemplate implements RoutingTemplate {
-    protected final GHRequest ghRequest;
+    private final GHRequest ghRequest;
     protected final GHResponse ghResponse;
     protected final PathWrapper altResponse = new PathWrapper();
     private final LocationIndex locationIndex;
@@ -64,16 +64,17 @@ public class ViaRoutingTemplate extends AbstractRoutingTemplate implements Routi
             throw new IllegalArgumentException("At least 2 points have to be specified, but was:" + points.size());
 
         EdgeFilter edgeFilter = DefaultEdgeFilter.allEdges(encoder);
-        EdgeFilter strictEdgeFilter = !ghRequest.hasSnapPreventions() ? edgeFilter : new SnapPreventionEdgeFilter(edgeFilter,
-                encoder.getEnumEncodedValue(RoadClass.KEY, RoadClass.class),
-                encoder.getEnumEncodedValue(RoadEnvironment.KEY, RoadEnvironment.class), ghRequest.getSnapPreventions());
+        EdgeFilter strictEdgeFilter = !getGhRequest().hasSnapPreventions() ? edgeFilter : new SnapPreventionEdgeFilter(edgeFilter,
+                                                                                                                       encoder.getEnumEncodedValue(RoadClass.KEY, RoadClass.class),
+                                                                                                                       encoder.getEnumEncodedValue(RoadEnvironment.KEY, RoadEnvironment.class), getGhRequest()
+                                                                                                                               .getSnapPreventions());
         queryResults = new ArrayList<>(points.size());
         for (int placeIndex = 0; placeIndex < points.size(); placeIndex++) {
             GHPoint point = points.get(placeIndex);
             QueryResult qr = null;
-            if (ghRequest.hasPointHints())
-                qr = locationIndex.findClosest(point.lat, point.lon, new NameSimilarityEdgeFilter(strictEdgeFilter, ghRequest.getPointHints().get(placeIndex)));
-            else if (ghRequest.hasSnapPreventions())
+            if (getGhRequest().hasPointHints())
+                qr = locationIndex.findClosest(point.lat, point.lon, new NameSimilarityEdgeFilter(strictEdgeFilter, getGhRequest().getPointHints().get(placeIndex)));
+            else if (getGhRequest().hasSnapPreventions())
                 qr = locationIndex.findClosest(point.lat, point.lon, strictEdgeFilter);
             if (qr == null || !qr.isValid())
                 qr = locationIndex.findClosest(point.lat, point.lon, edgeFilter);
@@ -89,15 +90,15 @@ public class ViaRoutingTemplate extends AbstractRoutingTemplate implements Routi
     @Override
     public List<Path> calcPaths(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
         long visitedNodesSum = 0L;
-        boolean viaTurnPenalty = ghRequest.getHints().getBool(Routing.PASS_THROUGH, false);
-        int pointCounts = ghRequest.getPoints().size();
+        boolean viaTurnPenalty = getGhRequest().getHints().getBool(Routing.PASS_THROUGH, false);
+        int pointCounts = getGhRequest().getPoints().size();
         pathList = new ArrayList<>(pointCounts - 1);
         QueryResult fromQResult = queryResults.get(0);
         StopWatch sw;
         for (int placeIndex = 1; placeIndex < pointCounts; placeIndex++) {
             if (placeIndex == 1) {
                 // enforce start direction
-                queryGraph.enforceHeading(fromQResult.getClosestNode(), ghRequest.getFavoredHeading(0), false);
+                queryGraph.enforceHeading(fromQResult.getClosestNode(), getGhRequest().getFavoredHeading(0), false);
             } else if (viaTurnPenalty) {
                 // enforce straight start after via stop
                 Path prevRoute = pathList.get(placeIndex - 2);
@@ -110,7 +111,7 @@ public class ViaRoutingTemplate extends AbstractRoutingTemplate implements Routi
             QueryResult toQResult = queryResults.get(placeIndex);
 
             // enforce end direction
-            queryGraph.enforceHeading(toQResult.getClosestNode(), ghRequest.getFavoredHeading(placeIndex), true);
+            queryGraph.enforceHeading(toQResult.getClosestNode(), getGhRequest().getFavoredHeading(placeIndex), true);
 
             sw = new StopWatch().start();
             RoutingAlgorithm algo = algoFactory.createAlgo(queryGraph, algoOpts);
@@ -127,7 +128,7 @@ public class ViaRoutingTemplate extends AbstractRoutingTemplate implements Routi
             int idx = 0;
             for (Path path : tmpPathList) {
                 if (path.getTime() < 0)
-                    throw new RuntimeException("Time was negative " + path.getTime() + " for index " + idx + ". Please report as bug and include:" + ghRequest);
+                    throw new RuntimeException("Time was negative " + path.getTime() + " for index " + idx + ". Please report as bug and include:" + getGhRequest());
 
                 pathList.add(path);
                 debug += ", " + path.getDebugInfo();
@@ -155,8 +156,8 @@ public class ViaRoutingTemplate extends AbstractRoutingTemplate implements Routi
 
     @Override
     public boolean isReady(PathMerger pathMerger, Translation tr) {
-        if (ghRequest.getPoints().size() - 1 != pathList.size())
-            throw new RuntimeException("There should be exactly one more points than paths. points:" + ghRequest.getPoints().size() + ", paths:" + pathList.size());
+        if (getGhRequest().getPoints().size() - 1 != pathList.size())
+            throw new RuntimeException("There should be exactly one more points than paths. points:" + getGhRequest().getPoints().size() + ", paths:" + pathList.size());
 
         altResponse.setWaypoints(getWaypoints());
         ghResponse.add(altResponse);
@@ -167,5 +168,9 @@ public class ViaRoutingTemplate extends AbstractRoutingTemplate implements Routi
     @Override
     public int getMaxRetries() {
         return 1;
+    }
+
+    public GHRequest getGhRequest() {
+        return ghRequest;
     }
 }

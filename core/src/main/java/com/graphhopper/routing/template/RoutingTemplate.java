@@ -17,6 +17,7 @@
  */
 package com.graphhopper.routing.template;
 
+import com.graphhopper.GHRequest;
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.QueryGraph;
@@ -57,4 +58,6 @@ public interface RoutingTemplate {
      * This method returns the maximum number of full retries of these 3 steps
      */
     int getMaxRetries();
+
+    public GHRequest getGhRequest();
 }
