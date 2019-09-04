@@ -420,4 +420,34 @@ public class Path {
 
         void finish();
     }
+
+    public void addPath(final Path newPath) {
+        final EdgeIteratorState lastEdgeOfThisPath = this.getFinalEdge();
+        final List<EdgeIteratorState> otherPathsEdges = newPath.calcEdges();
+
+        failOnNonAdablePath(lastEdgeOfThisPath, otherPathsEdges);
+        mergePaths(newPath, otherPathsEdges);
+    }
+
+    private void mergePaths(Path newPath, List<EdgeIteratorState> otherPathsEdges) {
+        addOtherPathsEdgesToThisPath(otherPathsEdges);
+        this.weight += newPath.getWeight();
+        this.sptEntry = null; // TODO: Test if this works and if not, how can be merge spt entries?
+    }
+
+    private void failOnNonAdablePath(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> otherPathsEdges) {
+        if (!lastAndFirstNodeEqual(lastEdgeOfThisPath, otherPathsEdges)) {
+            throw new IllegalArgumentException("Paths must end and start with equal node");
+        }
+    }
+
+    private void addOtherPathsEdgesToThisPath(List<EdgeIteratorState> otherPathsEdges) {
+        for (EdgeIteratorState edge : otherPathsEdges) {
+            this.addEdge(edge.getEdge());
+        }
+    }
+
+    private boolean lastAndFirstNodeEqual(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> firstEdgeOfNewPath) {
+        return lastEdgeOfThisPath.getAdjNode() == firstEdgeOfNewPath.get(0).getBaseNode();
+    }
 }

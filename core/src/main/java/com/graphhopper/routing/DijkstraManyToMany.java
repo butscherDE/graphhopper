@@ -5,6 +5,7 @@ import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeIteratorState;
+import javafx.util.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
@@ -15,14 +16,14 @@ import java.util.*;
 public class DijkstraManyToMany extends DijkstraOneToMany {
     private final List<Integer> interiorGraphNode;
     private final List<Integer> entryExitPoints;
-    private final List<Path> allPaths;
+    private final Map<Pair<Integer, Integer>, Path> allPaths;
     private int currentTo;
 
     public DijkstraManyToMany(Graph graph, Weighting weighting, TraversalMode tMode, final List<Integer> interiorGraphNode, final List<Integer> entryExitPoints) {
         super(graph, weighting, tMode);
         this.interiorGraphNode = interiorGraphNode;
         this.entryExitPoints = entryExitPoints;
-        this.allPaths = new LinkedList<>();
+        this.allPaths = new HashMap<Pair<Integer, Integer>, Path>();
     }
 
     @Override
@@ -49,15 +50,15 @@ public class DijkstraManyToMany extends DijkstraOneToMany {
             this.currentTo = to;
 
             Path newPath = this.calcPath(from, to);
-            allPaths.add(newPath);
+            allPaths.put(new Pair(from, to), newPath);
         }
     }
 
     public List<Integer> buildPathSkeleton() {
         Set<Integer> unionedNodesFromPaths = new HashSet<>(allPaths.size() * 10);
 
-        for (Path path : allPaths) {
-            addPathNodesToSet(unionedNodesFromPaths, path);
+        for (Map.Entry<Pair<Integer, Integer>, Path> entry : allPaths.entrySet()) {
+            addPathNodesToSet(unionedNodesFromPaths, entry.getValue());
         }
 
         return new ArrayList<>(unionedNodesFromPaths);
@@ -69,5 +70,9 @@ public class DijkstraManyToMany extends DijkstraOneToMany {
             int node = nodesInPath.get(i);
             unionedNodesFromPaths.add(node);
         }
+    }
+
+    public Path getPathByStartEndPoint(int start, int end) {
+        return this.allPaths.get(new Pair<Integer, Integer>(start, end));
     }
 }

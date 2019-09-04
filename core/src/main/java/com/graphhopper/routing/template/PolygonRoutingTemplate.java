@@ -11,7 +11,9 @@ import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
+import com.graphhopper.util.Parameters;
 import com.graphhopper.util.shapes.BBox;
+import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -22,10 +24,14 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private final Polygon polygon;
     private final GraphHopper gh;
     private final GraphHopperStorage ghStorage;
+    private final NodeAccess nodeAccess;
     private QueryGraph queryGraph;
     private AlgorithmOptions algoOpts;
     private RoutingAlgorithmFactory algoFactory;
-    private DijkstraOneToMany dijkstraOTM;
+    private DijkstraOneToMany dijkstraForLOTNodes;
+    private DijkstraManyToMany dijkstraForPathSkeleton;
+    private RoutingAlgorithm routingAlgorithm;
+    private List<RouteCandidate> routeCandidates;
 
     public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, GraphHopper gh,
                                   EncodingManager encodingManager) {
@@ -34,6 +40,7 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
         this.polygon = ghRequest.getPolygon();
         this.gh = gh;
         this.ghStorage = this.gh.getGraphHopperStorage();
+        this.nodeAccess = this.ghStorage.getNodeAccess();
     }
 
     @Override
@@ -41,7 +48,8 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
         this.queryGraph = queryGraph;
         this.algoFactory = algoFactory;
         this.algoOpts = algoOpts;
-
+        this.routingAlgorithm = algoFactory.createAlgo(queryGraph, algoOpts);
+        this.routeCandidates = new LinkedList<>();
         return routeWithPolygon();
     }
 
@@ -50,18 +58,47 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     private List<Path> routeWithPolygon() {
-        List<QueryResult> additionalPoints = this.findViaPointsToFullfillPolygonOrientedRouting();
+        this.findCandidateRoutes();
 
         throw new NotImplementedException();
     }
 
-    private List<QueryResult> findViaPointsToFullfillPolygonOrientedRouting() {
+    private void findCandidateRoutes() {
         List<Integer> nodesInPolygon = getNodesInPolygon();
         List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
-        List<Integer> pathSkeleton = calculatePathSkeleton(nodesInPolygon, polygonEntryExitPoints);
-        List<List<Integer>> LOTnodes = findLocalOptimalTouchnodes(polygonEntryExitPoints);
+        List<List<Integer>> LOTNodes = findLocalOptimalTouchnodes(polygonEntryExitPoints);
 
-        throw new NotImplementedException();
+        for (int i = 0; i < LOTNodes.size() - 1; i++) {
+            lookUpStartEndNodes(i);
+            buildRouteCandidatesForCurrentPoint(LOTNodes.get(i), i);
+
+        }
+    }
+
+    private void buildRouteCandidatesForCurrentPoint(List<Integer> currentPointsLOTNodes, int pointsIndex) {
+        int pointInQueryResultsIndex = this.queryResults.size() - 2;
+        int currentPointID = this.queryResults.get(pointInQueryResultsIndex).getClosestNode();
+        int nextPointID = this.queryResults.get(pointInQueryResultsIndex + 1).getClosestNode();
+
+        for (final int LOTNodeL : currentPointsLOTNodes) {
+            for (final int LOTNodeLPrime : currentPointsLOTNodes) {
+                this.routeCandidates.add(buildCandidatePath(currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime));
+            }
+        }
+    }
+
+    private RouteCandidate buildCandidatePath(int currentPointID, int nextPointID, int LOTNodeL, int LOTNodeLPrime) {
+        RouteCandidate routeCandidate = new RouteCandidate(this, currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime);
+
+        return routeCandidate;
+    }
+
+    private void lookUpStartEndNodes(int pointsIndex) {
+        final GHPoint currentPoint = this.ghRequest.getPoints().get(pointsIndex);
+        final GHPoint nextPoint = this.ghRequest.getPoints().get(pointsIndex + 1);
+
+        List<GHPoint> LOTNodesGHPoints = Arrays.asList(currentPoint, nextPoint);
+        super.lookup(LOTNodesGHPoints, this.encodingManager.getEncoder(this.ghRequest.getVehicle()));
     }
 
     // Definition 6 in Storandts paper Region-Aware Routing Planning
@@ -92,9 +129,8 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
         EdgeIterator neighborFinder = edgeExplorer.setBaseNode(entryExitPoint);
         Double distanceOfThisEntryExitPointFromPoint = distancesToPolygonEntryExit.get(entryExitPoint);
 
-        boolean foundABetterLOTNode = false;
-        foundABetterLOTNode =
-                lookForNeighborsThatMakeABetterLOTNode(distancesToPolygonEntryExit, neighborFinder, distanceOfThisEntryExitPointFromPoint, foundABetterLOTNode);
+        boolean foundABetterLOTNode =
+                lookForNeighborsThatMakeABetterLOTNode(distancesToPolygonEntryExit, neighborFinder, distanceOfThisEntryExitPointFromPoint);
 
         pruneThisNoteFromLOTIfBetterWasFound(LOTNodes, entryExitPoint, foundABetterLOTNode);
     }
@@ -106,17 +142,23 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     private boolean lookForNeighborsThatMakeABetterLOTNode(Map<Integer, Double> distancesToPolygonEntryExit, EdgeIterator neighborFinder,
-                                                           Double distanceOfThisEntryExitPointFromPoint, boolean foundABetterLOTNode) {
+                                                           Double distanceOfThisEntryExitPointFromPoint) {
+        boolean foundABetterLOTNode = false;
         do {
-            final int currentNeighbor = neighborFinder.getAdjNode();
-            Double distanceOfNeighborFromPoint = distancesToPolygonEntryExit.get(currentNeighbor);
-            if (distanceOfNeighborFromPoint != null) {
-                if (distanceOfNeighborFromPoint < distanceOfThisEntryExitPointFromPoint) {
-                    foundABetterLOTNode = true;
-                }
-            }
+            foundABetterLOTNode = foundABetterLOTNode(distancesToPolygonEntryExit, neighborFinder, distanceOfThisEntryExitPointFromPoint);
         } while (neighborFinder.next() && !foundABetterLOTNode);
         return foundABetterLOTNode;
+    }
+
+    private boolean foundABetterLOTNode(Map<Integer, Double> distancesToPolygonEntryExit, EdgeIterator neighborFinder, Double distanceOfThisEntryExitPointFromPoint) {
+        final int currentNeighbor = neighborFinder.getAdjNode();
+        Double distanceOfNeighborFromPoint = distancesToPolygonEntryExit.get(currentNeighbor);
+        if (distanceOfNeighborFromPoint != null) {
+            if (distanceOfNeighborFromPoint < distanceOfThisEntryExitPointFromPoint) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void addEntryExitPointsCopyTo(List<Integer> polygonEntryExitPoints, List<List<Integer>> LOTNodes) {
@@ -127,8 +169,8 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private Map<Integer, Double> getDistancesFromPointToEntryExitPoints(QueryResult point, List<Integer> polygonEntryExitPoints) {
         final Map<Integer, Double> weightsOfEntryExitPoints = new HashMap<Integer, Double>();
         for (final int entryExitPoint : polygonEntryExitPoints) {
-            this.dijkstraOTM.calcPath(point.getClosestNode(), entryExitPoint);
-            weightsOfEntryExitPoints.put(entryExitPoint, this.dijkstraOTM.getWeight(entryExitPoint));
+            this.dijkstraForLOTNodes.calcPath(point.getClosestNode(), entryExitPoint);
+            weightsOfEntryExitPoints.put(entryExitPoint, this.dijkstraForLOTNodes.getWeight(entryExitPoint));
         }
 
         return weightsOfEntryExitPoints;
@@ -161,11 +203,10 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     // According to Prof. Storandts paper Region-Aware Route Planning Definition 2.
-    private List<Integer> calculatePathSkeleton(List<Integer> subGraphNodes, final List<Integer> polygonEntryExitPoints) {
-        DijkstraManyToMany dijkstraMTM = new DijkstraManyToMany(this.queryGraph, algoOpts.getWeighting(), this.algoOpts.getTraversalMode(), subGraphNodes,
+    private void calculatePathSkeleton(List<Integer> subGraphNodes, final List<Integer> polygonEntryExitPoints) {
+        this.dijkstraForPathSkeleton = new DijkstraManyToMany(this.queryGraph, algoOpts.getWeighting(), this.algoOpts.getTraversalMode(), subGraphNodes,
                                                                 polygonEntryExitPoints);
-        dijkstraMTM.findAllPathsBetweenEntryExitPoints();
-        return dijkstraMTM.buildPathSkeleton();
+        this.dijkstraForPathSkeleton.findAllPathsBetweenEntryExitPoints();
     }
 
     private List<Integer> filterOutNodesNotInPolygon(final List<Integer> nodes, final Polygon polygon) {
@@ -226,5 +267,71 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
         }
 
         public List<Integer> getNodesInPolygon() { return this.nodesInPolygon; }
+    }
+
+    public RoutingAlgorithm getRoutingAlgorithm() {
+        return this.routingAlgorithm;
+    }
+
+    public DijkstraManyToMany getPathSkeletonRouter() {
+        return this.dijkstraForPathSkeleton;
+    }
+
+    private class RouteCandidate {
+        private final Path startToPolygonEntry;
+        private final Path polygonEntryToPolygonExit;
+        private final Path polygonExitToEnd;
+        private final Path directRouteStartEnd;
+        private final PolygonRoutingTemplate polygonRoutingTemplate;
+        private final RoutingAlgorithm routingAlgorithm;
+        private final DijkstraManyToMany pathSkeletonRouter;
+        private final double distance;
+
+        public RouteCandidate(final PolygonRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
+                              final int polygonExitNodeID) {
+            this.polygonRoutingTemplate = polygonRoutingTemplate;
+            this.routingAlgorithm = polygonRoutingTemplate.getRoutingAlgorithm();
+            this.pathSkeletonRouter = polygonRoutingTemplate.getPathSkeletonRouter();
+
+            this.startToPolygonEntry = this.routingAlgorithm.calcPath(startNodeID, polygonEntryNodeID);
+            this.polygonEntryToPolygonExit = this.pathSkeletonRouter.getPathByStartEndPoint(polygonEntryNodeID, polygonExitNodeID);
+            this.polygonExitToEnd = this.routingAlgorithm.calcPath(polygonExitNodeID, endNodeID);
+            this.directRouteStartEnd = this.routingAlgorithm.calcPath(startNodeID, endNodeID);
+
+            this.distance = this.startToPolygonEntry.getDistance() + this.polygonEntryToPolygonExit.getDistance() + this. polygonExitToEnd.getDistance();
+        }
+
+        public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
+            Path completePathCandidate = new Path(queryGraph, algoOpts.getWeighting());
+            completePathCandidate.addPath(startToPolygonEntry);
+            completePathCandidate.addPath(polygonEntryToPolygonExit);
+            completePathCandidate.addPath(polygonExitToEnd);
+            return completePathCandidate;
+        }
+
+        public double getDistance() {
+            return this.distance;
+        }
+
+        /**
+         * According to 5.2 in Storandts Region-Aware route planning paper.
+         *
+         * @return The approximated time spent in the region of interest
+         */
+        public double getDistanceInROI() {
+            return this.polygonEntryToPolygonExit.getDistance();
+        }
+
+        public double getGain() {
+            return this.polygonEntryToPolygonExit.getDistance() / (this.getDetourDistance() + 1);
+        }
+
+        public double getDetourDistance() {
+            return this.getDistance() - this.directRouteStartEnd.getDistance();
+        }
+
+        public boolean isDetourSelfIntersecting() {
+            throw new NotImplementedException();
+        }
     }
 }
