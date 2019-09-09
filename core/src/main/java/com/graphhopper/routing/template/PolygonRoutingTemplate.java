@@ -4,6 +4,8 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.*;
+import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidate;
+import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidateList;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
@@ -14,7 +16,6 @@ import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -25,12 +26,12 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private final GraphHopperStorage ghStorage;
     private final NodeAccess nodeAccess;
     private QueryGraph queryGraph;
-    private AlgorithmOptions algoOpts;
+    private AlgorithmOptions algorithmOptions;
     private RoutingAlgorithmFactory algoFactory;
     private DijkstraOneToMany dijkstraForLOTNodes;
     private DijkstraManyToMany dijkstraForPathSkeleton;
     private RoutingAlgorithm routingAlgorithm;
-    private List<RouteCandidate> routeCandidates;
+    private RouteCandidateList routeCandidates;
 
     public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, GraphHopper gh,
                                   EncodingManager encodingManager) {
@@ -46,15 +47,15 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     public List<Path> calcPaths(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
         this.queryGraph = queryGraph;
         this.algoFactory = algoFactory;
-        this.algoOpts = algoOpts;
+        this.algorithmOptions = algoOpts;
         this.routingAlgorithm = algoFactory.createAlgo(queryGraph, algoOpts);
-        this.routeCandidates = new LinkedList<>();
-        this.dijkstraForLOTNodes = new DijkstraOneToMany(this.queryGraph, this.algoOpts.getWeighting(), this.algoOpts.getTraversalMode());
+        this.routeCandidates = RouteCandidateList.createEmptyCandidateList();
+        this.dijkstraForLOTNodes = new DijkstraOneToMany(this.queryGraph, this.algorithmOptions.getWeighting(), this.algorithmOptions.getTraversalMode());
         return routeWithPolygon();
     }
 
     private boolean isInvalidParameterSet(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
-        return !queryGraph.equals(this.queryGraph) || !algoFactory.equals(this.algoFactory) || !algoOpts.equals(this.algoOpts);
+        return !queryGraph.equals(this.queryGraph) || !algoFactory.equals(this.algoFactory) || !algoOpts.equals(this.algorithmOptions);
     }
 
     private List<Path> routeWithPolygon() {
@@ -62,14 +63,17 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
         this.pruneDominatedCandidateRoutes();
         this.pruneLowerQuantileInROIcandidateRoutes();
 
-        throw new NotImplementedException();
+        this.routeCandidates.sortByGainAscending();
+
+        // TODO Maybe more? Dont know what happens in the gui then.
+        return this.routeCandidates.getFirstAsPathList(1, this.queryGraph, this.algorithmOptions);
     }
 
     private void findCandidateRoutes() {
         List<Integer> nodesInPolygon = getNodesInPolygon();
         List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         List<List<Integer>> LOTNodes = findLocalOptimalTouchnodes(polygonEntryExitPoints);
-        this.dijkstraForPathSkeleton = new DijkstraManyToMany(this.queryGraph, this.algoOpts.getWeighting(), this.algoOpts.getTraversalMode(), nodesInPolygon,
+        this.dijkstraForPathSkeleton = new DijkstraManyToMany(this.queryGraph, this.algorithmOptions.getWeighting(), this.algorithmOptions.getTraversalMode(), nodesInPolygon,
                                                               polygonEntryExitPoints);
 
         for (int i = 0; i < LOTNodes.size() - 1; i++) {
@@ -85,7 +89,7 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
         for (final int LOTNodeL : currentPointsLOTNodes) {
             for (final int LOTNodeLPrime : currentPointsLOTNodes) {
-                this.routeCandidates.add(buildCandidatePath(currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime));
+                this.routeCandidates.candidates.add(buildCandidatePath(currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime));
             }
         }
     }
@@ -219,11 +223,11 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     // Do it in a skyline problem pruning fashion
     private void pruneDominatedCandidateRoutes() {
-        sortRouteCandidatesToDistanceInROIDescending();
+        this.routeCandidates.sortRouteCandidatesToDistanceInROIDescending();
 
         int currentPruningCandidateIndex = 1;
         while (indexInCandidateBounds(currentPruningCandidateIndex)) {
-            RouteCandidate currentPruningCandidate = this.routeCandidates.get(currentPruningCandidateIndex);
+            RouteCandidate currentPruningCandidate = this.routeCandidates.candidates.get(currentPruningCandidateIndex);
 
             boolean foundDominatingPath = isThisCandidateDominatedByAny(currentPruningCandidateIndex, currentPruningCandidate);
 
@@ -235,7 +239,7 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
         boolean foundDominatingPath = false;
         for (int i = currentPruningCandidateIndex - 1; i >= 0 && !foundDominatingPath; i++) {
             // routeCandidates must be sorted by now. Therefore dominators can only bbe found on lower indices than the current pruning candidate.
-            RouteCandidate possiblyBetterRouteCandidate = this.routeCandidates.get(i);
+            RouteCandidate possiblyBetterRouteCandidate = this.routeCandidates.candidates.get(i);
 
             if (isPruningCandidateDominated(currentPruningCandidate, possiblyBetterRouteCandidate)) {
                 foundDominatingPath = true;
@@ -246,7 +250,7 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private int pruneOrUpdateIndex(int currentPruningCandidateIndex, boolean foundDominatingPath) {
         if (foundDominatingPath) {
-            this.routeCandidates.remove(currentPruningCandidateIndex);
+            this.routeCandidates.candidates.remove(currentPruningCandidateIndex);
         } else {
             currentPruningCandidateIndex++;
         }
@@ -254,39 +258,21 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     private boolean isPruningCandidateDominated(RouteCandidate currentPruningCandidate, RouteCandidate possiblyBetterRouteCandidate) {
-        return possiblyBetterRouteCandidate.getDistance() < currentPruningCandidate.getDistance() && possiblyBetterRouteCandidate.getDistanceInROI() > currentPruningCandidate.getDistanceInROI();
-    }
-
-    private void sortRouteCandidatesToDistanceInROIDescending() {
-        Collections.sort(this.routeCandidates, new Comparator<RouteCandidate>() {
-            @Override
-            public int compare(RouteCandidate rc1, RouteCandidate rc2) {
-                double distanceDifference = rc1.getDistanceInROI() - rc2.getDistanceInROI();
-                int output;
-                if (distanceDifference < 0) {
-                    output = 1;
-                } else if (distanceDifference == 0) {
-                    output = 0;
-                } else {
-                    output = -1;
-                }
-
-                return output;
-            }
-        });
+        return possiblyBetterRouteCandidate.getDistance() < currentPruningCandidate.getDistance() &&
+               possiblyBetterRouteCandidate.getDistanceInROI() > currentPruningCandidate.getDistanceInROI();
     }
 
     private boolean indexInCandidateBounds(int currentPruningCandidateIndex) {
-        return currentPruningCandidateIndex < this.routeCandidates.size();
+        return currentPruningCandidateIndex < this.routeCandidates.candidates.size();
     }
 
     private void pruneLowerQuantileInROIcandidateRoutes() {
         // Assumes that routeCandidates was already sorted descending to roi distance after pruning dominated route candidates
-        final int routeCandidatesSize = this.routeCandidates.size();
+        final int routeCandidatesSize = this.routeCandidates.candidates.size();
         int startIndex = (int) (routeCandidatesSize * 0.75) + 1;
 
         for (int i = startIndex; i < routeCandidatesSize; i++) {
-            this.routeCandidates.remove(i);
+            this.routeCandidates.candidates.remove(i);
         }
     }
 
@@ -323,90 +309,4 @@ public class PolygonRoutingTemplate extends ViaRoutingTemplate {
         }
     }
 
-    private class RouteCandidate implements Comparable<RouteCandidate> {
-        private final Path startToPolygonEntry;
-        private final Path polygonEntryToPolygonExit;
-        private final Path polygonExitToEnd;
-        private final Path directRouteStartEnd;
-        private final PolygonRoutingTemplate polygonRoutingTemplate;
-        private final RoutingAlgorithm routingAlgorithm;
-        private final DijkstraManyToMany pathSkeletonRouter;
-        private final double distance;
-
-        public RouteCandidate(final PolygonRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
-                              final int polygonExitNodeID) {
-            this.polygonRoutingTemplate = polygonRoutingTemplate;
-            this.routingAlgorithm = polygonRoutingTemplate.getRoutingAlgorithm();
-            this.pathSkeletonRouter = polygonRoutingTemplate.getPathSkeletonRouter();
-
-            this.startToPolygonEntry = this.routingAlgorithm.calcPath(startNodeID, polygonEntryNodeID);
-            this.polygonEntryToPolygonExit = this.pathSkeletonRouter.getPathByStartEndPoint(polygonEntryNodeID, polygonExitNodeID);
-            this.polygonExitToEnd = this.routingAlgorithm.calcPath(polygonExitNodeID, endNodeID);
-            this.directRouteStartEnd = this.routingAlgorithm.calcPath(startNodeID, endNodeID);
-
-            this.distance = this.startToPolygonEntry.getDistance() + this.polygonEntryToPolygonExit.getDistance() + this.polygonExitToEnd.getDistance();
-        }
-
-        public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
-            Path completePathCandidate = new Path(queryGraph, algoOpts.getWeighting());
-            completePathCandidate.addPath(startToPolygonEntry);
-            completePathCandidate.addPath(polygonEntryToPolygonExit);
-            completePathCandidate.addPath(polygonExitToEnd);
-            return completePathCandidate;
-        }
-
-        public double getDistance() {
-            return this.distance;
-        }
-
-        /**
-         * According to 5.2 in Storandts Region-Aware route planning paper.
-         *
-         * @return The approximated time spent in the region of interest
-         */
-        public double getDistanceInROI() {
-            return this.polygonEntryToPolygonExit.getDistance();
-        }
-
-        public double getGain() {
-            // + 1 to avoid division by zero
-            return this.polygonEntryToPolygonExit.getDistance() / (this.getDetourDistance() + 1);
-        }
-
-        public double getDetourDistance() {
-            return this.getDistance() - this.directRouteStartEnd.getDistance();
-        }
-
-        /**
-         * Uses the sweepline algorithm of Michael Ian Shamos and Dan Hoey to find intersecting line segments induced by the edges of the merged path.
-         * <p>
-         * Reference:
-         * Michael Ian Shamos and Dan Hoey. Geometric intersection problems. In Proceedings
-         * of the 17th Annual IEEE Symposium on Foundations of Computer Science
-         * (FOCS '76), pages 208{215, 1976.
-         *
-         * @return true if at least one intersection occurs and false otherwise.
-         */
-        public boolean isDetourSelfIntersecting() {
-            return false;
-            // TODO: Check with storandt what she means with intersections
-        }
-
-        @Override
-        /**
-         * @param   o - The Route Candidate to be compared.
-         * @return  A negative integer, zero, or a positive integer as this RouteCandidate
-         *          is less than, equal to, or greater than the supplied RouteCandidate object.
-         */
-        public int compareTo(RouteCandidate o) {
-            double gainDifference = this.getGain() - o.getGain();
-            if (gainDifference < 0) {
-                return -1;
-            } else if (gainDifference == 0) {
-                return 0;
-            } else {
-                return 1;
-            }
-        }
-    }
 }
