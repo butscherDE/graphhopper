@@ -1155,7 +1155,7 @@ public class GraphHopper implements GraphHopperAPI {
         } else if (validPolygonInRequest(request)) {
             routingTemplate = new PolygonRoutingTemplate(request, ghRsp, locationIndex, this, encodingManager);
         } else {
-                routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+            routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
         }
         return routingTemplate;
     }
