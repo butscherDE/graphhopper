@@ -307,7 +307,13 @@ public class GHRequest {
     }
 
     public Polygon getPolygon() {
-        return polygon;
+        final Polygon returnVal;
+        if (polygon == null) {
+            returnVal =  new Polygon(new double[] {}, new double[] {});
+        } else {
+            returnVal = this.polygon;
+        }
+        return returnVal;
     }
 
     public GHRequest setPolygon(Polygon polygon) {
