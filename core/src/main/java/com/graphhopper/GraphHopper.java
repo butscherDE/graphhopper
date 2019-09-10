@@ -52,7 +52,6 @@ import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -1153,7 +1152,7 @@ public class GraphHopper implements GraphHopperAPI {
         } else if (ALT_ROUTE.equalsIgnoreCase(algoStr)) {
             routingTemplate = new AlternativeRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
         } else if (validPolygonInRequest(request)) {
-            routingTemplate = new PolygonRoutingTemplate(request, ghRsp, locationIndex, this, encodingManager);
+            routingTemplate = new PolygonThroughRoutingTemplate(request, ghRsp, locationIndex, this, encodingManager);
         } else {
             routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
         }

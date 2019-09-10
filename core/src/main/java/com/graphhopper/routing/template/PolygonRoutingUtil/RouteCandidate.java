@@ -1,7 +1,7 @@
 package com.graphhopper.routing.template.PolygonRoutingUtil;
 
 import com.graphhopper.routing.*;
-import com.graphhopper.routing.template.PolygonRoutingTemplate;
+import com.graphhopper.routing.template.PolygonThroughRoutingTemplate;
 
 /**
  * A route candidate as in Prof. Dr. Sabine Storandts Paper Region-Aware Route Planning.
@@ -11,12 +11,12 @@ public class RouteCandidate implements Comparable<RouteCandidate> {
     private final Path polygonEntryToPolygonExit;
     private final Path polygonExitToEnd;
     private final Path directRouteStartEnd;
-    private final PolygonRoutingTemplate polygonRoutingTemplate;
+    private final PolygonThroughRoutingTemplate polygonRoutingTemplate;
     private final RoutingAlgorithm routingAlgorithm;
     private final DijkstraManyToMany pathSkeletonRouter;
     private final double distance;
 
-    public RouteCandidate(final PolygonRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
+    public RouteCandidate(final PolygonThroughRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
                           final int polygonExitNodeID) {
         this.polygonRoutingTemplate = polygonRoutingTemplate;
         this.routingAlgorithm = polygonRoutingTemplate.getRoutingAlgorithm();
