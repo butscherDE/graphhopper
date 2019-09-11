@@ -23,9 +23,9 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private DijkstraOneToMany dijkstraForLOTNodes;
     private DijkstraManyToMany dijkstraForPathSkeleton;
 
-    public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, GraphHopper gh,
+    public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
                                          EncodingManager encodingManager) {
-        super(ghRequest, ghRsp, locationIndex, gh, encodingManager);
+        super(ghRequest, ghRsp, locationIndex, nodeAccess, ghStorage, encodingManager);
     }
 
     private boolean isInvalidParameterSet(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
@@ -66,11 +66,13 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     private void lookUpStartEndNodes(int pointsIndex) {
+        // TODO Check if this is necessary since we already have node ids and we would add additional via points to the queryGraph result cache. This could have an impact.
         final GHPoint currentPoint = this.ghRequest.getPoints().get(pointsIndex);
         final GHPoint nextPoint = this.ghRequest.getPoints().get(pointsIndex + 1);
 
         List<GHPoint> LOTNodesGHPoints = Arrays.asList(currentPoint, nextPoint);
-        super.lookup(LOTNodesGHPoints, this.encodingManager.getEncoder(this.ghRequest.getVehicle()));
+        List<QueryResult> lookupResults = super.lookup(LOTNodesGHPoints, this.encodingManager.getEncoder(this.ghRequest.getVehicle()));
+        this.queryGraph.lookup(lookupResults);
     }
 
     // Definition 6 in Storandts paper Region-Aware Routing Planning
@@ -179,11 +181,10 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     private List<Integer> getNodesInPolygon() {
         final Polygon polygon = this.getGhRequest().getPolygon();
-        final NodeAccess nodeAccess = gh.getGraphHopperStorage().getNodeAccess();
 
         BBox minimumPolygonBoundingBox = BBox.createMinimalBoundingBoxFromPolygon(polygon);
         final NodesInPolygonFindingVisitor visitor = new NodesInPolygonFindingVisitor(polygon, nodeAccess);
-        this.gh.getLocationIndex().query(minimumPolygonBoundingBox, visitor);
+        this.locationIndex.query(minimumPolygonBoundingBox, visitor);
         return visitor.getNodesInPolygon();
     }
 

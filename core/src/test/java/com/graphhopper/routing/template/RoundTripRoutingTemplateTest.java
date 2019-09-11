@@ -137,14 +137,14 @@ public class RoundTripRoutingTemplateTest {
     }
 
     private Graph createTestGraph(boolean fullGraph) {
-        return new AlternativeRouteTest(tMode).createTestGraph(fullGraph, em);
+        return new AlternativeRouteTest(tMode).createSimpleTestGraph(fullGraph, em);
     }
 
     private Graph createSquareGraph() {
         // simple square
-        //  1 | 0 1 2      
+        //  1 | 0 1 2
         //  0 | 7   3
-        // -1 | 6 5 4 
+        // -1 | 6 5 4
         // ---|------
         //    |-1 0 1
         GraphHopperStorage graph =

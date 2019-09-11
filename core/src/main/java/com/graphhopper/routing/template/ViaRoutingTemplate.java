@@ -156,8 +156,7 @@ public class ViaRoutingTemplate extends AbstractRoutingTemplate implements Routi
 
     @Override
     public boolean isReady(PathMerger pathMerger, Translation tr) {
-        if (getGhRequest().getPoints().size() - 1 != pathList.size())
-            throw new RuntimeException("There should be exactly one more points than paths. points:" + getGhRequest().getPoints().size() + ", paths:" + pathList.size());
+        failOnNumPathsInvalid(this.ghRequest, this.pathList);
 
         altResponse.setWaypoints(getWaypoints());
         ghResponse.add(altResponse);

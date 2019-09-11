@@ -269,6 +269,7 @@ public class RouteResource {
     }
 
     static void initHints(HintsMap m, MultivaluedMap<String, String> parameterMap) {
+        // TODO Output parameters are bad practice, especially if the return type is void
         for (Map.Entry<String, List<String>> e : parameterMap.entrySet()) {
             if (e.getValue().size() == 1) {
                 m.put(e.getKey(), e.getValue().get(0));

@@ -61,7 +61,7 @@ public class AlternativeRouteTest {
         });
     }
 
-    public GraphHopperStorage createTestGraph(boolean fullGraph, EncodingManager tmpEM) {
+    public GraphHopperStorage createSimpleTestGraph(boolean fullGraph, EncodingManager tmpEM) {
         GraphHopperStorage graph = new GraphHopperStorage(new RAMDirectory(), tmpEM, false, turnCostExtension);
         graph.create(1000);
 
@@ -70,7 +70,7 @@ public class AlternativeRouteTest {
          1  2-3-4-10
          \   /   \
          5--6-7---8
-        
+
          */
         graph.edge(1, 9, 1, true);
         graph.edge(9, 2, 1, true);
@@ -105,7 +105,7 @@ public class AlternativeRouteTest {
 
     @Test
     public void testCalcAlternatives() {
-        GraphHopperStorage g = createTestGraph(true, em);
+        GraphHopperStorage g = createSimpleTestGraph(true, em);
         AlternativeRoute altDijkstra = new AlternativeRoute(g, weighting, traversalMode);
         altDijkstra.setMaxShareFactor(0.5);
         altDijkstra.setMaxWeightFactor(2);
@@ -133,7 +133,7 @@ public class AlternativeRouteTest {
 
     @Test
     public void testCalcAlternatives2() {
-        Graph g = createTestGraph(true, em);
+        Graph g = createSimpleTestGraph(true, em);
         AlternativeRoute altDijkstra = new AlternativeRoute(g, weighting, traversalMode);
         altDijkstra.setMaxPaths(3);
         altDijkstra.setMaxShareFactor(0.7);
@@ -169,7 +169,7 @@ public class AlternativeRouteTest {
 
     @Test
     public void testDisconnectedAreas() {
-        Graph g = createTestGraph(true, em);
+        Graph g = createSimpleTestGraph(true, em);
 
         // one single disconnected node
         updateDistancesFor(g, 20, 0.00, -0.01);

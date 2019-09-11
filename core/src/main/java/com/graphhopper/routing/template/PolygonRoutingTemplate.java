@@ -2,59 +2,89 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidate;
 import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidateList;
 import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
+import com.graphhopper.storage.index.QueryResult;
+import com.graphhopper.util.PathMerger;
+import com.graphhopper.util.Translation;
+import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
 public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     final GHRequest ghRequest;
     final Polygon polygon;
-    final GraphHopper gh;
     final GraphHopperStorage ghStorage;
     final NodeAccess nodeAccess;
+    final LocationIndex locationIndex;
     QueryGraph queryGraph;
     AlgorithmOptions algorithmOptions;
     RoutingAlgorithmFactory algoFactory;
     RoutingAlgorithm routingAlgorithm;
     RouteCandidateList routeCandidates;
 
-    public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, GraphHopper gh,
+    public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
                                          EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);
         this.ghRequest = ghRequest;
         this.polygon = ghRequest.getPolygon();
-        this.gh = gh;
-        this.ghStorage = this.gh.getGraphHopperStorage();
-        this.nodeAccess = this.ghStorage.getNodeAccess();
+        this.ghStorage = ghStorage;
+        this.nodeAccess = nodeAccess;
+        this.locationIndex = locationIndex;
     }
 
     @Override
     public List<Path> calcPaths(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
+        if (this.ghRequest.getPoints().size() != 2) {
+            // TODO implement for more than start & endpoint
+            throw new NotImplementedException();
+        }
+        this.setCalcPathsParams(queryGraph, algoFactory, algoOpts);
+        return routeWithPolygon();
+    }
+
+    private void setCalcPathsParams(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
         this.queryGraph = queryGraph;
+        this.lookupPoints();
         this.algoFactory = algoFactory;
         this.algorithmOptions = algoOpts;
         this.routingAlgorithm = algoFactory.createAlgo(queryGraph, algoOpts);
         this.routeCandidates = RouteCandidateList.createEmptyCandidateList();
-        return routeWithPolygon();
+    }
+
+    private void lookupPoints() {
+        List<GHPoint> points = this.ghRequest.getPoints();
+        FlagEncoder flagEncoder = this.encodingManager.getEncoder(ghRequest.getVehicle());
+        List<QueryResult> lookupResults = super.lookup(points, flagEncoder);
+        queryGraph.lookup(lookupResults);
     }
 
     private List<Path> routeWithPolygon() {
+        prepareRouteCandidateList();
+        extractBestPathCandidate();
+
+        return this.pathList;
+    }
+
+    private void extractBestPathCandidate() {
+        // TODO Maybe more? Dont know what happens in the gui then.
+        this.routeCandidates.sortByGainAscending();
+        final List<Path> bestPath = this.routeCandidates.getFirstAsPathList(1, this.queryGraph, this.algorithmOptions);
+        this.pathList.addAll(bestPath);
+    }
+
+    private void prepareRouteCandidateList() {
         this.findCandidateRoutes();
         this.pruneDominatedCandidateRoutes();
         this.pruneLowerQuantileInROIcandidateRoutes();
-
-
-        // TODO Maybe more? Dont know what happens in the gui then.
-        this.routeCandidates.sortByGainAscending();
-        return this.routeCandidates.getFirstAsPathList(1, this.queryGraph, this.algorithmOptions);
     }
 
     // Do it in a skyline problem pruning fashion
@@ -113,4 +143,20 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     abstract RouteCandidateList findCandidateRoutes();
+
+    @Override
+    public boolean isReady(PathMerger pathMerger, Translation translation) {
+        this.failOnNumPathsInvalid(this.ghRequest, this.pathList);
+
+        // TODO check if all waypoints have been queried. Respectively: The entry exit points: Are they queried? Do They have to be queried or mustnt they be queried?
+        this.altResponse.setWaypoints(getWaypoints());
+        this.ghResponse.add(this.altResponse);
+        pathMerger.doWork(this.altResponse, this.pathList, this.encodingManager, translation);
+        return true;
+    }
+
+    @Override
+    public GHRequest getGhRequest() {
+        return this.ghRequest;
+    }
 }
