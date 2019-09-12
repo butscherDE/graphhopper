@@ -111,7 +111,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     private void pruneThisNoteFromLOTIfBetterWasFound(List<List<Integer>> LOTNodes, int entryExitPoint, boolean foundABetterLOTNode) {
         if (foundABetterLOTNode) {
-            LOTNodes.get(LOTNodes.size() - 1).remove(entryExitPoint);
+            LOTNodes.get(LOTNodes.size() - 1).remove((Integer) entryExitPoint);
         }
     }
 
