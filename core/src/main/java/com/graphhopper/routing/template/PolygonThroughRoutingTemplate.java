@@ -153,7 +153,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
         this.dijkstraForLOTNodes = new DijkstraOneToMany(this.queryGraph, this.algorithmOptions.getWeighting(), this.algorithmOptions.getTraversalMode());
-        final List<Integer> entryExitPoints = new LinkedList<>();
+        final List<Integer> entryExitPoints = new ArrayList<>();
         final EdgeExplorer edgeExplorer = ghStorage.getBaseGraph().createEdgeExplorer();
 
         addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(nodesInPolygon, entryExitPoints, edgeExplorer);
@@ -197,7 +197,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     private class NodesInPolygonFindingVisitor extends LocationIndex.Visitor {
-        private final List<Integer> nodesInPolygon = new LinkedList<>();
+        private final List<Integer> nodesInPolygon = new ArrayList<>();
         private final Polygon polygon;
         private final NodeAccess nodeAccess;
 

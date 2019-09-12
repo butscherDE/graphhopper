@@ -8,6 +8,7 @@ import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.DistanceCalc2D;
 import com.graphhopper.util.EdgeExplorer;
+import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
@@ -280,7 +281,9 @@ public class PolygonRoutingTestGraphs {
 
             private EdgeIteratorState findClosestEdge(Node minNode) {
                 EdgeExplorer edgeExplorer = graph.createEdgeExplorer();
-                return edgeExplorer.setBaseNode(minNode.id);
+                EdgeIterator edgeIterator = edgeExplorer.setBaseNode(minNode.id);
+                edgeIterator.next();
+                return edgeIterator;
             }
 
             private QueryResult createQueryResult(double minDistance, Node minNode, EdgeIteratorState firstEdgeAdjacentToMinNode) {
@@ -288,6 +291,8 @@ public class PolygonRoutingTestGraphs {
                 result.setClosestNode(minNode.id);
                 result.setQueryDistance(minDistance);
                 result.setClosestEdge(firstEdgeAdjacentToMinNode);
+                result.setWayIndex(0);
+                result.calcSnappedPoint(new DistanceCalc2D());
                 return result;
             }
 
@@ -303,7 +308,11 @@ public class PolygonRoutingTestGraphs {
 
             @Override
             public void query(BBox queryBBox, Visitor function) {
-                throw new NotImplementedException();
+                for (final Node node : nodes) {
+                    if (queryBBox.contains(node.latitude, node.longitude)) {
+                        function.onNode(node.id);
+                    }
+                }
             }
 
             @Override
