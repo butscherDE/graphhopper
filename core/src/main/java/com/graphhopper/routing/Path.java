@@ -90,6 +90,7 @@ public class Path {
         weight = p.weight;
         edgeIds = new GHIntArrayList(p.edgeIds);
         sptEntry = p.sptEntry;
+        endNode = p.endNode;
     }
 
     /**
@@ -445,6 +446,7 @@ public class Path {
         addOtherPathsEdgesToThisPath(otherPathsEdges);
         this.weight += newPath.getWeight();
         this.sptEntry = null; // TODO: Test if this works and if not, how can be merge spt entries?
+        this.endNode = newPath.endNode;
     }
 
     private void failOnNonAdablePath(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> otherPathsEdges) {
@@ -459,7 +461,7 @@ public class Path {
         }
     }
 
-    private boolean lastAndFirstNodeEqual(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> firstEdgeOfNewPath) {
-        return lastEdgeOfThisPath.getAdjNode() == firstEdgeOfNewPath.get(0).getBaseNode();
+    private boolean lastAndFirstNodeEqual(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> otherPathEdges) {
+        return lastEdgeOfThisPath.getAdjNode() == otherPathEdges.get(0).getBaseNode();
     }
 }
