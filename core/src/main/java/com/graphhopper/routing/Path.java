@@ -83,6 +83,10 @@ public class Path {
      */
     Path(Path p) {
         this(p.graph, p.weighting);
+        buildThisPathFromAnotherPath(p);
+    }
+
+    private void buildThisPathFromAnotherPath(Path p) {
         weight = p.weight;
         edgeIds = new GHIntArrayList(p.edgeIds);
         sptEntry = p.sptEntry;
@@ -422,6 +426,14 @@ public class Path {
     }
 
     public void addPath(final Path newPath) {
+        if (this.edgeIds.size() > 0) {
+            addIfThisPathIsntEmpty(newPath);
+        } else {
+            buildThisPathFromAnotherPath(newPath);
+        }
+    }
+
+    private void addIfThisPathIsntEmpty(Path newPath) {
         final EdgeIteratorState lastEdgeOfThisPath = this.getFinalEdge();
         final List<EdgeIteratorState> otherPathsEdges = newPath.calcEdges();
 

@@ -103,7 +103,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private boolean isThisCandidateDominatedByAny(int currentPruningCandidateIndex, RouteCandidate currentPruningCandidate) {
         boolean foundDominatingPath = false;
-        for (int i = currentPruningCandidateIndex - 1; i >= 0 && !foundDominatingPath; i++) {
+        for (int i = currentPruningCandidateIndex - 1; i >= 0 && !foundDominatingPath; i--) {
             // routeCandidates must be sorted by now. Therefore dominators can only bbe found on lower indices than the current pruning candidate.
             RouteCandidate possiblyBetterRouteCandidate = this.routeCandidates.candidates.get(i);
 
@@ -134,10 +134,9 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private void pruneLowerQuantileInROIcandidateRoutes() {
         // Assumes that routeCandidates was already sorted descending to roi distance after pruning dominated route candidates
-        final int routeCandidatesSize = this.routeCandidates.candidates.size();
-        int startIndex = (int) (routeCandidatesSize * 0.75) + 1;
+        int startIndex = (int) (this.routeCandidates.candidates.size() * 0.75) + 1;
 
-        for (int i = startIndex; i < routeCandidatesSize; i++) {
+        for (int i = startIndex; i < this.routeCandidates.candidates.size(); i++) {
             this.routeCandidates.candidates.remove(i);
         }
     }

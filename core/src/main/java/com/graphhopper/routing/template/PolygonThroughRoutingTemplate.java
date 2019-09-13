@@ -2,7 +2,6 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidate;
 import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidateList;
@@ -38,6 +37,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         List<List<Integer>> LOTNodes = findLocalOptimalTouchnodes(polygonEntryExitPoints);
         this.dijkstraForPathSkeleton = new DijkstraManyToMany(this.queryGraph, this.algorithmOptions.getWeighting(), this.algorithmOptions.getTraversalMode(), nodesInPolygon,
                                                               polygonEntryExitPoints);
+        this.dijkstraForPathSkeleton.findAllPathsBetweenEntryExitPoints();
 
         for (int i = 0; i < LOTNodes.size() - 1; i++) {
             lookUpStartEndNodes(i);
@@ -67,12 +67,12 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     private void lookUpStartEndNodes(int pointsIndex) {
         // TODO Check if this is necessary since we already have node ids and we would add additional via points to the queryGraph result cache. This could have an impact.
-        final GHPoint currentPoint = this.ghRequest.getPoints().get(pointsIndex);
-        final GHPoint nextPoint = this.ghRequest.getPoints().get(pointsIndex + 1);
-
-        List<GHPoint> LOTNodesGHPoints = Arrays.asList(currentPoint, nextPoint);
-        List<QueryResult> lookupResults = super.lookup(LOTNodesGHPoints, this.encodingManager.getEncoder(this.ghRequest.getVehicle()));
-        this.queryGraph.lookup(lookupResults);
+//        final GHPoint currentPoint = this.ghRequest.getPoints().get(pointsIndex);
+//        final GHPoint nextPoint = this.ghRequest.getPoints().get(pointsIndex + 1);
+//
+//        List<GHPoint> LOTNodesGHPoints = Arrays.asList(currentPoint, nextPoint);
+//        List<QueryResult> lookupResults = super.lookup(LOTNodesGHPoints, this.encodingManager.getEncoder(this.ghRequest.getVehicle()));
+//        this.queryGraph.lookup(lookupResults);
     }
 
     // Definition 6 in Storandts paper Region-Aware Routing Planning
@@ -94,25 +94,33 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private void makeLOTNodeListForThisPoint(List<Integer> polygonEntryExitPoints, EdgeExplorer edgeExplorer, List<List<Integer>> LOTNodes, QueryResult point) {
         Map<Integer, Double> distancesToPolygonEntryExit = getDistancesFromPointToEntryExitPoints(point, polygonEntryExitPoints);
         addEntryExitPointsCopyTo(polygonEntryExitPoints, LOTNodes);
-        for (final int entryExitPoint : LOTNodes.get(LOTNodes.size() - 1)) {
-            checkIfThisIsAValidLOTNode(edgeExplorer, LOTNodes, distancesToPolygonEntryExit, entryExitPoint);
-        }
+
+        List<Integer> thisPointLOTNodeList = LOTNodes.get(LOTNodes.size() - 1);
+        int i = 0;
+        do {
+            int entryExitPoint = thisPointLOTNodeList.get(i);
+            boolean betterFound = checkIfThisIsAValidLOTNode(edgeExplorer, LOTNodes, distancesToPolygonEntryExit, entryExitPoint);
+
+            if (betterFound) {
+                pruneThisNoteFromLOT(LOTNodes, entryExitPoint);
+            } else {
+                i++;
+            }
+        } while (i < thisPointLOTNodeList.size());
     }
 
-    private void checkIfThisIsAValidLOTNode(EdgeExplorer edgeExplorer, List<List<Integer>> LOTNodes, Map<Integer, Double> distancesToPolygonEntryExit, int entryExitPoint) {
+    private boolean checkIfThisIsAValidLOTNode(EdgeExplorer edgeExplorer, List<List<Integer>> LOTNodes, Map<Integer, Double> distancesToPolygonEntryExit, int entryExitPoint) {
         EdgeIterator neighborFinder = edgeExplorer.setBaseNode(entryExitPoint);
         Double distanceOfThisEntryExitPointFromPoint = distancesToPolygonEntryExit.get(entryExitPoint);
 
         boolean foundABetterLOTNode =
                 lookForNeighborsThatMakeABetterLOTNode(distancesToPolygonEntryExit, neighborFinder, distanceOfThisEntryExitPointFromPoint);
 
-        pruneThisNoteFromLOTIfBetterWasFound(LOTNodes, entryExitPoint, foundABetterLOTNode);
+        return foundABetterLOTNode;
     }
 
-    private void pruneThisNoteFromLOTIfBetterWasFound(List<List<Integer>> LOTNodes, int entryExitPoint, boolean foundABetterLOTNode) {
-        if (foundABetterLOTNode) {
-            LOTNodes.get(LOTNodes.size() - 1).remove((Integer) entryExitPoint);
-        }
+    private void pruneThisNoteFromLOT(List<List<Integer>> LOTNodes, int entryExitPoint) {
+        LOTNodes.get(LOTNodes.size() - 1).remove((Integer) entryExitPoint);
     }
 
     private boolean lookForNeighborsThatMakeABetterLOTNode(Map<Integer, Double> distancesToPolygonEntryExit, EdgeIterator neighborFinder,
@@ -165,10 +173,9 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         for (int node : nodesInPolygon) {
             final EdgeIterator edgeIterator = edgeExplorer.setBaseNode(node);
 
-            do {
+            while (edgeIterator.next()) {
                 addToEntryExitIfNotExistentAndNotInPolygon(nodesInPolygon, entryExitPoints, edgeIterator);
             }
-            while (edgeIterator.next());
         }
     }
 
@@ -188,8 +195,9 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return visitor.getNodesInPolygon();
     }
 
-    public RoutingAlgorithm getRoutingAlgorithm() {
-        return this.routingAlgorithm;
+    public RoutingAlgorithm getNewRoutingAlgorithm() {
+        return this.algoFactory.createAlgo(queryGraph, algorithmOptions);
+        //return this.routingAlgorithm;
     }
 
     public DijkstraManyToMany getPathSkeletonRouter() {

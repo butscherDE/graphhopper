@@ -7,27 +7,45 @@ import com.graphhopper.routing.template.PolygonThroughRoutingTemplate;
  * A route candidate as in Prof. Dr. Sabine Storandts Paper Region-Aware Route Planning.
  */
 public class RouteCandidate implements Comparable<RouteCandidate> {
-    private final Path startToPolygonEntry;
-    private final Path polygonEntryToPolygonExit;
-    private final Path polygonExitToEnd;
-    private final Path directRouteStartEnd;
+    private Path startToPolygonEntry;
+    private Path polygonEntryToPolygonExit;
+    private Path polygonExitToEnd;
+    private Path directRouteStartEnd;
     private final PolygonThroughRoutingTemplate polygonRoutingTemplate;
-    private final RoutingAlgorithm routingAlgorithm;
+    private RoutingAlgorithm routingAlgorithm;
     private final DijkstraManyToMany pathSkeletonRouter;
     private final double distance;
 
     public RouteCandidate(final PolygonThroughRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
                           final int polygonExitNodeID) {
         this.polygonRoutingTemplate = polygonRoutingTemplate;
-        this.routingAlgorithm = polygonRoutingTemplate.getRoutingAlgorithm();
         this.pathSkeletonRouter = polygonRoutingTemplate.getPathSkeletonRouter();
 
-        this.startToPolygonEntry = this.routingAlgorithm.calcPath(startNodeID, polygonEntryNodeID);
-        this.polygonEntryToPolygonExit = this.pathSkeletonRouter.getPathByStartEndPoint(polygonEntryNodeID, polygonExitNodeID);
-        this.polygonExitToEnd = this.routingAlgorithm.calcPath(polygonExitNodeID, endNodeID);
-        this.directRouteStartEnd = this.routingAlgorithm.calcPath(startNodeID, endNodeID);
+        calcPathFromStartToPolygonEntry(polygonRoutingTemplate, startNodeID, polygonEntryNodeID);
+        calcPathThroughPolygon(polygonEntryNodeID, polygonExitNodeID);
+        calcPathFromPolygonExitToEnd(polygonRoutingTemplate, endNodeID, polygonExitNodeID);
+        calcDirectRouteFromStartToEnd(polygonRoutingTemplate, startNodeID, endNodeID);
 
         this.distance = this.startToPolygonEntry.getDistance() + this.polygonEntryToPolygonExit.getDistance() + this.polygonExitToEnd.getDistance();
+    }
+
+    private void calcDirectRouteFromStartToEnd(PolygonThroughRoutingTemplate polygonRoutingTemplate, int startNodeID, int endNodeID) {
+        this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
+        this.directRouteStartEnd = this.routingAlgorithm.calcPath(startNodeID, endNodeID);
+    }
+
+    private void calcPathFromPolygonExitToEnd(PolygonThroughRoutingTemplate polygonRoutingTemplate, int endNodeID, int polygonExitNodeID) {
+        this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
+        this.polygonExitToEnd = this.routingAlgorithm.calcPath(polygonExitNodeID, endNodeID);
+    }
+
+    private void calcPathThroughPolygon(int polygonEntryNodeID, int polygonExitNodeID) {
+        this.polygonEntryToPolygonExit = this.pathSkeletonRouter.getPathByStartEndPoint(polygonEntryNodeID, polygonExitNodeID);
+    }
+
+    private void calcPathFromStartToPolygonEntry(PolygonThroughRoutingTemplate polygonRoutingTemplate, int startNodeID, int polygonEntryNodeID) {
+        this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
+        this.startToPolygonEntry = this.routingAlgorithm.calcPath(startNodeID, polygonEntryNodeID);
     }
 
     public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
