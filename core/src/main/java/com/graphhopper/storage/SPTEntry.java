@@ -19,6 +19,8 @@ package com.graphhopper.storage;
 
 import com.graphhopper.util.EdgeIterator;
 
+import java.util.LinkedList;
+
 /**
  * This class is used to create the shortest-path-tree from linked entities.
  * <p>
@@ -76,7 +78,7 @@ public class SPTEntry implements Cloneable, Comparable<SPTEntry> {
         if (weight < o.weight)
             return -1;
 
-        // assumption no NaN and no -0        
+        // assumption no NaN and no -0
         return weight > o.weight ? 1 : 0;
     }
 

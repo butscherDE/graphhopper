@@ -2,10 +2,7 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.routing.AlgorithmOptions;
-import com.graphhopper.routing.QueryGraph;
-import com.graphhopper.routing.RoutingAlgorithmFactory;
-import com.graphhopper.routing.RoutingAlgorithmFactorySimple;
+import com.graphhopper.routing.*;
 import com.graphhopper.routing.profiles.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraphs;
 import com.graphhopper.routing.util.*;
@@ -114,7 +111,17 @@ public class PolygonThroughRoutingTemplateTest {
         RoutingAlgorithmFactory algorithmFactory = new RoutingAlgorithmFactorySimple();
         AlgorithmOptions algorithmOptions = buildAlgorithmOptions(algorithmHints, this.traversalMode, this.algorithmName, this.weighting, maxVisitedNodes);
 
-        routingTemplate.calcPaths(new QueryGraph(this.testGraph), algorithmFactory, algorithmOptions);
+        List<Path> paths = routingTemplate.calcPaths(new QueryGraph(this.testGraph), algorithmFactory, algorithmOptions);
+        System.out.println(paths.get(0).getNodesInPathOrder());
+        System.out.println(paths.toString());
+    }
+
+    @Test
+    public void showAllEdgesWithIDs() {
+        AllEdgesIterator aei = this.testGraph.getAllEdges();
+        while (aei.next()) {
+            System.out.println(aei.toString());
+        }
     }
 
     private AlgorithmOptions buildAlgorithmOptions(HintsMap hints, TraversalMode tMode, String algoStr, Weighting weighting, int maxVisitedNodesForRequest) {

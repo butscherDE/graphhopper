@@ -15,44 +15,54 @@ public class RouteCandidate implements Comparable<RouteCandidate> {
     private RoutingAlgorithm routingAlgorithm;
     private final DijkstraManyToMany pathSkeletonRouter;
     private final double distance;
+    private final int startNodeID, endNodeID, polygonEntryNodeID, polygonExitNodeID;
 
     public RouteCandidate(final PolygonThroughRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
                           final int polygonExitNodeID) {
         this.polygonRoutingTemplate = polygonRoutingTemplate;
         this.pathSkeletonRouter = polygonRoutingTemplate.getPathSkeletonRouter();
 
-        calcPathFromStartToPolygonEntry(polygonRoutingTemplate, startNodeID, polygonEntryNodeID);
-        calcPathThroughPolygon(polygonEntryNodeID, polygonExitNodeID);
-        calcPathFromPolygonExitToEnd(polygonRoutingTemplate, endNodeID, polygonExitNodeID);
-        calcDirectRouteFromStartToEnd(polygonRoutingTemplate, startNodeID, endNodeID);
+        this.startNodeID = startNodeID;
+        this.endNodeID = endNodeID;
+        this.polygonEntryNodeID = polygonEntryNodeID;
+        this.polygonExitNodeID = polygonExitNodeID;
+
+        calcPathFromStartToPolygonEntry(polygonRoutingTemplate);
+        calcPathThroughPolygon();
+        calcPathFromPolygonExitToEnd(polygonRoutingTemplate);
+        calcDirectRouteFromStartToEnd(polygonRoutingTemplate);
 
         this.distance = this.startToPolygonEntry.getDistance() + this.polygonEntryToPolygonExit.getDistance() + this.polygonExitToEnd.getDistance();
     }
 
-    private void calcDirectRouteFromStartToEnd(PolygonThroughRoutingTemplate polygonRoutingTemplate, int startNodeID, int endNodeID) {
-        this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
-        this.directRouteStartEnd = this.routingAlgorithm.calcPath(startNodeID, endNodeID);
-    }
-
-    private void calcPathFromPolygonExitToEnd(PolygonThroughRoutingTemplate polygonRoutingTemplate, int endNodeID, int polygonExitNodeID) {
-        this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
-        this.polygonExitToEnd = this.routingAlgorithm.calcPath(polygonExitNodeID, endNodeID);
-    }
-
-    private void calcPathThroughPolygon(int polygonEntryNodeID, int polygonExitNodeID) {
-        this.polygonEntryToPolygonExit = this.pathSkeletonRouter.getPathByStartEndPoint(polygonEntryNodeID, polygonExitNodeID);
-    }
-
-    private void calcPathFromStartToPolygonEntry(PolygonThroughRoutingTemplate polygonRoutingTemplate, int startNodeID, int polygonEntryNodeID) {
+    private void calcPathFromStartToPolygonEntry(PolygonThroughRoutingTemplate polygonRoutingTemplate) {
         this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
         this.startToPolygonEntry = this.routingAlgorithm.calcPath(startNodeID, polygonEntryNodeID);
     }
 
+    private void calcPathThroughPolygon() {
+        this.polygonEntryToPolygonExit = this.pathSkeletonRouter.getPathByFromEndPoint(polygonEntryNodeID, polygonExitNodeID);
+    }
+
+    private void calcPathFromPolygonExitToEnd(PolygonThroughRoutingTemplate polygonRoutingTemplate) {
+        this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
+        this.polygonExitToEnd = this.routingAlgorithm.calcPath(polygonExitNodeID, endNodeID);
+    }
+
+    private void calcDirectRouteFromStartToEnd(PolygonThroughRoutingTemplate polygonRoutingTemplate) {
+        this.routingAlgorithm = polygonRoutingTemplate.getNewRoutingAlgorithm();
+        this.directRouteStartEnd = this.routingAlgorithm.calcPath(startNodeID, endNodeID);
+    }
+
     public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
-        Path completePathCandidate = new Path(queryGraph, algoOpts.getWeighting());
+        PathMerge completePathCandidate = new PathMerge(queryGraph, algoOpts.getWeighting());
+
         completePathCandidate.addPath(startToPolygonEntry);
         completePathCandidate.addPath(polygonEntryToPolygonExit);
         completePathCandidate.addPath(polygonExitToEnd);
+
+        completePathCandidate.extract();
+
         return completePathCandidate;
     }
 

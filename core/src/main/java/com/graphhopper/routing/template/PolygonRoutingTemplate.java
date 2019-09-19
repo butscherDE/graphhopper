@@ -17,6 +17,7 @@ import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
@@ -39,6 +40,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         this.ghStorage = ghStorage;
         this.nodeAccess = nodeAccess;
         this.locationIndex = locationIndex;
+        this.pathList = new ArrayList<>(ghRequest.getPoints().size() - 1);
     }
 
     @Override

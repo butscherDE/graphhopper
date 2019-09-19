@@ -120,7 +120,6 @@ public class DijkstraOneToMany extends AbstractRoutingAlgorithm {
         while (true) {
             visitedNodes++;
             EdgeIterator iter = outEdgeExplorer.setBaseNode(currNode);
-            // TODO shouldnt this be do while because iter already has a first edge after setBaseNode called?
             while (iter.next()) {
                 exploreNextNeighbor(iter);
             }

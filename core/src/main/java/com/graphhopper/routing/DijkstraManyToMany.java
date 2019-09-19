@@ -49,30 +49,16 @@ public class DijkstraManyToMany extends DijkstraOneToMany {
         for (int to : entryExitPoints) {
             this.currentTo = to;
 
+            this.clear();
             Path newPath = this.calcPath(from, to);
             allPaths.put(new Pair(from, to), newPath);
         }
     }
 
-    public List<Integer> buildPathSkeleton() {
-        Set<Integer> unionedNodesFromPaths = new HashSet<>(allPaths.size() * 10);
-
-        for (Map.Entry<Pair<Integer, Integer>, Path> entry : allPaths.entrySet()) {
-            addPathNodesToSet(unionedNodesFromPaths, entry.getValue());
-        }
-
-        return new ArrayList<>(unionedNodesFromPaths);
-    }
-
-    private void addPathNodesToSet(Set<Integer> unionedNodesFromPaths, Path path) {
-        IntIndexedContainer nodesInPath = path.calcNodes();
-        for (int i = 0; i < nodesInPath.size(); i++) {
-            int node = nodesInPath.get(i);
-            unionedNodesFromPaths.add(node);
-        }
-    }
-
-    public Path getPathByStartEndPoint(int start, int end) {
-        return this.allPaths.get(new Pair<Integer, Integer>(start, end));
+    public Path getPathByFromEndPoint(int from, int end) {
+        final Path pathByGivenNodeIDs = this.allPaths.get(new Pair<Integer, Integer>(from, end));
+        pathByGivenNodeIDs.setFromNode(from);
+        pathByGivenNodeIDs.setEndNode(end);
+        return pathByGivenNodeIDs;
     }
 }

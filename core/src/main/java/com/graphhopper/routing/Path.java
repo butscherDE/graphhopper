@@ -19,6 +19,7 @@ package com.graphhopper.routing;
 
 import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.IntIndexedContainer;
+import com.carrotsearch.hppc.cursors.IntCursor;
 import com.graphhopper.coll.GHIntArrayList;
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
 import com.graphhopper.routing.util.FlagEncoder;
@@ -58,15 +59,15 @@ public class Path {
     /**
      * Shortest path tree entry
      */
-    protected SPTEntry sptEntry;
+    public SPTEntry sptEntry;
     protected int endNode = -1;
     private List<String> description;
     protected Weighting weighting;
     private FlagEncoder encoder;
     private boolean found;
     private int fromNode = -1;
-    private GHIntArrayList edgeIds;
-    private double weight;
+    protected GHIntArrayList edgeIds;
+    protected double weight;
     private NodeAccess nodeAccess;
 
     public Path(Graph graph, Weighting weighting) {
@@ -86,7 +87,7 @@ public class Path {
         buildThisPathFromAnotherPath(p);
     }
 
-    private void buildThisPathFromAnotherPath(Path p) {
+    protected void buildThisPathFromAnotherPath(Path p) {
         weight = p.weight;
         edgeIds = new GHIntArrayList(p.edgeIds);
         sptEntry = p.sptEntry;
@@ -406,6 +407,20 @@ public class Path {
         return "found: " + found + ", weight: " + weight + ", time: " + time + ", distance: " + distance + ", edges: " + edgeIds.size();
     }
 
+    public List<Integer> getNodesInPathOrder() {
+        final List<Integer> edgeids = new ArrayList<>(edgeIds.size());
+        int adjacentNode = fromNode;
+        edgeids.add(adjacentNode);
+        for (final IntCursor edgeidCursor : edgeIds) {
+            final int edgeid = edgeidCursor.value;
+
+            adjacentNode = this.graph.getOtherNode(edgeid, adjacentNode);
+            edgeids.add(adjacentNode);
+        }
+
+        return edgeids;
+    }
+
     public String toDetailsString() {
         String str = "";
         for (int i = 0; i < edgeIds.size(); i++) {
@@ -426,42 +441,7 @@ public class Path {
         void finish();
     }
 
-    public void addPath(final Path newPath) {
-        if (this.edgeIds.size() > 0) {
-            addIfThisPathIsntEmpty(newPath);
-        } else {
-            buildThisPathFromAnotherPath(newPath);
-        }
-    }
-
-    private void addIfThisPathIsntEmpty(Path newPath) {
-        final EdgeIteratorState lastEdgeOfThisPath = this.getFinalEdge();
-        final List<EdgeIteratorState> otherPathsEdges = newPath.calcEdges();
-
-        failOnNonAdablePath(lastEdgeOfThisPath, otherPathsEdges);
-        mergePaths(newPath, otherPathsEdges);
-    }
-
-    private void mergePaths(Path newPath, List<EdgeIteratorState> otherPathsEdges) {
-        addOtherPathsEdgesToThisPath(otherPathsEdges);
-        this.weight += newPath.getWeight();
-        this.sptEntry = null; // TODO: Test if this works and if not, how can be merge spt entries?
-        this.endNode = newPath.endNode;
-    }
-
-    private void failOnNonAdablePath(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> otherPathsEdges) {
-        if (!lastAndFirstNodeEqual(lastEdgeOfThisPath, otherPathsEdges)) {
-            throw new IllegalArgumentException("Paths must end and start with equal node");
-        }
-    }
-
-    private void addOtherPathsEdgesToThisPath(List<EdgeIteratorState> otherPathsEdges) {
-        for (EdgeIteratorState edge : otherPathsEdges) {
-            this.addEdge(edge.getEdge());
-        }
-    }
-
-    private boolean lastAndFirstNodeEqual(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> otherPathEdges) {
-        return lastEdgeOfThisPath.getAdjNode() == otherPathEdges.get(0).getBaseNode();
+    public boolean isNonEmpty() {
+        return this.edgeIds.size() > 0;
     }
 }

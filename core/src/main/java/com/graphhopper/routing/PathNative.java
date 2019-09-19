@@ -37,7 +37,6 @@ public class PathNative extends Path {
         this.parentEdges = parentEdges;
     }
 
-    @Override
     public Path extract() {
         if (endNode < 0)
             return this;
@@ -45,8 +44,9 @@ public class PathNative extends Path {
         int prevEdge = EdgeIterator.NO_EDGE;
         while (true) {
             int edgeId = parentEdges[endNode];
-            if (!EdgeIterator.Edge.isValid(edgeId))
+            if (!EdgeIterator.Edge.isValid(edgeId)) {
                 break;
+            }
 
             processEdge(edgeId, endNode, prevEdge);
             prevEdge = edgeId;
