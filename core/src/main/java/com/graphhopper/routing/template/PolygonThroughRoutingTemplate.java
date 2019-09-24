@@ -3,8 +3,9 @@ package com.graphhopper.routing.template;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.routing.*;
-import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidate;
+import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidatePolygon;
 import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidateList;
+import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidatePolygonThrough;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
@@ -13,7 +14,6 @@ import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.shapes.BBox;
-import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 
 import java.util.*;
@@ -31,7 +31,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return !queryGraph.equals(this.queryGraph) || !algoFactory.equals(this.algoFactory) || !algoOpts.equals(this.algorithmOptions);
     }
 
-    RouteCandidateList findCandidateRoutes() {
+    protected RouteCandidateList findCandidateRoutes() {
         List<Integer> nodesInPolygon = getNodesInPolygon();
         List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         List<List<Integer>> LOTNodes = findLocalOptimalTouchnodes(polygonEntryExitPoints);
@@ -40,7 +40,6 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         this.dijkstraForPathSkeleton.findAllPathsBetweenEntryExitPoints();
 
         for (int i = 0; i < LOTNodes.size() - 1; i++) {
-            lookUpStartEndNodes(i);
             buildRouteCandidatesForCurrentPoint(LOTNodes.get(i), i);
         }
 
@@ -61,20 +60,11 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         }
     }
 
-    private RouteCandidate buildCandidatePath(int currentPointID, int nextPointID, int LOTNodeL, int LOTNodeLPrime) {
-        RouteCandidate routeCandidate = new RouteCandidate(this, currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime);
+    private RouteCandidatePolygon buildCandidatePath(int currentPointID, int nextPointID, int LOTNodeL, int LOTNodeLPrime) {
+        RouteCandidatePolygon routeCandidate = new RouteCandidatePolygonThrough(this, currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime);
+        routeCandidate.calcPaths();
 
         return routeCandidate;
-    }
-
-    private void lookUpStartEndNodes(int pointsIndex) {
-        // TODO Check if this is necessary since we already have node ids and we would add additional via points to the queryGraph result cache. This could have an impact.
-//        final GHPoint currentPoint = this.ghRequest.getPoints().get(pointsIndex);
-//        final GHPoint nextPoint = this.ghRequest.getPoints().get(pointsIndex + 1);
-//
-//        List<GHPoint> LOTNodesGHPoints = Arrays.asList(currentPoint, nextPoint);
-//        List<QueryResult> lookupResults = super.lookup(LOTNodesGHPoints, this.encodingManager.getEncoder(this.ghRequest.getVehicle()));
-//        this.queryGraph.lookup(lookupResults);
     }
 
     // Definition 6 in Storandts paper Region-Aware Routing Planning
@@ -195,11 +185,6 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         final NodesInPolygonFindingVisitor visitor = new NodesInPolygonFindingVisitor(polygon, nodeAccess);
         this.locationIndex.query(minimumPolygonBoundingBox, visitor);
         return visitor.getNodesInPolygon();
-    }
-
-    public RoutingAlgorithm getNewRoutingAlgorithm() {
-        return this.algoFactory.createAlgo(queryGraph, algorithmOptions);
-        //return this.routingAlgorithm;
     }
 
     public DijkstraManyToMany getPathSkeletonRouter() {

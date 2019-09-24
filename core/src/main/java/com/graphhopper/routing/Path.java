@@ -92,6 +92,7 @@ public class Path {
         edgeIds = new GHIntArrayList(p.edgeIds);
         sptEntry = p.sptEntry;
         endNode = p.endNode;
+        distance = p.distance;
     }
 
     /**
@@ -114,11 +115,11 @@ public class Path {
         return this;
     }
 
-    protected void addEdge(int edge) {
+    public void addEdge(int edge) {
         edgeIds.add(edge);
     }
 
-    protected Path setEndNode(int end) {
+    public Path setEndNode(int end) {
         endNode = end;
         return this;
     }

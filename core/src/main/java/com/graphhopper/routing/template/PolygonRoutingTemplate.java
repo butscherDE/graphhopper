@@ -3,8 +3,8 @@ package com.graphhopper.routing.template;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.routing.*;
-import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidate;
 import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidateList;
+import com.graphhopper.routing.template.PolygonRoutingUtil.RouteCandidatePolygon;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.storage.GraphHopperStorage;
@@ -30,7 +30,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     AlgorithmOptions algorithmOptions;
     RoutingAlgorithmFactory algoFactory;
     RoutingAlgorithm routingAlgorithm;
-    RouteCandidateList routeCandidates;
+    RouteCandidateList<RouteCandidatePolygon> routeCandidates;
 
     public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
                                          EncodingManager encodingManager) {
@@ -59,7 +59,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         this.algoFactory = algoFactory;
         this.algorithmOptions = algoOpts;
         this.routingAlgorithm = algoFactory.createAlgo(queryGraph, algoOpts);
-        this.routeCandidates = RouteCandidateList.createEmptyCandidateList();
+        this.routeCandidates = new RouteCandidateList<>();
     }
 
     private void lookupPoints() {
@@ -85,53 +85,8 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private void prepareRouteCandidateList() {
         this.findCandidateRoutes();
-        this.pruneDominatedCandidateRoutes();
+        this.routeCandidates.pruneDominatedCandidateRoutes();
         this.pruneLowerQuantileInROIcandidateRoutes();
-    }
-
-    // Do it in a skyline problem pruning fashion
-    private void pruneDominatedCandidateRoutes() {
-        this.routeCandidates.sortRouteCandidatesToDistanceInROIDescending();
-
-        int currentPruningCandidateIndex = 1;
-        while (indexInCandidateBounds(currentPruningCandidateIndex)) {
-            RouteCandidate currentPruningCandidate = this.routeCandidates.candidates.get(currentPruningCandidateIndex);
-
-            boolean foundDominatingPath = isThisCandidateDominatedByAny(currentPruningCandidateIndex, currentPruningCandidate);
-
-            currentPruningCandidateIndex = pruneOrUpdateIndex(currentPruningCandidateIndex, foundDominatingPath);
-        }
-    }
-
-    private boolean isThisCandidateDominatedByAny(int currentPruningCandidateIndex, RouteCandidate currentPruningCandidate) {
-        boolean foundDominatingPath = false;
-        for (int i = currentPruningCandidateIndex - 1; i >= 0 && !foundDominatingPath; i--) {
-            // routeCandidates must be sorted by now. Therefore dominators can only bbe found on lower indices than the current pruning candidate.
-            RouteCandidate possiblyBetterRouteCandidate = this.routeCandidates.candidates.get(i);
-
-            if (isPruningCandidateDominated(currentPruningCandidate, possiblyBetterRouteCandidate)) {
-                foundDominatingPath = true;
-            }
-        }
-        return foundDominatingPath;
-    }
-
-    private int pruneOrUpdateIndex(int currentPruningCandidateIndex, boolean foundDominatingPath) {
-        if (foundDominatingPath) {
-            this.routeCandidates.candidates.remove(currentPruningCandidateIndex);
-        } else {
-            currentPruningCandidateIndex++;
-        }
-        return currentPruningCandidateIndex;
-    }
-
-    private boolean isPruningCandidateDominated(RouteCandidate currentPruningCandidate, RouteCandidate possiblyBetterRouteCandidate) {
-        return possiblyBetterRouteCandidate.getDistance() < currentPruningCandidate.getDistance() &&
-               possiblyBetterRouteCandidate.getDistanceInROI() > currentPruningCandidate.getDistanceInROI();
-    }
-
-    private boolean indexInCandidateBounds(int currentPruningCandidateIndex) {
-        return currentPruningCandidateIndex < this.routeCandidates.candidates.size();
     }
 
     private void pruneLowerQuantileInROIcandidateRoutes() {
@@ -143,7 +98,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         }
     }
 
-    abstract RouteCandidateList findCandidateRoutes();
+    protected abstract RouteCandidateList findCandidateRoutes();
 
     @Override
     public boolean isReady(PathMerger pathMerger, Translation translation) {
@@ -159,5 +114,9 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     @Override
     public GHRequest getGhRequest() {
         return this.ghRequest;
+    }
+
+    public RoutingAlgorithm getNewRoutingAlgorithm() {
+        return this.algoFactory.createAlgo(queryGraph, algorithmOptions);
     }
 }

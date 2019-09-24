@@ -1,8 +1,9 @@
 package com.graphhopper.routing.template.util;
 
 import com.graphhopper.routing.AbstractRoutingAlgorithmTester;
-import com.graphhopper.routing.util.EdgeFilter;
-import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.util.*;
+import com.graphhopper.routing.weighting.FastestWeighting;
+import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.*;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
@@ -14,19 +15,37 @@ import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-public class PolygonRoutingTestGraphs {
-    private final TurnCostExtension turnCostExtension;
-    private GraphHopperStorage graph;
-    private Node[] nodes;
-    private DistanceCalc2D distanceCalculator;
+public class PolygonRoutingTestGraph {
+    public final TurnCostExtension turnCostExtension;
+    public Node[] nodes;
+    public DistanceCalc2D distanceCalculator;
+    public EncodingManager encodingManager;
+    public FlagEncoder flagEncoder;
+    public GraphHopperStorage graph;
+    public Polygon polygon;
+    public LocationIndex locationIndex;
+    public NodeAccess nodeAccess;
+    public TraversalMode traversalMode;
+    public String algorithmName;
+    public HintsMap algorithmHints;
+    public Weighting weighting;
 
-    public PolygonRoutingTestGraphs() {
+    public PolygonRoutingTestGraph() {
         this.turnCostExtension = new TurnCostExtension();
         this.distanceCalculator = new DistanceCalc2D();
+        this.createEncodingManager();
+        this.createTestGraph();
+        this.createTestPolygon();
+        this.createLocationIndex();
+        this.getNodeAccess();
+        this.setTraversalMode();
+        this.setAlgorithmName();
+        this.buildHintsMap();
+        this.setWeighting();
     }
 
-    public GraphHopperStorage createPolygonTestGraph(EncodingManager tmpEM) {
-        this.graph = new GraphHopperStorage(new RAMDirectory(), tmpEM, false, turnCostExtension);
+    public GraphHopperStorage createPolygonTestGraph() {
+        this.graph = new GraphHopperStorage(new RAMDirectory(), this.encodingManager, false, turnCostExtension);
         this.graph.create(1000);
 
         // Exterior this.graph including to Entry / Exit nodes
@@ -401,5 +420,50 @@ public class PolygonRoutingTestGraphs {
             }
             return this;
         }
+    }
+
+    private void createEncodingManager() {
+        final FlagEncoder carFlagEncoder = new CarFlagEncoder();
+        this.flagEncoder = carFlagEncoder;
+        this.encodingManager = EncodingManager.create(carFlagEncoder);
+    }    private void createTestGraph() {
+        this.graph = this.createPolygonTestGraph();
+    }
+
+    private void createTestPolygon() {
+        this.polygon = createPolygon();
+    }
+
+    private void createLocationIndex() {
+        this.locationIndex = this.getCorrespondingIndex();
+    }
+
+    private void getNodeAccess() {
+        this.nodeAccess = this.graph.getNodeAccess();
+    }
+
+    private void setTraversalMode() {
+        this.traversalMode = TraversalMode.NODE_BASED;
+    }
+
+    private void setAlgorithmName() {
+        this.algorithmName = "dijkstrabi";
+    }
+
+    private void buildHintsMap() {
+        this.algorithmHints = new HintsMap();
+        this.algorithmHints.put("elevation", "false");
+        this.algorithmHints.put("instructions", "true");
+        this.algorithmHints.put("way_point_max_distance", "1.0");
+        this.algorithmHints.put("calc_points", "true");
+        this.algorithmHints.put("type", "json");
+        this.algorithmHints.put("locale", "de-DE");
+        this.algorithmHints.put("weighting", "fastest");
+        this.algorithmHints.put("key", "");
+        this.algorithmHints.put("vehicle", "car");
+    }
+
+    private void setWeighting() {
+        this.weighting = new FastestWeighting(this.flagEncoder, this.algorithmHints);
     }
 }

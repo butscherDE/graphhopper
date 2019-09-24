@@ -41,6 +41,7 @@ public class PathMerge extends Path {
     private void mergePaths(Path newPath, List<EdgeIteratorState> otherPathsEdges) {
         addOtherPathsEdgesToThisPath(otherPathsEdges);
         this.weight += newPath.getWeight();
+        this.distance += newPath.distance;
         this.endNode = newPath.endNode;
     }
 
