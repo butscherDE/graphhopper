@@ -54,7 +54,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         for (final int LOTNodeL : currentPointsLOTNodes) {
             for (final int LOTNodeLPrime : currentPointsLOTNodes) {
                 if (LOTNodeL != LOTNodeLPrime) {
-                    this.routeCandidates.candidates.add(buildCandidatePath(currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime));
+                    this.routeCandidates.getCandidates().add(buildCandidatePath(currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime));
                 }
             }
         }

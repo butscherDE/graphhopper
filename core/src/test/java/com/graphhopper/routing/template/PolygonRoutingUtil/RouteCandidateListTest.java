@@ -23,14 +23,14 @@ public class RouteCandidateListTest {
     final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
 
     private void addTestingCandidates() {
-        this.candidateList.candidates.clear();
-        this.candidateList.candidates.add(new RouteCandidateMocker(routingTemplate, 3,6,1, "a"));
-        this.candidateList.candidates.add(new RouteCandidateMocker(routingTemplate, 2,3,1, "b"));
-        this.candidateList.candidates.add(new RouteCandidateMocker(routingTemplate, 6,6,5, "c"));
-        this.candidateList.candidates.add(new RouteCandidateMocker(routingTemplate, 4,5,3, "d"));
-        this.candidateList.candidates.add(new RouteCandidateMocker(routingTemplate, 8,4,6, "e"));
-        this.candidateList.candidates.add(new RouteCandidateMocker(routingTemplate, 6,1,3, "f"));
-        this.candidateList.candidates.add(new RouteCandidateMocker(routingTemplate, 7,1,6, "g"));
+        this.candidateList.getCandidates().clear();
+        this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 3, 6, 1, "a"));
+        this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 2, 3, 1, "b"));
+        this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 6, 6, 5, "c"));
+        this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 4, 5, 3, "d"));
+        this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 8, 4, 6, "e"));
+        this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 6, 1, 3, "f"));
+        this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 7, 1, 6, "g"));
     }
 
     @Test
@@ -38,9 +38,9 @@ public class RouteCandidateListTest {
         addTestingCandidates();
         this.candidateList.pruneDominatedCandidateRoutes();
 
-        assertEquals("a", this.candidateList.candidates.get(0).name);
-        assertEquals("c", this.candidateList.candidates.get(1).name);
-        assertEquals("b", this.candidateList.candidates.get(2).name);
+        assertEquals("a", this.candidateList.getCandidates().get(0).name);
+        assertEquals("c", this.candidateList.getCandidates().get(1).name);
+        assertEquals("b", this.candidateList.getCandidates().get(2).name);
     }
 
     @Test
