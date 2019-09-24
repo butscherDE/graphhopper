@@ -7,21 +7,16 @@ import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.util.shapes.GHPoint;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.graphhopper.util.Parameters.Routing.*;
 
 public class PolygonThroughRoutingTemplateTest {
-    private PolygonRoutingTestGraph testGraph = new PolygonRoutingTestGraph();
-
-
-    @Before
-    public void initVariables() {
-    }
+    private final PolygonRoutingTestGraph testGraph = new PolygonRoutingTestGraph();
 
     @Test
     public void quickStartingTest() {
@@ -58,7 +53,6 @@ public class PolygonThroughRoutingTemplateTest {
 
     private GHRequest buildRequest(GHPoint... startViaEndPoints) {
         List<GHPoint> startViaEndPointList = convertPointsToListFormat(startViaEndPoints);
-        List<Double> favoredHeadings = new ArrayList<>(0);
         String vehicleStr = "car";
         String weighting = "fastest";
         String algoStr = "";
@@ -84,10 +78,7 @@ public class PolygonThroughRoutingTemplateTest {
     }
 
     private static List<GHPoint> convertPointsToListFormat(GHPoint[] startViaEndPoints) {
-        List<GHPoint> startViaEndPointList = new ArrayList<GHPoint>();
-        for (GHPoint point : startViaEndPoints) {
-            startViaEndPointList.add(point);
-        }
+        List<GHPoint> startViaEndPointList = new ArrayList<>(Arrays.asList(startViaEndPoints));
 
         return startViaEndPointList;
     }

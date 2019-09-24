@@ -1,4 +1,4 @@
-package com.graphhopper.routing.template.PolygonRoutingUtil;
+package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.routing.AlgorithmOptions;
@@ -17,10 +17,10 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class RouteCandidateListTest {
-    final RouteCandidateList<RouteCandidateMocker> candidateList = new RouteCandidateList<>();
-    final GHRequest ghRequest = new GHRequest(0,0, 10, 10).setPolygon(new Polygon(new double [] {5,10,10,5}, new double [] {5,5,10,10}));
-    final PolygonThroughRoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(ghRequest, null, null, null, null, null);
-    final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    private final RouteCandidateList<RouteCandidateMocker> candidateList = new RouteCandidateList<>();
+    private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double [] {5, 10, 10, 5}, new double [] {5, 5, 10, 10}));
+    private final PolygonThroughRoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(ghRequest, null, null, null, null, null);
+    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
 
     private void addTestingCandidates() {
         this.candidateList.getCandidates().clear();
@@ -58,19 +58,14 @@ public class RouteCandidateListTest {
         assertEquals(3, topCandidates.size());
     }
 
-    @Test
-    public void assertCorrectBestCandidate() {
+    class RouteCandidateMocker extends RouteCandidatePolygon {
+        final double polygonRouteDistance;
+        final double roiDistance;
+        final double directDistance;
+        final String name;
 
-    }
-
-    public class RouteCandidateMocker extends RouteCandidatePolygon {
-        protected final double polygonRouteDistance;
-        protected final double roiDistance;
-        protected final double directDistance;
-        protected final String name;
-
-        public RouteCandidateMocker(PolygonRoutingTemplate polygonRoutingTemplate, final double polygonRouteDistance, final double distanceInROI, final double directDistance,
-                                    final String name) {
+        RouteCandidateMocker(PolygonRoutingTemplate polygonRoutingTemplate, final double polygonRouteDistance, final double distanceInROI, final double directDistance,
+                             final String name) {
             super(polygonRoutingTemplate, 0,3,1,2);
 
             this.polygonRouteDistance = polygonRouteDistance;
@@ -95,26 +90,23 @@ public class RouteCandidateListTest {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
 
-            sb.append(super.toString());
-            sb.append(", name: ");
-            sb.append(name);
-
-            return sb.toString();
+            String sb = super.toString() +
+                        ", name: " +
+                        name;
+            return sb;
         }
 
         @Override
         public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algorithmOptions) {
-            Path mergedPath = new TestPath(graphMocker.graph, graphMocker.weighting, this.name);
-            return mergedPath;
+            return new TestPath(graphMocker.graph, graphMocker.weighting, this.name);
         }
     }
 
-    private class TestPath extends Path {
+    private static class TestPath extends Path {
         final String name;
 
-        public TestPath(Graph graph, Weighting weighting, final String name) {
+        TestPath(Graph graph, Weighting weighting, final String name) {
             super(graph, weighting);
             this.name = name;
         }

@@ -1,4 +1,4 @@
-package com.graphhopper.routing.template.PolygonRoutingUtil;
+package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.routing.Path;
@@ -11,9 +11,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class RouteCandidateTest {
-    final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double [] {5, 10, 10, 5}, new double [] {5, 5, 10, 10}));
-    final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
-    final PolygonThroughRoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(ghRequest, null, graphMocker.locationIndex, graphMocker.nodeAccess, graphMocker.graph
+    private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double [] {5, 10, 10, 5}, new double [] {5, 5, 10, 10}));
+    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    private final PolygonThroughRoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(ghRequest, null, graphMocker.locationIndex, graphMocker.nodeAccess, graphMocker.graph
             , graphMocker.encodingManager);
 
 

@@ -16,11 +16,11 @@ import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class PolygonRoutingTestGraph {
-    public final TurnCostExtension turnCostExtension;
-    public Node[] nodes;
-    public DistanceCalc2D distanceCalculator;
+    private final TurnCostExtension turnCostExtension;
+    private Node[] nodes;
+    private final DistanceCalc2D distanceCalculator;
     public EncodingManager encodingManager;
-    public FlagEncoder flagEncoder;
+    private FlagEncoder flagEncoder;
     public GraphHopperStorage graph;
     public Polygon polygon;
     public LocationIndex locationIndex;
@@ -44,7 +44,7 @@ public class PolygonRoutingTestGraph {
         this.setWeighting();
     }
 
-    public GraphHopperStorage createPolygonTestGraph() {
+    private GraphHopperStorage createPolygonTestGraph() {
         this.graph = new GraphHopperStorage(new RAMDirectory(), this.encodingManager, false, turnCostExtension);
         this.graph.create(1000);
 
@@ -124,7 +124,7 @@ public class PolygonRoutingTestGraph {
 
     private void setDistanceToEuclidean() {
         for (Node node : nodes) {
-            node.updateDistance(this.graph);
+            node.updateDistance();
         }
     }
 
@@ -269,12 +269,11 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(56, 57, 1, true);
     }
 
-    public Polygon createPolygon() {
-        final Polygon polygon = new Polygon(new double[]{19, 19, 8, 8}, new double[]{14, 24, 24, 14});
-        return polygon;
+    private Polygon createPolygon() {
+        return new Polygon(new double[]{19, 19, 8, 8}, new double[]{14, 24, 24, 14});
     }
 
-    public LocationIndex getCorrespondingIndex() {
+    private LocationIndex getCorrespondingIndex() {
         return new LocationIndex() {
             @Override
             public LocationIndex setResolution(int resolution) {
@@ -294,9 +293,7 @@ public class PolygonRoutingTestGraph {
                 Node minNode = minDistanceNodeFinder.getMinNode();
                 EdgeIteratorState firstEdgeAdjacentToMinNode = findClosestEdge(minNode);
 
-                QueryResult result = createQueryResult(minDistance, minNode, firstEdgeAdjacentToMinNode);
-
-                return result;
+                return createQueryResult(minDistance, minNode, firstEdgeAdjacentToMinNode);
             }
 
             private EdgeIteratorState findClosestEdge(Node minNode) {
@@ -367,46 +364,42 @@ public class PolygonRoutingTestGraph {
         };
     }
 
-    public NodeAccess getCorrespondingNodeAccess() {
-        return this.graph.getNodeAccess();
-    }
-
     private class Node {
-        public final int id;
-        public final double latitude;
-        public final double longitude;
+        final int id;
+        final double latitude;
+        final double longitude;
 
-        public Node(final int id, final double latitude, final double longitude) {
+        Node(final int id, final double latitude, final double longitude) {
             this.id = id;
             this.latitude = latitude;
             this.longitude = longitude;
         }
 
-        public void updateDistance(final GraphHopperStorage ghs) {
+        void updateDistance() {
             AbstractRoutingAlgorithmTester.updateDistancesFor(graph, this.id, this.latitude, this.longitude);
         }
     }
 
     private class MinDistanceNodeFinder {
-        private double lat;
-        private double lon;
+        private final double lat;
+        private final double lon;
         private double minDistance;
         private Node minNode;
 
-        public MinDistanceNodeFinder(double lat, double lon) {
+        MinDistanceNodeFinder(double lat, double lon) {
             this.lat = lat;
             this.lon = lon;
         }
 
-        public double getMinDistance() {
+        double getMinDistance() {
             return minDistance;
         }
 
-        public Node getMinNode() {
+        Node getMinNode() {
             return minNode;
         }
 
-        public MinDistanceNodeFinder invoke() {
+        MinDistanceNodeFinder invoke() {
             minDistance = Double.MAX_VALUE;
             minNode = null;
 

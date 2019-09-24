@@ -1,4 +1,4 @@
-package com.graphhopper.routing.template.PolygonRoutingUtil;
+package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.PolygonRoutingTemplate;
