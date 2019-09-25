@@ -148,6 +148,7 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(4, 9, 1, true);
         this.graph.edge(4, 10, 1, true);
         this.graph.edge(4, 13, 1, true);
+        this.graph.edge(5, 6, 1, true);
         this.graph.edge(5, 10, 1, true);
         this.graph.edge(5, 11, 1, true);
         this.graph.edge(5, 13, 1, true);
