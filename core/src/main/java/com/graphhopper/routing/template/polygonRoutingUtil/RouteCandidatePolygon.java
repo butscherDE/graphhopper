@@ -39,6 +39,7 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
         completePathCandidate.addPath(detourEntryToDetourExit);
         completePathCandidate.addPath(detourExitToEnd);
 
+        completePathCandidate.setFromNode(startNodeID);
         completePathCandidate.extract();
 
         return completePathCandidate;
@@ -103,6 +104,7 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
         sb.append("endNodeID: " + endNodeID + ", ");
         sb.append("polygonEntryNodeID: " + polygonEntryNodeID + ", ");
         sb.append("polygonExitNodeID: " + polygonExitNodeID + ", ");
+        sb.append("Distance: " + this.getDistance() + ", ");
         sb.append("DistanceInROI: " + getDistanceInROI() + ", ");
         sb.append("detour distance: " + getDetourDistance() + ", ");
         sb.append("gain: " + this.getGain());

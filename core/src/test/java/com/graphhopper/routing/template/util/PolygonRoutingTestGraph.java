@@ -233,7 +233,7 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(41, 53, 1, true);
         this.graph.edge(42, 53, 1, true);
         this.graph.edge(43, 44, 1, true);
-        this.graph.edge(43, 46, 53, true);
+        this.graph.edge(43, 46, 1, true);
         this.graph.edge(43, 53, 1, true);
         this.graph.edge(44, 45, 1, true);
         this.graph.edge(44, 46, 1, true);

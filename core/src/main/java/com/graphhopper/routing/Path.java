@@ -137,7 +137,7 @@ public class Path {
     /**
      * We need to remember fromNode explicitly as its not saved in one edgeId of edgeIds.
      */
-    protected Path setFromNode(int from) {
+    public Path setFromNode(int from) {
         fromNode = from;
         return this;
     }
@@ -409,17 +409,21 @@ public class Path {
     }
 
     public List<Integer> getNodesInPathOrder() {
-        final List<Integer> edgeids = new ArrayList<>(edgeIds.size());
+        if (fromNode == -1) {
+            throw new IllegalStateException("From node may not be -1. Set from node first");
+        }
+
+        final List<Integer> nodeIds = new ArrayList<>(edgeIds.size());
         int adjacentNode = fromNode;
-        edgeids.add(adjacentNode);
+        nodeIds.add(adjacentNode);
         for (final IntCursor edgeidCursor : edgeIds) {
             final int edgeid = edgeidCursor.value;
 
             adjacentNode = this.graph.getOtherNode(edgeid, adjacentNode);
-            edgeids.add(adjacentNode);
+            nodeIds.add(adjacentNode);
         }
 
-        return edgeids;
+        return nodeIds;
     }
 
     public String toDetailsString() {
