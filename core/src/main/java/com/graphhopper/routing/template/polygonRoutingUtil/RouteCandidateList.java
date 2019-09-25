@@ -39,13 +39,28 @@ public class RouteCandidateList <T extends RouteCandidatePolygon> {
         });
     }
 
-    public List<Path> getFirstAsPathList(final int nOfFirstElements, final QueryGraph queryGraph, final AlgorithmOptions algorithmOptions) {
+    public List<Path> getFirstAsPathList(int nOfFirstElements, QueryGraph queryGraph, AlgorithmOptions algorithmOptions) {
         final List<Path> paths = new ArrayList<>(nOfFirstElements);
 
         final int endOfCandidates = getCandidates().size() - 1;
-        final int endOfIteration = endOfCandidates - nOfFirstElements;
-        for (int i = endOfCandidates; i > endOfIteration; i--) {
-            paths.add(this.getCandidates().get(i).getMergedPath(queryGraph, algorithmOptions));
+        paths.addAll(addPathsBasedOnIntersectionStatus(nOfFirstElements, queryGraph, algorithmOptions, endOfCandidates, false));
+        paths.addAll(addPathsBasedOnIntersectionStatus(nOfFirstElements, queryGraph, algorithmOptions, endOfCandidates, true));
+
+        return paths;
+    }
+
+    private List<Path> addPathsBasedOnIntersectionStatus(int nOfFirstElements, QueryGraph queryGraph, AlgorithmOptions algorithmOptions, int endOfCandidates,
+                                                   boolean addSelfIntersecting) {
+        List<Path> paths = new ArrayList<>(nOfFirstElements);
+        int indexIntoCandidates = endOfCandidates;
+        while (indexIntoCandidates > 0 && paths.size() < nOfFirstElements) {
+            final RouteCandidatePolygon candidate = this.getCandidates().get(indexIntoCandidates);
+
+            if (candidate.isDetourSelfIntersecting(queryGraph, algorithmOptions) == addSelfIntersecting) {
+                paths.add(candidate.getMergedPath(queryGraph, algorithmOptions));
+            }
+
+            indexIntoCandidates--;
         }
 
         return paths;
