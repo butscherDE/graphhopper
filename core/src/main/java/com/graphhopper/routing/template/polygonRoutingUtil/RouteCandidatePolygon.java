@@ -2,6 +2,10 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.PolygonRoutingTemplate;
+import com.graphhopper.util.EdgeIteratorState;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A route candidate as in Prof. Dr. Sabine Storandts Paper Region-Aware Route Planning.
@@ -14,6 +18,7 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
     final PolygonRoutingTemplate polygonRoutingTemplate;
     RoutingAlgorithm routingAlgorithm;
     final int startNodeID, endNodeID, polygonEntryNodeID, polygonExitNodeID;
+    PathMerge mergedPath = null;
 
     public RouteCandidatePolygon(final PolygonRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
                                  final int polygonExitNodeID) {
@@ -33,6 +38,12 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
     }
 
     public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
+        mergePathIfNotDone(queryGraph, algoOpts);
+
+        return this.mergedPath;
+    }
+
+    private void mergePath(QueryGraph queryGraph, AlgorithmOptions algoOpts) {
         PathMerge completePathCandidate = new PathMerge(queryGraph, algoOpts.getWeighting());
 
         completePathCandidate.addPath(startToDetourEntry);
@@ -42,7 +53,7 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
         completePathCandidate.setFromNode(startNodeID);
         completePathCandidate.extract();
 
-        return completePathCandidate;
+        this.mergedPath = completePathCandidate;
     }
 
     public double getDistance() {
@@ -77,9 +88,31 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
      *
      * @return true if at least one intersection occurs and false otherwise.
      */
-    public boolean isDetourSelfIntersecting() {
-        return false;
+    public boolean isDetourSelfIntersecting(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
+        mergePathIfNotDone(queryGraph, algoOpts);
+
+        return checkForRedundantNodes();
         // TODO: Selfintersecting: Complete route or detour part?
+    }
+
+    private void mergePathIfNotDone(QueryGraph queryGraph, AlgorithmOptions algoOpts) {
+        if (mergedPath == null) {
+            mergePath(queryGraph, algoOpts);
+        }
+    }
+
+    private boolean checkForRedundantNodes() {
+        Map<Integer, Boolean> foundNodes = new HashMap<>();
+
+        for (final int node : this.mergedPath.getNodesInPathOrder()) {
+            if (foundNodes.get(node) == null) {
+                foundNodes.put(node, true);
+            } else {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
