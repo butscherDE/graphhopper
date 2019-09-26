@@ -3,6 +3,10 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.storage.index.QueryResult;
+import com.graphhopper.util.DistanceCalc2D;
+import com.graphhopper.util.EdgeExplorer;
+import com.graphhopper.util.EdgeIterator;
+import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.GHPoint;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,11 +66,26 @@ public class OneToManyRoutingTest {
             final double latitude = this.graphMocker.nodeAccess.getLatitude(node);
             final double longitude = this.graphMocker.nodeAccess.getLongitude(node);
 
-            QueryResult queryResult = new QueryResult(latitude, longitude);
-            queryResult.setClosestNode(node);
+            QueryResult queryResult = createQueryReult(node, latitude, longitude);
             queryResults.add(queryResult);
         }
         return queryResults;
+    }
+
+    private QueryResult createQueryReult(int node, double latitude, double longitude) {
+        QueryResult queryResult = new QueryResult(latitude, longitude);
+        queryResult.setClosestNode(node);
+        queryResult.setWayIndex(0);
+        queryResult.setClosestEdge(findClosestEdge(node));
+        queryResult.calcSnappedPoint(new DistanceCalc2D());
+        return queryResult;
+    }
+
+    private EdgeIteratorState findClosestEdge(final int baseNode) {
+        EdgeExplorer edgeExplorer = this.graphMocker.graph.createEdgeExplorer();
+        EdgeIterator edgeIterator = edgeExplorer.setBaseNode(baseNode);
+        edgeIterator.next();
+        return edgeIterator;
     }
 
     @Test
@@ -82,6 +101,7 @@ public class OneToManyRoutingTest {
     @Test
     public void validateSecondPath() {
         final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(1);
+
 
     }
 

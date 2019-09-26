@@ -50,7 +50,7 @@ public class OneToManyRouting {
     }
 
     public List<Path> getAllFoundPaths() {
-        return this.getAllFoundPaths();
+        return this.allFoundPaths;
     }
 
     private class NodesToConsiderEdgeFilter implements EdgeFilter {
