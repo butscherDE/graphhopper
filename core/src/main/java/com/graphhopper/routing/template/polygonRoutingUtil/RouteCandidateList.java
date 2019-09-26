@@ -53,7 +53,7 @@ public class RouteCandidateList <T extends RouteCandidatePolygon> {
                                                    boolean addSelfIntersecting) {
         List<Path> paths = new ArrayList<>(nOfFirstElements);
         int indexIntoCandidates = endOfCandidates;
-        while (indexIntoCandidates > 0 && paths.size() < nOfFirstElements) {
+        while (indexIntoCandidates >= 0 && paths.size() < nOfFirstElements) {
             final RouteCandidatePolygon candidate = this.getCandidates().get(indexIntoCandidates);
 
             if (candidate.isDetourSelfIntersecting(queryGraph, algorithmOptions) == addSelfIntersecting) {
