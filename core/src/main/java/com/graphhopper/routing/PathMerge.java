@@ -19,10 +19,6 @@ public class PathMerge extends Path {
     }
 
     public void addPath(final Path newPath) {
-        if (!newPath.isNonEmpty()) {
-            throw new IllegalArgumentException("Cannot add empty paths");
-        }
-
         if (this.edgeIds.size() > 0) {
             addIfThisPathIsntEmpty(newPath);
         } else {

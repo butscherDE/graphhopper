@@ -3,6 +3,7 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 import com.graphhopper.GHRequest;
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.Path;
+import com.graphhopper.routing.PathMerge;
 import com.graphhopper.routing.QueryGraph;
 import com.graphhopper.routing.template.PolygonRoutingTemplate;
 import com.graphhopper.routing.template.PolygonThroughRoutingTemplate;
@@ -25,12 +26,39 @@ public class RouteCandidateListTest {
     private void addTestingCandidates() {
         this.candidateList.getCandidates().clear();
         this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 3, 6, 1, "a"));
+        this.candidateList.getCandidates().get(0).startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(0).detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(0).detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
+
         this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 2, 3, 1, "b"));
+        this.candidateList.getCandidates().get(1).startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(1).detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(1).detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
+
         this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 6, 6, 5, "c"));
+        this.candidateList.getCandidates().get(2).startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(2).detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(2).detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
+
         this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 4, 5, 3, "d"));
+        this.candidateList.getCandidates().get(3).startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(3).detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(3).detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
+
         this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 8, 4, 6, "e"));
+        this.candidateList.getCandidates().get(4).startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(4).detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(4).detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
+
         this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 6, 1, 3, "f"));
+        this.candidateList.getCandidates().get(5).startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(5).detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(5).detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
+
         this.candidateList.getCandidates().add(new RouteCandidateMocker(routingTemplate, 7, 1, 6, "g"));
+        this.candidateList.getCandidates().get(6).startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(6).detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
+        this.candidateList.getCandidates().get(6).detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
     }
 
     @Test

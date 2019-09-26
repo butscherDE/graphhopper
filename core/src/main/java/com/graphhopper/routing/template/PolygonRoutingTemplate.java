@@ -55,18 +55,10 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private void setCalcPathsParams(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
         this.queryGraph = queryGraph;
-        this.lookupPoints();
         this.algoFactory = algoFactory;
         this.algorithmOptions = algoOpts;
         this.routingAlgorithm = algoFactory.createAlgo(queryGraph, algoOpts);
         this.routeCandidates = new RouteCandidateList<>();
-    }
-
-    private void lookupPoints() {
-        List<GHPoint> points = this.ghRequest.getPoints();
-        FlagEncoder flagEncoder = this.encodingManager.getEncoder(ghRequest.getVehicle());
-        List<QueryResult> lookupResults = super.lookup(points, flagEncoder);
-        queryGraph.lookup(lookupResults);
     }
 
     private List<Path> routeWithPolygon() {

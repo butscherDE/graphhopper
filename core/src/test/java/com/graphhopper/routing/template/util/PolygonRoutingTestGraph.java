@@ -20,7 +20,7 @@ public class PolygonRoutingTestGraph {
     private Node[] nodes;
     private final DistanceCalc2D distanceCalculator;
     public EncodingManager encodingManager;
-    private FlagEncoder flagEncoder;
+    public FlagEncoder flagEncoder;
     public GraphHopperStorage graph;
     public Polygon polygon;
     public LocationIndex locationIndex;

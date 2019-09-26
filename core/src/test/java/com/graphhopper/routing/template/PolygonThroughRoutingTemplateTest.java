@@ -6,6 +6,7 @@ import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.Weighting;
+import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.shapes.GHPoint;
 import org.junit.Test;
 
@@ -24,13 +25,26 @@ public class PolygonThroughRoutingTemplateTest {
         GHRequest request = buildRequest(new GHPoint(25, 0), new GHPoint(25, 46));
         GHResponse response = new GHResponse();
         final int maxVisitedNodes = this.testGraph.algorithmHints.getInt(MAX_VISITED_NODES, Integer.MAX_VALUE);
-
-        RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.testGraph.locationIndex, this.testGraph.nodeAccess, this.testGraph.graph,
+        final RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.testGraph.locationIndex, this.testGraph.nodeAccess, this.testGraph.graph,
                                                                             this.testGraph.encodingManager);
-        RoutingAlgorithmFactory algorithmFactory = new RoutingAlgorithmFactorySimple();
-        AlgorithmOptions algorithmOptions = buildAlgorithmOptions(testGraph.algorithmHints, this.testGraph.traversalMode, this.testGraph.algorithmName, this.testGraph.weighting, maxVisitedNodes);
+        final RoutingAlgorithmFactory algorithmFactory = new RoutingAlgorithmFactorySimple();
+        final AlgorithmOptions algorithmOptions = buildAlgorithmOptions(testGraph.algorithmHints, this.testGraph.traversalMode, this.testGraph.algorithmName,
+                                                                       this.testGraph.weighting, maxVisitedNodes);
+        final QueryGraph queryGraph = createQueryGraph(request, routingTemplate);
 
-        List<Path> paths = routingTemplate.calcPaths(new QueryGraph(this.testGraph.graph), algorithmFactory, algorithmOptions);
+        List<Path> paths = routingTemplate.calcPaths(queryGraph, algorithmFactory, algorithmOptions);
+
+        printPath(paths);
+    }
+
+    private QueryGraph createQueryGraph(GHRequest request, RoutingTemplate routingTemplate) {
+        final QueryGraph queryGraph = new QueryGraph(this.testGraph.graph);
+        List<QueryResult> results = routingTemplate.lookup(request.getPoints(), this.testGraph.flagEncoder);
+        queryGraph.lookup(results);
+        return queryGraph;
+    }
+
+    private void printPath(List<Path> paths) {
         System.out.println(paths.get(0).getNodesInPathOrder());
         System.out.println(paths.toString());
     }
