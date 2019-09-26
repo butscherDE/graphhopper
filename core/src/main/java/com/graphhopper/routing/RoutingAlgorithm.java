@@ -17,6 +17,7 @@
  */
 package com.graphhopper.routing;
 
+import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.util.NotThreadSafe;
 
 import java.util.List;

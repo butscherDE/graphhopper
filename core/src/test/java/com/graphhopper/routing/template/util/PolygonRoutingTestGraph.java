@@ -1,6 +1,7 @@
 package com.graphhopper.routing.template.util;
 
 import com.graphhopper.routing.AbstractRoutingAlgorithmTester;
+import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.FastestWeighting;
 import com.graphhopper.routing.weighting.Weighting;
@@ -14,6 +15,8 @@ import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import static com.graphhopper.util.Parameters.Routing.MAX_VISITED_NODES;
 
 public class PolygonRoutingTestGraph {
     private final TurnCostExtension turnCostExtension;
@@ -29,6 +32,7 @@ public class PolygonRoutingTestGraph {
     public String algorithmName;
     public HintsMap algorithmHints;
     public Weighting weighting;
+    public AlgorithmOptions algorithmOptions;
 
     public PolygonRoutingTestGraph() {
         this.turnCostExtension = new TurnCostExtension();
@@ -42,6 +46,7 @@ public class PolygonRoutingTestGraph {
         this.setAlgorithmName();
         this.buildHintsMap();
         this.setWeighting();
+        this.setAlgorithmOptions();
     }
 
     private GraphHopperStorage createPolygonTestGraph() {
@@ -459,5 +464,14 @@ public class PolygonRoutingTestGraph {
 
     private void setWeighting() {
         this.weighting = new FastestWeighting(this.flagEncoder, this.algorithmHints);
+    }
+
+    private void setAlgorithmOptions() {
+        final int maxVisitedNodes = this.algorithmHints.getInt(MAX_VISITED_NODES, Integer.MAX_VALUE);
+        this.algorithmOptions =  AlgorithmOptions.start().
+                algorithm(algorithmName).traversalMode(traversalMode).weighting(weighting).
+                maxVisitedNodes(maxVisitedNodes).
+                hints(algorithmHints).
+                build();
     }
 }

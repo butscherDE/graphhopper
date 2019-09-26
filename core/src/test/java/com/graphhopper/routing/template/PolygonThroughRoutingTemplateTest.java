@@ -28,8 +28,7 @@ public class PolygonThroughRoutingTemplateTest {
         final RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.testGraph.locationIndex, this.testGraph.nodeAccess, this.testGraph.graph,
                                                                             this.testGraph.encodingManager);
         final RoutingAlgorithmFactory algorithmFactory = new RoutingAlgorithmFactorySimple();
-        final AlgorithmOptions algorithmOptions = buildAlgorithmOptions(testGraph.algorithmHints, this.testGraph.traversalMode, this.testGraph.algorithmName,
-                                                                       this.testGraph.weighting, maxVisitedNodes);
+        final AlgorithmOptions algorithmOptions = testGraph.algorithmOptions;
         final QueryGraph queryGraph = createQueryGraph(request, routingTemplate);
 
         List<Path> paths = routingTemplate.calcPaths(queryGraph, algorithmFactory, algorithmOptions);
@@ -55,14 +54,6 @@ public class PolygonThroughRoutingTemplateTest {
         while (aei.next()) {
             System.out.println(aei.toString());
         }
-    }
-
-    private AlgorithmOptions buildAlgorithmOptions(HintsMap hints, TraversalMode tMode, String algoStr, Weighting weighting, int maxVisitedNodesForRequest) {
-        return AlgorithmOptions.start().
-                algorithm(algoStr).traversalMode(tMode).weighting(weighting).
-                maxVisitedNodes(maxVisitedNodesForRequest).
-                hints(hints).
-                build();
     }
 
     private GHRequest buildRequest(GHPoint... startViaEndPoints) {
