@@ -3,10 +3,9 @@ package com.graphhopper.routing.template;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.routing.*;
-import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidatePolygon;
-import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidateList;
-import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidatePolygonThrough;
+import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
@@ -19,12 +18,13 @@ import com.graphhopper.util.shapes.Polygon;
 import java.util.*;
 
 public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
-    private DijkstraOneToMany dijkstraForLOTNodes;
-    private DijkstraManyToMany dijkstraForPathSkeleton;
+    private OneToManyRouting dijkstraForLOTNodes;
+    private ManyToManyRouting dijkstraForPathSkeleton;
+    private List<Integer> nodesInPolygon;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
                                          EncodingManager encodingManager) {
-        super(ghRequest, ghRsp, locationIndex, nodeAccess, ghStorage, encodingManager);
+        super(ghRequest, ghRsp, locationIndex, ghStorage.getBaseGraph(), nodeAccess, ghStorage, encodingManager);
     }
 
     private boolean isInvalidParameterSet(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
@@ -32,12 +32,11 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     protected RouteCandidateList findCandidateRoutes() {
-        List<Integer> nodesInPolygon = getNodesInPolygon();
+        this.nodesInPolygon = getNodesInPolygon();
         List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         List<List<Integer>> LOTNodes = findLocalOptimalTouchnodes(polygonEntryExitPoints);
-        this.dijkstraForPathSkeleton = new DijkstraManyToMany(this.queryGraph, this.algorithmOptions.getWeighting(), this.algorithmOptions.getTraversalMode(), nodesInPolygon,
-                                                              polygonEntryExitPoints);
-        this.dijkstraForPathSkeleton.findAllPathsBetweenEntryExitPoints();
+        this.dijkstraForPathSkeleton = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, this.algoFactory, this.algorithmOptions);
+        this.dijkstraForPathSkeleton.findPathBetweenAllNodePairs();
 
         for (int i = 0; i < LOTNodes.size() - 1; i++) {
             buildRouteCandidatesForCurrentPoint(LOTNodes.get(i), i);
@@ -142,17 +141,20 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     private Map<Integer, Double> getDistancesFromPointToEntryExitPoints(QueryResult point, List<Integer> polygonEntryExitPoints) {
-        final Map<Integer, Double> weightsOfEntryExitPoints = new HashMap<Integer, Double>();
-        for (final int entryExitPoint : polygonEntryExitPoints) {
-            this.dijkstraForLOTNodes.calcPath(point.getClosestNode(), entryExitPoint);
-            weightsOfEntryExitPoints.put(entryExitPoint, this.dijkstraForLOTNodes.getWeight(entryExitPoint));
+        final int fromNode = point.getClosestNode();
+        this.dijkstraForLOTNodes = new OneToManyRouting(fromNode, polygonEntryExitPoints, this.nodesInPolygon, this.queryGraph, this.algoFactory, this.algorithmOptions);
+        this.dijkstraForLOTNodes.findPathBetweenAllNodePairs();
+        final List<Path> allFoundPaths = this.dijkstraForLOTNodes.getAllFoundPaths();
+
+        final Map<Integer, Double> weightsOfEntryExitPoints = new HashMap<>();
+        for (int i = 0; i < polygonEntryExitPoints.size(); i++) {
+            weightsOfEntryExitPoints.put(polygonEntryExitPoints.get(i), allFoundPaths.get(0).getDistance());
         }
 
         return weightsOfEntryExitPoints;
     }
 
     private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
-        this.dijkstraForLOTNodes = new DijkstraOneToMany(this.queryGraph, this.algorithmOptions.getWeighting(), this.algorithmOptions.getTraversalMode());
         final List<Integer> entryExitPoints = new ArrayList<>();
         final EdgeExplorer edgeExplorer = ghStorage.getBaseGraph().createEdgeExplorer();
 
@@ -187,7 +189,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return visitor.getNodesInPolygon();
     }
 
-    public DijkstraManyToMany getPathSkeletonRouter() {
+    public ManyToManyRouting getPathSkeletonRouter() {
         return this.dijkstraForPathSkeleton;
     }
 

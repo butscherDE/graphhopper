@@ -7,6 +7,7 @@ import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidateList;
 import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidatePolygon;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
+import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
@@ -26,13 +27,14 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     final GraphHopperStorage ghStorage;
     final NodeAccess nodeAccess;
     final LocationIndex locationIndex;
+    final Graph graph;
     QueryGraph queryGraph;
     AlgorithmOptions algorithmOptions;
     RoutingAlgorithmFactory algoFactory;
     RoutingAlgorithm routingAlgorithm;
     RouteCandidateList<RouteCandidatePolygon> routeCandidates;
 
-    public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
+    public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, Graph graph, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
                                          EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);
         this.ghRequest = ghRequest;
@@ -40,6 +42,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         this.ghStorage = ghStorage;
         this.nodeAccess = nodeAccess;
         this.locationIndex = locationIndex;
+        this.graph = graph;
         this.pathList = new ArrayList<>(ghRequest.getPoints().size() - 1);
     }
 

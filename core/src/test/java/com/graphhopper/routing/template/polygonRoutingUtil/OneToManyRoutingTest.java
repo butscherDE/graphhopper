@@ -11,23 +11,27 @@ import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class OneToManyRoutingTest {
     private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
     private QueryGraph queryGraph;
     private OneToManyRouting oneToManyRouting;
+    private int fromNode;
+    private List<Integer> toNodes;
 
     @Before
     public void setupOneToManyRouting() {
-        final int fromNode = 28;
-        final List<Integer> toNodes = prepareToNodes();
+        this.fromNode = 28;
+        this.toNodes = prepareToNodes();
         final List<Integer> nodesToConsiderForRouting = prepareInteriorGraph();
         final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
         final AlgorithmOptions algorithmOptions = this.graphMocker.algorithmOptions;
 
         this.prepareQueryGraph(fromNode, toNodes);
         this.oneToManyRouting = new OneToManyRouting(fromNode, toNodes, nodesToConsiderForRouting, queryGraph, routingAlgorithmFactory, algorithmOptions);
-        this.oneToManyRouting.calcAllPaths();
+        this.oneToManyRouting.findPathBetweenAllNodePairs();
     }
 
     private List<Integer> prepareToNodes() {
@@ -54,24 +58,24 @@ public class OneToManyRoutingTest {
     }
 
     @Test
-    public void validateFirstPath() {
-        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(0);
+    public void validate28to29() {
+        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(28, 29);
         final List<Integer> firstPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 29}));
 
         validatePath(nodesInPathOrder, firstPathOption);
     }
 
     @Test
-    public void validateSecondPath() {
-        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(1);
+    public void validate28to30() {
+        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(28, 30);
         final List<Integer> firstPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 47, 30}));
 
         validatePath(nodesInPathOrder, firstPathOption);
     }
 
     @Test
-    public void validateThirdPath() {
-        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(2);
+    public void validate28to32() {
+        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(28, 32);
         final List<Integer> firstPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 47, 48, 49, 32}));
         final List<Integer> secondPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 47, 55, 49, 32}));
 
@@ -79,15 +83,39 @@ public class OneToManyRoutingTest {
     }
 
     @Test
-    public void validateFourthPath() {
-        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(3);
+    public void validate28to40() {
+        final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(28, 40);
         final List<Integer> firstPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 46, 53, 52, 40}));
 
         validatePath(nodesInPathOrder, firstPathOption);
     }
 
-    private List<Integer> retrieveFoundPathsNode(final int index) {
-        return this.oneToManyRouting.getAllFoundPaths().get(index).getNodesInPathOrder();
+    @Test
+    public void numberOfPathsFound() {
+        final List<Path> allPaths = this.oneToManyRouting.getAllFoundPaths();
+
+        assertEquals(4, allPaths.size());
+    }
+
+    @Test
+    public void noDuplicatesFound() {
+        final List<Path> allPaths = this.oneToManyRouting.getAllFoundPaths();
+
+        crossValidateAllPathsToFindDuplicates(allPaths);
+    }
+
+    private void crossValidateAllPathsToFindDuplicates(List<Path> allPaths) {
+        for (int i = 0; i < allPaths.size(); i++) {
+            for (int j = 0; j < allPaths.size(); j++) {
+                if (i != j) {
+                    assertNotEquals(allPaths.get(i), allPaths.get(j));
+                }
+            }
+        }
+    }
+
+    private List<Integer> retrieveFoundPathsNode(final int fromNode, final int toNode) {
+        return this.oneToManyRouting.getPathByFromEndNodeID(fromNode, toNode).getNodesInPathOrder();
     }
 
     static void validatePath(final List<Integer> foundPath, final List<Integer>... possibleShortestPaths) {

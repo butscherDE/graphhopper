@@ -1153,7 +1153,8 @@ public class GraphHopper implements GraphHopperAPI {
             routingTemplate = new AlternativeRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
         } else if (validPolygonInRequest(request)) {
             routingTemplate =
-                    new PolygonThroughRoutingTemplate(request, ghRsp, locationIndex, this.getGraphHopperStorage().getNodeAccess(), this.getGraphHopperStorage(), encodingManager);
+                    new PolygonThroughRoutingTemplate(request, ghRsp, locationIndex, this.getGraphHopperStorage().getNodeAccess(),
+                    this.getGraphHopperStorage(), encodingManager);
         } else {
             routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
         }

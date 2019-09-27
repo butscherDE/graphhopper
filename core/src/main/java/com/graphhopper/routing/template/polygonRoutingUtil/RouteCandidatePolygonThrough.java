@@ -1,10 +1,9 @@
 package com.graphhopper.routing.template.polygonRoutingUtil;
 
-import com.graphhopper.routing.DijkstraManyToMany;
 import com.graphhopper.routing.template.PolygonThroughRoutingTemplate;
 
 public class RouteCandidatePolygonThrough extends RouteCandidatePolygon {
-    private final DijkstraManyToMany pathSkeletonRouter;
+    private final ManyToManyRouting pathSkeletonRouter;
     public RouteCandidatePolygonThrough(PolygonThroughRoutingTemplate polygonRoutingTemplate, int startNodeID, int endNodeID,
                                         int polygonEntryNodeID, int polygonExitNodeID) {
         super(polygonRoutingTemplate, startNodeID, endNodeID, polygonEntryNodeID, polygonExitNodeID);
@@ -17,7 +16,7 @@ public class RouteCandidatePolygonThrough extends RouteCandidatePolygon {
     }
 
     private void calcDetourPath() {
-        this.detourEntryToDetourExit = this.pathSkeletonRouter.getPathByFromEndPoint(polygonEntryNodeID, polygonExitNodeID);
+        this.detourEntryToDetourExit = this.pathSkeletonRouter.getPathByFromEndNodeID(polygonEntryNodeID, polygonExitNodeID);
     }
 
     private void calcPathFromDetourExitToEnd() {
