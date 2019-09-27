@@ -2,12 +2,7 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
-import com.graphhopper.storage.index.QueryResult;
-import com.graphhopper.util.DistanceCalc2D;
-import com.graphhopper.util.EdgeExplorer;
-import com.graphhopper.util.EdgeIterator;
-import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.util.shapes.GHPoint;
+import com.graphhopper.routing.template.util.QueryGraphCreator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +14,7 @@ import static junit.framework.TestCase.assertTrue;
 
 public class OneToManyRoutingTest {
     private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
-    private final QueryGraph queryGraph = new QueryGraph(graphMocker.graph);
+    private QueryGraph queryGraph;
     private OneToManyRouting oneToManyRouting;
 
     @Before
@@ -40,7 +35,7 @@ public class OneToManyRoutingTest {
         return new ArrayList<>(Arrays.asList(toNodesArray));
     }
 
-    private List<Integer> prepareInteriorGraph() {
+    static List<Integer> prepareInteriorGraph() {
         final Integer[] nodesToConsiderForRoutingArray = new Integer[] {46 ,47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
         return new ArrayList<>(Arrays.asList(nodesToConsiderForRoutingArray));
     }
@@ -48,8 +43,7 @@ public class OneToManyRoutingTest {
     private void prepareQueryGraph(final int fromNode, final List<Integer> toNodes) {
         List<Integer> allNodes = prepareAllNodesList(fromNode, toNodes);
 
-        List<QueryResult> queryResults = getQueryResults( allNodes);
-        this.queryGraph.lookup(queryResults);
+        this.queryGraph = new QueryGraphCreator(this.graphMocker.graph, allNodes).createQueryGraph();
     }
 
     private List<Integer> prepareAllNodesList(int fromNode, List<Integer> toNodes) {
@@ -57,35 +51,6 @@ public class OneToManyRoutingTest {
         allNodes.add(fromNode);
         allNodes.addAll(toNodes);
         return allNodes;
-    }
-
-    private List<QueryResult> getQueryResults(List<Integer> allNodes) {
-        final List <QueryResult> queryResults = new ArrayList<>(allNodes.size());
-
-        for (final int node : allNodes) {
-            final double latitude = this.graphMocker.nodeAccess.getLatitude(node);
-            final double longitude = this.graphMocker.nodeAccess.getLongitude(node);
-
-            QueryResult queryResult = createQueryReult(node, latitude, longitude);
-            queryResults.add(queryResult);
-        }
-        return queryResults;
-    }
-
-    private QueryResult createQueryReult(int node, double latitude, double longitude) {
-        QueryResult queryResult = new QueryResult(latitude, longitude);
-        queryResult.setClosestNode(node);
-        queryResult.setWayIndex(0);
-        queryResult.setClosestEdge(findClosestEdge(node));
-        queryResult.calcSnappedPoint(new DistanceCalc2D());
-        return queryResult;
-    }
-
-    private EdgeIteratorState findClosestEdge(final int baseNode) {
-        EdgeExplorer edgeExplorer = this.graphMocker.graph.createEdgeExplorer();
-        EdgeIterator edgeIterator = edgeExplorer.setBaseNode(baseNode);
-        edgeIterator.next();
-        return edgeIterator;
     }
 
     @Test
@@ -100,6 +65,8 @@ public class OneToManyRoutingTest {
     public void validateSecondPath() {
         final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(1);
         final List<Integer> firstPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 47, 30}));
+
+        validatePath(nodesInPathOrder, firstPathOption);
     }
 
     @Test
@@ -123,7 +90,7 @@ public class OneToManyRoutingTest {
         return this.oneToManyRouting.getAllFoundPaths().get(index).getNodesInPathOrder();
     }
 
-    private void validatePath(final List<Integer> foundPath, final List<Integer>... possibleShortestPaths) {
+    static void validatePath(final List<Integer> foundPath, final List<Integer>... possibleShortestPaths) {
         boolean correctPathFound = false;
 
         for (final List<Integer> candidate : possibleShortestPaths) {

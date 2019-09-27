@@ -4,12 +4,9 @@ import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.QueryGraph;
 import com.graphhopper.routing.RoutingAlgorithmFactory;
-import com.graphhopper.routing.template.RoutingTemplate;
-import com.graphhopper.routing.util.FlagEncoder;
+import com.graphhopper.routing.template.util.QueryGraphCreator;
 import com.graphhopper.storage.Graph;
-import com.graphhopper.storage.NodeAccess;
-import com.graphhopper.storage.index.QueryResult;
-import com.graphhopper.util.shapes.GHPoint;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +15,7 @@ public class ManyToManyRouting {
     private final List<Integer> nodesToConsiderForRouting;
     private final List<Integer> nodesToBuildRoutesWith;
     private final List<Path> allFoundPaths;
+    private final Graph graph;
     private final QueryGraph queryGraph;
     private final RoutingAlgorithmFactory routingAlgorithmFactory;
     private final AlgorithmOptions algorithmOptions;
@@ -27,28 +25,15 @@ public class ManyToManyRouting {
         this.nodesToConsiderForRouting = nodesToConsiderForRouting;
         this.nodesToBuildRoutesWith = nodesToBuildRoutesWith;
         this.allFoundPaths = new ArrayList<>(nodesToBuildRoutesWith.size() * nodesToBuildRoutesWith.size());
-        this.queryGraph = new QueryGraph(graph);
+        this.graph = graph;
+        this.queryGraph = prepareQueryGraph();
         this.routingAlgorithmFactory = routingAlgorithmFactory;
         this.algorithmOptions = algorithmOptions;
     }
 
-    public void lookup(RoutingTemplate routingTemplate, NodeAccess nodeAccess, FlagEncoder flagEncoder) {
-        List<GHPoint> pointsOfNodes = allNodeIDsToGHPoints(nodeAccess);
-        addLookupResultsToQueryGraph(routingTemplate, flagEncoder, pointsOfNodes);
-    }
-
-    private List<GHPoint> allNodeIDsToGHPoints(NodeAccess nodeAccess) {
-        final List<GHPoint> pointsOfNodes = new ArrayList<>(this.nodesToBuildRoutesWith.size());
-
-        for (final int nodeId : this.nodesToBuildRoutesWith) {
-            pointsOfNodes.add(new GHPoint(nodeAccess.getLatitude(nodeId), nodeAccess.getLongitude(nodeId)));
-        }
-        return pointsOfNodes;
-    }
-
-    private void addLookupResultsToQueryGraph(RoutingTemplate routingTemplate, FlagEncoder flagEncoder, List<GHPoint> pointsOfNodes) {
-        final List<QueryResult> queryResults = routingTemplate.lookup(pointsOfNodes, flagEncoder);
-        this.queryGraph.lookup(queryResults);
+    private QueryGraph prepareQueryGraph() {
+        final QueryGraphCreator queryGraphCreator = new QueryGraphCreator(this.graph, this.nodesToBuildRoutesWith);
+        return queryGraphCreator.createQueryGraph();
     }
 
     public void findAllPathsBetweenEntryExitPoints() {
@@ -65,5 +50,9 @@ public class ManyToManyRouting {
 
     public void clear() {
         this.allFoundPaths.clear();
+    }
+
+    public List<Path> getAllFoundPaths() {
+        return this.allFoundPaths;
     }
 }
