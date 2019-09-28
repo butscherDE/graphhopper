@@ -5,7 +5,6 @@ import com.graphhopper.GHResponse;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
@@ -18,8 +17,8 @@ import com.graphhopper.util.shapes.Polygon;
 import java.util.*;
 
 public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
-    private OneToManyRouting dijkstraForLOTNodes;
-    private ManyToManyRouting dijkstraForPathSkeleton;
+    private OneToManyRouting lotNodeRouter;
+    private ManyToManyRouting pathSkeletonRouter;
     private List<Integer> nodesInPolygon;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
@@ -35,8 +34,8 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         this.nodesInPolygon = getNodesInPolygon();
         List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         List<List<Integer>> LOTNodes = findLocalOptimalTouchnodes(polygonEntryExitPoints);
-        this.dijkstraForPathSkeleton = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, this.algoFactory, this.algorithmOptions);
-        this.dijkstraForPathSkeleton.findPathBetweenAllNodePairs();
+        this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, this.algoFactory, this.algorithmOptions);
+        this.pathSkeletonRouter.findPathBetweenAllNodePairs();
 
         for (int i = 0; i < LOTNodes.size() - 1; i++) {
             buildRouteCandidatesForCurrentPoint(LOTNodes.get(i), i);
@@ -83,12 +82,15 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     private void makeLOTNodeListForThisPoint(List<Integer> polygonEntryExitPoints, EdgeExplorer edgeExplorer, List<List<Integer>> LOTNodes, QueryResult point) {
+        System.out.println(point.getClosestNode());
         Map<Integer, Double> distancesToPolygonEntryExit = getDistancesFromPointToEntryExitPoints(point, polygonEntryExitPoints);
         addEntryExitPointsCopyTo(polygonEntryExitPoints, LOTNodes);
 
         List<Integer> thisPointLOTNodeList = LOTNodes.get(LOTNodes.size() - 1);
         int i = 0;
         do {
+
+
             int entryExitPoint = thisPointLOTNodeList.get(i);
             boolean betterFound = checkIfThisIsAValidLOTNode(edgeExplorer, LOTNodes, distancesToPolygonEntryExit, entryExitPoint);
 
@@ -142,9 +144,9 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     private Map<Integer, Double> getDistancesFromPointToEntryExitPoints(QueryResult point, List<Integer> polygonEntryExitPoints) {
         final int fromNode = point.getClosestNode();
-        this.dijkstraForLOTNodes = new OneToManyRouting(fromNode, polygonEntryExitPoints, this.nodesInPolygon, this.queryGraph, this.algoFactory, this.algorithmOptions);
-        this.dijkstraForLOTNodes.findPathBetweenAllNodePairs();
-        final List<Path> allFoundPaths = this.dijkstraForLOTNodes.getAllFoundPaths();
+        this.lotNodeRouter = new OneToManyRouting(fromNode, polygonEntryExitPoints, this.nodesInPolygon, this.queryGraph, this.algoFactory, this.algorithmOptions);
+        this.lotNodeRouter.findPathBetweenAllNodePairs();
+        final List<Path> allFoundPaths = this.lotNodeRouter.getAllFoundPaths();
 
         final Map<Integer, Double> weightsOfEntryExitPoints = new HashMap<>();
         for (int i = 0; i < polygonEntryExitPoints.size(); i++) {
@@ -190,7 +192,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     public ManyToManyRouting getPathSkeletonRouter() {
-        return this.dijkstraForPathSkeleton;
+        return this.pathSkeletonRouter;
     }
 
     private class NodesInPolygonFindingVisitor extends LocationIndex.Visitor {

@@ -6,15 +6,12 @@ import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidateList;
 import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidatePolygon;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
-import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.PathMerger;
 import com.graphhopper.util.Translation;
-import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
