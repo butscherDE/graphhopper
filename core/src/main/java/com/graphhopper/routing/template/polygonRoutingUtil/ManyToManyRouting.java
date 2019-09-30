@@ -5,6 +5,7 @@ import com.graphhopper.routing.QueryGraph;
 import com.graphhopper.routing.RoutingAlgorithmFactory;
 import com.graphhopper.routing.template.util.QueryGraphCreator;
 import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.GraphHopperStorage;
 
 import java.util.List;
 

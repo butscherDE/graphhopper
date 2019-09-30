@@ -24,8 +24,7 @@ public class PolygonThroughRoutingTemplateTest {
         GHRequest request = buildRequest(new GHPoint(25, 0), new GHPoint(25, 46));
         GHResponse response = new GHResponse();
         final int maxVisitedNodes = this.graphMocker.algorithmHints.getInt(MAX_VISITED_NODES, Integer.MAX_VALUE);
-        final RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.graphMocker.locationIndex, this.graphMocker.nodeAccess,
-                                                                                  this.graphMocker.graph,
+        final RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.graphMocker.locationIndex,
                                                                                   this.graphMocker.encodingManager);
         final RoutingAlgorithmFactory algorithmFactory = new RoutingAlgorithmFactorySimple();
         final AlgorithmOptions algorithmOptions = graphMocker.algorithmOptions;

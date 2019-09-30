@@ -6,13 +6,10 @@ import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidateList;
 import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidatePolygon;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.storage.Graph;
-import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.util.PathMerger;
 import com.graphhopper.util.Translation;
-import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -20,23 +17,17 @@ import java.util.List;
 
 public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private final GHRequest ghRequest;
-    final GraphHopperStorage ghStorage;
-    final NodeAccess nodeAccess;
     final LocationIndex locationIndex;
-    final Graph graph;
-    private QueryGraph queryGraph;
+    NodeAccess nodeAccess;
+    QueryGraph graph;
     AlgorithmOptions algorithmOptions;
     RoutingAlgorithmFactory algoFactory;
     RouteCandidateList<RouteCandidatePolygon> routeCandidates;
 
-    PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, Graph graph, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
-                           EncodingManager encodingManager) {
+    PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);
         this.ghRequest = ghRequest;
-        this.ghStorage = ghStorage;
-        this.nodeAccess = nodeAccess;
         this.locationIndex = locationIndex;
-        this.graph = graph;
         this.pathList = new ArrayList<>(ghRequest.getPoints().size() - 1);
     }
 
@@ -51,7 +42,8 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     private void setCalcPathsParams(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
-        this.queryGraph = queryGraph;
+        this.graph = queryGraph;
+        this.nodeAccess = graph.getNodeAccess();
         this.algoFactory = algoFactory;
         this.algorithmOptions = algoOpts;
         this.routeCandidates = new RouteCandidateList<>();
@@ -67,7 +59,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private void extractBestPathCandidate() {
         // TODO Maybe more? Dont know what happens in the gui then.
         this.routeCandidates.sortByGainAscending();
-        final List<Path> bestPath = this.routeCandidates.getFirstAsPathList(1, this.queryGraph, this.algorithmOptions);
+        final List<Path> bestPath = this.routeCandidates.getFirstAsPathList(1, this.graph, this.algorithmOptions);
         this.pathList.addAll(bestPath);
     }
 
@@ -105,6 +97,6 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     public RoutingAlgorithm getNewRoutingAlgorithm() {
-        return this.algoFactory.createAlgo(queryGraph, algorithmOptions);
+        return this.algoFactory.createAlgo(this.graph, this.algorithmOptions);
     }
 }

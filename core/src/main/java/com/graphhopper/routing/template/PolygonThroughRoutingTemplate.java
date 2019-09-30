@@ -4,7 +4,6 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
@@ -18,9 +17,9 @@ import java.util.*;
 public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private ManyToManyRouting pathSkeletonRouter;
 
-    public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
+    public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex,
                                          EncodingManager encodingManager) {
-        super(ghRequest, ghRsp, locationIndex, ghStorage.getBaseGraph(), nodeAccess, ghStorage, encodingManager);
+        super(ghRequest, ghRsp, locationIndex, encodingManager);
     }
 
     protected void findCandidateRoutes() {
@@ -71,7 +70,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
         final List<Integer> entryExitPoints = new ArrayList<>();
-        final EdgeExplorer edgeExplorer = ghStorage.getBaseGraph().createEdgeExplorer();
+        final EdgeExplorer edgeExplorer = this.graph.createEdgeExplorer();//ghStorage.getBaseGraph().createEdgeExplorer();
 
         addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(nodesInPolygon, entryExitPoints, edgeExplorer);
 

@@ -695,7 +695,9 @@ public class QueryGraph implements Graph {
 
     @Override
     public AllEdgesIterator getAllEdges() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // TODO maybe dangerous, let's see...
+        return mainGraph.getAllEdges();
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

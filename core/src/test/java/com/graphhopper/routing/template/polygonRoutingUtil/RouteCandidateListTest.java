@@ -21,8 +21,8 @@ public class RouteCandidateListTest {
     private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
     private final RouteCandidateList<RouteCandidateMocker> candidateList = new RouteCandidateList<>();
     private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double [] {5, 10, 10, 5}, new double [] {5, 5, 10, 10}));
-    private final PolygonThroughRoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(ghRequest, null, graphMocker.locationIndex, graphMocker.nodeAccess,
-                                                                                                    graphMocker.graph,graphMocker.encodingManager);
+    private final PolygonThroughRoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(ghRequest, null, graphMocker.locationIndex,
+                                                                                                    graphMocker.encodingManager);
 
     private void addTestingCandidates() {
         this.candidateList.getCandidates().clear();

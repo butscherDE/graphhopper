@@ -7,7 +7,9 @@ import com.graphhopper.routing.RoutingAlgorithmFactory;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
+import com.graphhopper.util.StopWatch;
 import javafx.util.Pair;
+import org.locationtech.jts.util.Stopwatch;
 
 import java.util.*;
 
@@ -35,7 +37,11 @@ public class LOTNodeExtractor {
         this.viaPointToLOTNodes = new HashMap<>();
         this.viaPointToEntryExitPointPath = new HashMap<>();
 
+        final Stopwatch sw = new Stopwatch();
+        sw.start();
         this.extractData();
+        sw.stop();
+        System.out.println(sw.getTimeString());
     }
 
     public static LOTNodeExtractor createExtractedData(final Graph graph, final RoutingAlgorithmFactory routingAlgorithmFactory, final AlgorithmOptions algorithmOptions,
