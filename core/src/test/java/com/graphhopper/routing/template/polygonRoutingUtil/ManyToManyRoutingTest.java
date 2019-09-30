@@ -4,6 +4,9 @@ import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.RoutingAlgorithmFactory;
 import com.graphhopper.routing.RoutingAlgorithmFactorySimple;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
+import com.graphhopper.routing.template.util.QueryGraphCreator;
+import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.index.QueryResult;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,9 +24,17 @@ public class ManyToManyRoutingTest {
         final List<Integer> nodesToConsiderForRouting = OneToManyRoutingTest.prepareInteriorGraph();
         final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
         final AlgorithmOptions algorithmOptions = this.graphMocker.algorithmOptions;
+        final List<QueryResult> queryResults = this.createQueryResults(this.graphMocker.graph, sourceDestinations);
 
-        this.manyToManyRouting = new ManyToManyRouting(nodesToConsiderForRouting, sourceDestinations, this.graphMocker.graph, routingAlgorithmFactory, algorithmOptions);
+        this.manyToManyRouting = new ManyToManyRouting(nodesToConsiderForRouting, sourceDestinations, this.graphMocker.graph, queryResults, routingAlgorithmFactory,
+                                                       algorithmOptions);
         this.manyToManyRouting.findPathBetweenAllNodePairs();
+    }
+
+    private List<QueryResult> createQueryResults(final Graph graph, final List<Integer> nodesToLookup) {
+        final QueryGraphCreator queryGraphCreator = new QueryGraphCreator(graph, nodesToLookup);
+
+        return queryGraphCreator.getQueryResults();
     }
 
     private List<Integer> prepareSourceDestination() {

@@ -4,22 +4,27 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.shapes.BBox;
+import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 
 import java.util.*;
 
 public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private ManyToManyRouting pathSkeletonRouter;
+    private final FlagEncoder flagEncoder;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex,
                                          EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);
+
+        this.flagEncoder = encodingManager.getEncoder(ghRequest.getVehicle());
     }
 
     protected void findCandidateRoutes() {
@@ -27,14 +32,34 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         final List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         final List<Integer> viaPointNodeIds = this.extractNodeIdsFromQueryResults();
         final LOTNodeExtractor LOTNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
-        this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, this.algoFactory, this.algorithmOptions);
+        final List<QueryResult> queryResults = createQueryResults(polygonEntryExitPoints, flagEncoder);
+        this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
         this.pathSkeletonRouter.findPathBetweenAllNodePairs();
 
 
-        for (final int viaPointNodeId : viaPointNodeIds) {
+        for (int i = 0; i < viaPointNodeIds.size() - 1; i++) {
+            final int viaPointNodeId = viaPointNodeIds.get(i);
             buildRouteCandidatesForCurrentPoint(LOTNodes.getLotNodesFor(viaPointNodeId));
         }
+    }
 
+    private List<QueryResult> createQueryResults(final List<Integer> nodes, final FlagEncoder flagEncoder) {
+        final List<GHPoint> points = nodeIdsToGhPoints(nodes);
+
+        return this.lookup(points, flagEncoder);
+    }
+
+    private List<GHPoint> nodeIdsToGhPoints(List<Integer> nodes) {
+        final List<GHPoint> points = new ArrayList<>(nodes.size());
+        final NodeAccess nodeAccess = this.graph.getNodeAccess();
+
+        for (final int node : nodes) {
+            final double latitude = nodeAccess.getLatitude(node);
+            final double longitude = nodeAccess.getLongitude(node);
+
+            points.add(new GHPoint(latitude, longitude));
+        }
+        return points;
     }
 
     private List<Integer> extractNodeIdsFromQueryResults() {

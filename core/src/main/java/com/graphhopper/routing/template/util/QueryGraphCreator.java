@@ -29,24 +29,25 @@ public class QueryGraphCreator {
         return queryGraph;
     }
 
-    private List<QueryResult> getQueryResults() {
+    public List<QueryResult> getQueryResults() {
         final List<QueryResult> queryResults = new ArrayList<>(this.nodesToLookup.size());
 
         for (final int node : this.nodesToLookup) {
             final double latitude = this.graph.getNodeAccess().getLatitude(node);
             final double longitude = this.graph.getNodeAccess().getLongitude(node);
 
-            QueryResult queryResult = createQueryReult(node, latitude, longitude);
+            QueryResult queryResult = createQueryResult(node, latitude, longitude);
             queryResults.add(queryResult);
         }
         return queryResults;
     }
 
-    private QueryResult createQueryReult(int node, double latitude, double longitude) {
+    private QueryResult createQueryResult(int node, double latitude, double longitude) {
         QueryResult queryResult = new QueryResult(latitude, longitude);
         queryResult.setClosestNode(node);
         queryResult.setWayIndex(0);
         queryResult.setClosestEdge(findClosestEdge(node));
+
         queryResult.calcSnappedPoint(new DistanceCalc2D());
         return queryResult;
     }
