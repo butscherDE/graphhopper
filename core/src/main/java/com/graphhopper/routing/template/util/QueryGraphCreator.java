@@ -30,7 +30,7 @@ public class QueryGraphCreator {
     }
 
     public List<QueryResult> getQueryResults() {
-        final List <QueryResult> queryResults = new ArrayList<>(this.nodesToLookup.size());
+        final List<QueryResult> queryResults = new ArrayList<>(this.nodesToLookup.size());
 
         for (final int node : this.nodesToLookup) {
             final double latitude = this.graph.getNodeAccess().getLatitude(node);

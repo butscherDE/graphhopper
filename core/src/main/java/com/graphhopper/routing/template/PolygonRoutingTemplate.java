@@ -32,7 +32,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     RouteCandidateList<RouteCandidatePolygon> routeCandidates;
 
     public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, Graph graph, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
-                                         EncodingManager encodingManager) {
+                                  EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);
         this.ghRequest = ghRequest;
         this.polygon = ghRequest.getPolygon();

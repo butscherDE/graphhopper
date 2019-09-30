@@ -34,7 +34,8 @@ public class ManyToManyRouting extends MultiRouting {
     void calculatePaths() {
         for (int fromNode : nodesToBuildRoutesWith) {
             final OneToManyRouting
-                    oneToManyRouting = new OneToManyRouting(fromNode, this.nodesToBuildRoutesWith, nodesToConsiderForRouting, this.queryGraph, this.routingAlgorithmFactory, this.algorithmOptions);
+                    oneToManyRouting =
+                    new OneToManyRouting(fromNode, this.nodesToBuildRoutesWith, nodesToConsiderForRouting, this.queryGraph, this.routingAlgorithmFactory, this.algorithmOptions);
             oneToManyRouting.findPathBetweenAllNodePairs();
             this.allFoundPaths.putAll(oneToManyRouting.getAllFoundPathsMap());
         }

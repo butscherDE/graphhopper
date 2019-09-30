@@ -4,6 +4,7 @@ import com.graphhopper.routing.template.PolygonThroughRoutingTemplate;
 
 public class RouteCandidatePolygonThrough extends RouteCandidatePolygon {
     private final ManyToManyRouting pathSkeletonRouter;
+
     public RouteCandidatePolygonThrough(PolygonThroughRoutingTemplate polygonRoutingTemplate, int startNodeID, int endNodeID,
                                         int polygonEntryNodeID, int polygonExitNodeID) {
         super(polygonRoutingTemplate, startNodeID, endNodeID, polygonEntryNodeID, polygonExitNodeID);

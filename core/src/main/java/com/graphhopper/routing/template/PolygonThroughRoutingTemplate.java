@@ -73,7 +73,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return routeCandidate;
     }
 
-     private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
+    private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
         final List<Integer> entryExitPoints = new ArrayList<>();
         final EdgeExplorer edgeExplorer = ghStorage.getBaseGraph().createEdgeExplorer();
 

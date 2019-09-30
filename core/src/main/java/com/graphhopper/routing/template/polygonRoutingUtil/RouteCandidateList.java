@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class RouteCandidateList <T extends RouteCandidatePolygon> {
+public class RouteCandidateList<T extends RouteCandidatePolygon> {
     private List<T> candidates;
 
     public RouteCandidateList() {
@@ -50,7 +50,7 @@ public class RouteCandidateList <T extends RouteCandidatePolygon> {
     }
 
     private List<Path> addPathsBasedOnIntersectionStatus(int nOfFirstElements, QueryGraph queryGraph, AlgorithmOptions algorithmOptions, int endOfCandidates,
-                                                   boolean addSelfIntersecting) {
+                                                         boolean addSelfIntersecting) {
         List<Path> paths = new ArrayList<>(nOfFirstElements);
         int indexIntoCandidates = endOfCandidates;
         while (indexIntoCandidates >= 0 && paths.size() < nOfFirstElements) {

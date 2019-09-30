@@ -32,6 +32,7 @@ public abstract class MultiRouting {
 
     /**
      * Outputs a list of all found paths
+     *
      * @return
      */
     public List<Path> getAllFoundPaths() {
@@ -48,7 +49,7 @@ public abstract class MultiRouting {
      * Gets a specific path between two nodes.
      *
      * @param fromNodeId node where the path shall start from.
-     * @param toNodeId node where the path shall end to.
+     * @param toNodeId   node where the path shall end to.
      * @return
      */
     public Path getPathByFromEndNodeID(Integer fromNodeId, Integer toNodeId) {
