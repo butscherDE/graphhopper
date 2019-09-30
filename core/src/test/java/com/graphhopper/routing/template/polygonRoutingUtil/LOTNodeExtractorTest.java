@@ -5,11 +5,9 @@ import com.graphhopper.routing.RoutingAlgorithmFactory;
 import com.graphhopper.routing.RoutingAlgorithmFactorySimple;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.storage.Graph;
-import com.graphhopper.util.EdgeExplorer;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

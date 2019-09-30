@@ -30,7 +30,6 @@ public class OneToManyRouting extends MultiRouting {
 
     void calculatePaths() {
         for (final int toNode : toNodes) {
-            System.out.println("to: " + toNode);
             final RoutingAlgorithm routingAlgorithm = buildRoutingAlgorithmForFromToPair(toNode);
             final Path path = routingAlgorithm.calcPath(this.fromNode, toNode);
             this.allFoundPaths.put(new Pair(this.fromNode, toNode), path);
