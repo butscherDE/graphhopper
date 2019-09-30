@@ -44,12 +44,12 @@ import java.util.List;
  */
 public class ViaRoutingTemplate extends AbstractRoutingTemplate implements RoutingTemplate {
     private final GHRequest ghRequest;
-    protected final GHResponse ghResponse;
-    protected final PathWrapper altResponse = new PathWrapper();
+    final GHResponse ghResponse;
+    final PathWrapper altResponse = new PathWrapper();
     private final LocationIndex locationIndex;
-    protected final EncodingManager encodingManager;
+    final EncodingManager encodingManager;
     // result from route
-    protected List<Path> pathList;
+    List<Path> pathList;
 
     public ViaRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, EncodingManager encodingManager) {
         this.locationIndex = locationIndex;

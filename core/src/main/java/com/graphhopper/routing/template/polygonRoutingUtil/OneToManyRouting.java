@@ -3,7 +3,6 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.util.StopWatch;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class OneToManyRouting extends MultiRouting {
         for (final int toNode : toNodes) {
             final RoutingAlgorithm routingAlgorithm = buildRoutingAlgorithmForFromToPair(toNode);
             final Path path = routingAlgorithm.calcPath(this.fromNode, toNode);
-            this.allFoundPaths.put(new Pair(this.fromNode, toNode), path);
+            this.allFoundPaths.put(new Pair<>(this.fromNode, toNode), path);
         }
     }
 
@@ -47,10 +46,10 @@ public class OneToManyRouting extends MultiRouting {
         return this.allFoundPaths;
     }
 
-    private class NodesToConsiderEdgeFilter implements EdgeFilter {
+    private static class NodesToConsiderEdgeFilter implements EdgeFilter {
         List<Integer> nodesToConsiderInclusiveStartEndPoint;
 
-        public NodesToConsiderEdgeFilter(final List<Integer> nodesToConsiderForRouting, final int fromNode, final int toNode) {
+        NodesToConsiderEdgeFilter(final List<Integer> nodesToConsiderForRouting, final int fromNode, final int toNode) {
             prepareConsiderableNodesList(nodesToConsiderForRouting, fromNode, toNode);
         }
 

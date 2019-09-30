@@ -2,7 +2,6 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.storage.GraphHopperStorage;
@@ -17,17 +16,15 @@ import com.graphhopper.util.shapes.Polygon;
 import java.util.*;
 
 public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
-    private OneToManyRouting lotNodeRouter;
     private ManyToManyRouting pathSkeletonRouter;
-    private List<Integer> nodesInPolygon;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
                                          EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, ghStorage.getBaseGraph(), nodeAccess, ghStorage, encodingManager);
     }
 
-    protected RouteCandidateList findCandidateRoutes() {
-        this.nodesInPolygon = getNodesInPolygon();
+    protected void findCandidateRoutes() {
+        List<Integer> nodesInPolygon = getNodesInPolygon();
         final List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         final List<Integer> viaPointNodeIds = this.extractNodeIdsFromQueryResults();
         final LOTNodeExtractor LOTNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
@@ -39,7 +36,6 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
             buildRouteCandidatesForCurrentPoint(LOTNodes.getLotNodesFor(viaPointNodeId));
         }
 
-        return this.routeCandidates;
     }
 
     private List<Integer> extractNodeIdsFromQueryResults() {
@@ -112,12 +108,12 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return this.pathSkeletonRouter;
     }
 
-    private class NodesInPolygonFindingVisitor extends LocationIndex.Visitor {
+    private static class NodesInPolygonFindingVisitor extends LocationIndex.Visitor {
         private final List<Integer> nodesInPolygon = new ArrayList<>();
         private final Polygon polygon;
         private final NodeAccess nodeAccess;
 
-        public NodesInPolygonFindingVisitor(final Polygon polygon, final NodeAccess nodeAccess) {
+        NodesInPolygonFindingVisitor(final Polygon polygon, final NodeAccess nodeAccess) {
             this.polygon = polygon;
             this.nodeAccess = nodeAccess;
         }
@@ -132,7 +128,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
             }
         }
 
-        public List<Integer> getNodesInPolygon() {
+        List<Integer> getNodesInPolygon() {
             return this.nodesInPolygon;
         }
     }

@@ -2,7 +2,6 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.PolygonRoutingTemplate;
-import com.graphhopper.util.EdgeIteratorState;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -117,8 +116,6 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
 
     @Override
     public int compareTo(RouteCandidatePolygon o) {
-        final double thisGain = this.getGain();
-        final double thatGain = o.getGain();
         final double gainDifference = this.getGain() - o.getGain();
         if (gainDifference < 0) {
             return -1;
@@ -131,17 +128,14 @@ public abstract class RouteCandidatePolygon implements Comparable<RouteCandidate
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-
-        sb.append("startNodeID: " + startNodeID + ", ");
-        sb.append("endNodeID: " + endNodeID + ", ");
-        sb.append("polygonEntryNodeID: " + polygonEntryNodeID + ", ");
-        sb.append("polygonExitNodeID: " + polygonExitNodeID + ", ");
-        sb.append("Distance: " + this.getDistance() + ", ");
-        sb.append("DistanceInROI: " + getDistanceInROI() + ", ");
-        sb.append("detour distance: " + getDetourDistance() + ", ");
-        sb.append("gain: " + this.getGain());
-
-        return sb.toString();
+        String sb = "startNodeID: " + startNodeID + ", " +
+                    "endNodeID: " + endNodeID + ", " +
+                    "polygonEntryNodeID: " + polygonEntryNodeID + ", " +
+                    "polygonExitNodeID: " + polygonExitNodeID + ", " +
+                    "Distance: " + this.getDistance() + ", " +
+                    "DistanceInROI: " + getDistanceInROI() + ", " +
+                    "detour distance: " + getDetourDistance() + ", " +
+                    "gain: " + this.getGain();
+        return sb;
     }
 }

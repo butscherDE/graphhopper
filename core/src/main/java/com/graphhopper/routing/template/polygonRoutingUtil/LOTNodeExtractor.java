@@ -63,8 +63,7 @@ public class LOTNodeExtractor {
 
     private Path calcPathBetween(final int viaPoint, final int entryExitPoint) {
         final RoutingAlgorithm routingAlgorithm = this.routingAlgorithmFactory.createAlgo(graph, algorithmOptions);
-        final Path path = routingAlgorithm.calcPath(viaPoint, entryExitPoint);
-        return path;
+        return routingAlgorithm.calcPath(viaPoint, entryExitPoint);
     }
 
     private void saveLOTNodesForEachViaPoint() {

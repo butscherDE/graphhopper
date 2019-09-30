@@ -29,7 +29,7 @@ public class QueryGraphCreator {
         return queryGraph;
     }
 
-    public List<QueryResult> getQueryResults() {
+    private List<QueryResult> getQueryResults() {
         final List<QueryResult> queryResults = new ArrayList<>(this.nodesToLookup.size());
 
         for (final int node : this.nodesToLookup) {
@@ -42,7 +42,7 @@ public class QueryGraphCreator {
         return queryResults;
     }
 
-    public QueryResult createQueryReult(int node, double latitude, double longitude) {
+    private QueryResult createQueryReult(int node, double latitude, double longitude) {
         QueryResult queryResult = new QueryResult(latitude, longitude);
         queryResult.setClosestNode(node);
         queryResult.setWayIndex(0);
@@ -51,7 +51,7 @@ public class QueryGraphCreator {
         return queryResult;
     }
 
-    public EdgeIteratorState findClosestEdge(final int baseNode) {
+    private EdgeIteratorState findClosestEdge(final int baseNode) {
         EdgeExplorer edgeExplorer = this.graph.createEdgeExplorer();
         EdgeIterator edgeIterator = edgeExplorer.setBaseNode(baseNode);
         edgeIterator.next();

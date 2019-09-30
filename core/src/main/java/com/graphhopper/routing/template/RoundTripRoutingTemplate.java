@@ -56,7 +56,6 @@ public class RoundTripRoutingTemplate extends AbstractRoutingTemplate implements
     private final GHResponse ghResponse;
     private final LocationIndex locationIndex;
     private final EncodingManager encodingManager;
-    private PathWrapper altResponse;
     // result from route
     private List<Path> pathList;
 
@@ -151,7 +150,7 @@ public class RoundTripRoutingTemplate extends AbstractRoutingTemplate implements
 
     @Override
     public boolean isReady(PathMerger pathMerger, Translation tr) {
-        altResponse = new PathWrapper();
+        PathWrapper altResponse = new PathWrapper();
         altResponse.setWaypoints(getWaypoints());
         ghResponse.add(altResponse);
         pathMerger.doWork(altResponse, pathList, encodingManager, tr);

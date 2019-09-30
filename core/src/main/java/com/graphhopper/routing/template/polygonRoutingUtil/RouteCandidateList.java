@@ -115,7 +115,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         return candidates;
     }
 
-    public void setCandidates(List<T> candidates) {
+    void setCandidates(List<T> candidates) {
         this.candidates = candidates;
     }
 }

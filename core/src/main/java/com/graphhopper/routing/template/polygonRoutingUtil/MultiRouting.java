@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class MultiRouting {
-    protected final Map<Pair<Integer, Integer>, Path> allFoundPaths;
+    final Map<Pair<Integer, Integer>, Path> allFoundPaths;
 
-    public MultiRouting() {
+    MultiRouting() {
         this.allFoundPaths = new HashMap<>();
     }
 
@@ -33,14 +33,12 @@ public abstract class MultiRouting {
     /**
      * Outputs a list of all found paths
      *
-     * @return
+     * @return the list of all found paths
      */
     public List<Path> getAllFoundPaths() {
         final List<Path> allFoundPathsList = new ArrayList<>(this.allFoundPaths.size());
 
-        for (final Path path : this.allFoundPaths.values()) {
-            allFoundPathsList.add(path);
-        }
+        allFoundPathsList.addAll(this.allFoundPaths.values());
 
         return allFoundPathsList;
     }
@@ -50,9 +48,9 @@ public abstract class MultiRouting {
      *
      * @param fromNodeId node where the path shall start from.
      * @param toNodeId   node where the path shall end to.
-     * @return
+     * @return the path that starts at fromNodeId and ends at toNodeId
      */
     public Path getPathByFromEndNodeID(Integer fromNodeId, Integer toNodeId) {
-        return this.allFoundPaths.get(new Pair<Integer, Integer>(fromNodeId, toNodeId));
+        return this.allFoundPaths.get(new Pair<>(fromNodeId, toNodeId));
     }
 }

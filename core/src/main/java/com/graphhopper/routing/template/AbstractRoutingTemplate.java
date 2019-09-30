@@ -10,11 +10,11 @@ import java.util.List;
 /**
  * @author Peter Karich
  */
-public class AbstractRoutingTemplate {
+class AbstractRoutingTemplate {
     // result from lookup
-    protected List<QueryResult> queryResults;
+    List<QueryResult> queryResults;
 
-    protected PointList getWaypoints() {
+    PointList getWaypoints() {
         PointList pointList = new PointList(queryResults.size(), true);
         for (QueryResult qr : queryResults) {
             pointList.add(qr.getSnappedPoint());
@@ -22,7 +22,7 @@ public class AbstractRoutingTemplate {
         return pointList;
     }
 
-    public void failOnNumPathsInvalid(final GHRequest ghrequest, final List<Path> paths) {
+    void failOnNumPathsInvalid(final GHRequest ghrequest, final List<Path> paths) {
         if (ghrequest.getPoints().size() - 1 != paths.size())
             throw new RuntimeException("There should be exactly one more points than paths. points:" + ghrequest.getPoints().size() + ", paths:" + paths.size());
     }

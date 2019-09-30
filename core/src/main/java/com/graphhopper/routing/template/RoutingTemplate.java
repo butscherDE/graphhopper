@@ -59,5 +59,5 @@ public interface RoutingTemplate {
      */
     int getMaxRetries();
 
-    public GHRequest getGhRequest();
+    GHRequest getGhRequest();
 }

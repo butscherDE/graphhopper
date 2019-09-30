@@ -19,23 +19,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
-    final GHRequest ghRequest;
-    final Polygon polygon;
+    private final GHRequest ghRequest;
     final GraphHopperStorage ghStorage;
     final NodeAccess nodeAccess;
     final LocationIndex locationIndex;
     final Graph graph;
-    QueryGraph queryGraph;
+    private QueryGraph queryGraph;
     AlgorithmOptions algorithmOptions;
     RoutingAlgorithmFactory algoFactory;
-    RoutingAlgorithm routingAlgorithm;
     RouteCandidateList<RouteCandidatePolygon> routeCandidates;
 
-    public PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, Graph graph, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
-                                  EncodingManager encodingManager) {
+    PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, Graph graph, NodeAccess nodeAccess, GraphHopperStorage ghStorage,
+                           EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);
         this.ghRequest = ghRequest;
-        this.polygon = ghRequest.getPolygon();
         this.ghStorage = ghStorage;
         this.nodeAccess = nodeAccess;
         this.locationIndex = locationIndex;
@@ -57,7 +54,6 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         this.queryGraph = queryGraph;
         this.algoFactory = algoFactory;
         this.algorithmOptions = algoOpts;
-        this.routingAlgorithm = algoFactory.createAlgo(queryGraph, algoOpts);
         this.routeCandidates = new RouteCandidateList<>();
     }
 
@@ -90,7 +86,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         }
     }
 
-    protected abstract RouteCandidateList findCandidateRoutes();
+    protected abstract void findCandidateRoutes();
 
     @Override
     public boolean isReady(PathMerger pathMerger, Translation translation) {
