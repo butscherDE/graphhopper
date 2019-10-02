@@ -15,11 +15,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class RouteCandidateTest {
-    private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double [] {5, 10, 10, 5}, new double [] {5, 5, 10, 10})).setVehicle("car");
+    private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double[]{5, 10, 10, 5}, new double[]{5, 5, 10, 10})).setVehicle("car");
     private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
-    private final PolygonThroughRoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(ghRequest, null, graphMocker.locationIndex,
-                                                                                                    graphMocker.encodingManager);
-
 
     @Test
     public void testCorrectDistanceMetricsSmaller() {
@@ -53,23 +50,25 @@ public class RouteCandidateTest {
     }
 
     private RouteCandidatePolygon setupSmallerRouteCandidate() {
-        RouteCandidatePolygon test = new RouteCandidatePolygonThrough(routingTemplate, 1, 3, 28, 29);
+        Path startToDetourEntry = createTestSubPath(7, 28, 1);
+        Path detourEntryToDetourExit = createTestSubPath(72, 29, 1).setFromNode(0);
+        Path detourExitToEnd = createTestSubPath(12, 3, 1);
+        Path directRouteStartEnd = createDirectRoute(2);
 
-        test.startToDetourEntry = createTestSubPath(7, 28, 1);
-        test.detourEntryToDetourExit = createTestSubPath(72, 29, 1).setFromNode(0);
-        test.detourExitToEnd = createTestSubPath(12, 3, 1);
-        test.directRouteStartEnd = createDirectRoute(2);
+        RouteCandidatePolygon test = new RouteCandidatePolygon( 1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
+                                                                detourExitToEnd, directRouteStartEnd);
 
         return test;
     }
 
     private RouteCandidatePolygon setupGreaterRouteCandidate() {
-        RouteCandidatePolygon test = new RouteCandidatePolygonThrough(routingTemplate, 1, 3, 28, 29);
+        Path startToDetourEntry = createTestSubPath(7, 28, 2);
+        Path detourEntryToDetourExit = createTestSubPath(72, 29, 2).setFromNode(0);
+        Path detourExitToEnd = createTestSubPath(12, 3, 2);
+        Path directRouteStartEnd = createDirectRoute(5);
 
-        test.startToDetourEntry = createTestSubPath(7, 28, 2);
-        test.detourEntryToDetourExit = createTestSubPath(72, 29, 2).setFromNode(0);
-        test.detourExitToEnd = createTestSubPath(12, 3, 2);
-        test.directRouteStartEnd = createDirectRoute(5);
+        RouteCandidatePolygon test = new RouteCandidatePolygon(1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
+                                                               detourExitToEnd, directRouteStartEnd);
 
         return test;
     }
@@ -110,11 +109,11 @@ public class RouteCandidateTest {
     }
 
     private RouteCandidatePolygon setupNonSelfintersectingRouteCandidate() {
-        return createSimpleMergedCandidate(0,3, 0, 3, 8);
+        return createSimpleMergedCandidate(0, 3, 0, 3, 8);
     }
 
     private RouteCandidatePolygon setupSelfintersectingRouteCandidate() {
-        return createSimpleMergedCandidate(0,3, 0, 3, 9, 73, 10, 8);
+        return createSimpleMergedCandidate(0, 3, 0, 3, 9, 73, 10, 8);
     }
 
     private RouteCandidatePolygon createSimpleMergedCandidate(final int from, final int to, final int... edgeIds) {
@@ -125,7 +124,7 @@ public class RouteCandidateTest {
     }
 
     private RouteCandidatePolygon createRouteCandidateWithMergedPath(int from, int to) {
-        RouteCandidatePolygon candidate = new RouteCandidatePolygonThrough(routingTemplate, from, to, -1, -1);
+        RouteCandidatePolygon candidate = new RouteCandidatePolygon(from, to, -1, -1, null, null, null, null);
         candidate.mergedPath = new PathMerge(graphMocker.graph, graphMocker.weighting);
         return candidate;
     }

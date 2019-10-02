@@ -9,31 +9,26 @@ import java.util.Map;
 /**
  * A route candidate as in Prof. Dr. Sabine Storandts Paper Region-Aware Route Planning.
  */
-public abstract class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> {
+public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> {
     Path startToDetourEntry;
     Path detourEntryToDetourExit;
     Path detourExitToEnd;
     Path directRouteStartEnd;
-    final PolygonRoutingTemplate polygonRoutingTemplate;
     RoutingAlgorithm routingAlgorithm;
     final int startNodeID, endNodeID, polygonEntryNodeID, polygonExitNodeID;
     PathMerge mergedPath = null;
 
-    public RouteCandidatePolygon(final PolygonRoutingTemplate polygonRoutingTemplate, final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
-                                 final int polygonExitNodeID) {
-        this.polygonRoutingTemplate = polygonRoutingTemplate;
-
+    public RouteCandidatePolygon(final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
+                                 final int polygonExitNodeID, final Path startToDetourEntry, final Path detourEntryToDetourExit, final Path detourExitToEnd,
+                                 final Path directRouteStartEnd) {
         this.startNodeID = startNodeID;
         this.endNodeID = endNodeID;
         this.polygonEntryNodeID = polygonEntryNodeID;
         this.polygonExitNodeID = polygonExitNodeID;
-    }
-
-    public abstract void calcPaths();
-
-    void calcDirectRouteFromStartToEnd() {
-        this.routingAlgorithm = this.polygonRoutingTemplate.getNewRoutingAlgorithm();
-        this.directRouteStartEnd = this.routingAlgorithm.calcPath(startNodeID, endNodeID);
+        this.startToDetourEntry = startToDetourEntry;
+        this.detourEntryToDetourExit = detourEntryToDetourExit;
+        this.detourExitToEnd = detourExitToEnd;
+        this.directRouteStartEnd = directRouteStartEnd;
     }
 
     public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {

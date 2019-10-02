@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.graphhopper.util.Parameters.Routing.*;
+import static org.junit.Assert.assertEquals;
 
 public class PolygonThroughRoutingTemplateTest {
     private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
@@ -21,11 +22,9 @@ public class PolygonThroughRoutingTemplateTest {
     @Test
     public void quickStartingTest() {
         // Just to let something run
-        GHRequest request = buildRequest(new GHPoint(25, 0), new GHPoint(25, 46));
-        GHResponse response = new GHResponse();
-        final int maxVisitedNodes = this.graphMocker.algorithmHints.getInt(MAX_VISITED_NODES, Integer.MAX_VALUE);
-        final RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.graphMocker.locationIndex,
-                                                                                  this.graphMocker.encodingManager);
+        final GHRequest request = buildRequest(new GHPoint(25, 0), new GHPoint(25, 46));
+        final GHResponse response = new GHResponse();
+        final RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.graphMocker.locationIndex, this.graphMocker.encodingManager);
         final RoutingAlgorithmFactory algorithmFactory = new RoutingAlgorithmFactorySimple();
         final AlgorithmOptions algorithmOptions = graphMocker.algorithmOptions;
         final QueryGraph queryGraph = createQueryGraph(request, routingTemplate);
@@ -33,6 +32,8 @@ public class PolygonThroughRoutingTemplateTest {
         List<Path> paths = routingTemplate.calcPaths(queryGraph, algorithmFactory, algorithmOptions);
 
         printPath(paths);
+
+        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[] {0, 7, 44, 46, 54, 56, 49, 32, 12, 13, 5, 6})), paths.get(0).getNodesInPathOrder());
     }
 
     private QueryGraph createQueryGraph(GHRequest request, RoutingTemplate routingTemplate) {

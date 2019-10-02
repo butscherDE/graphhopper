@@ -2,6 +2,7 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
+import com.graphhopper.routing.Path;
 import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
@@ -19,6 +20,7 @@ import java.util.*;
 public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private ManyToManyRouting pathSkeletonRouter;
     private final FlagEncoder flagEncoder;
+    private LOTNodeExtractor lotNodes;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex,
                                          EncodingManager encodingManager) {
@@ -31,7 +33,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         final List<Integer> nodesInPolygon = getNodesInPolygon();
         final List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         final List<Integer> viaPointNodeIds = this.extractNodeIdsFromQueryResults();
-        final LOTNodeExtractor lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
+        lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
 
         final List<QueryResult> queryResults = createQueryResults(polygonEntryExitPoints, flagEncoder);
         this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
@@ -84,9 +86,14 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         }
     }
 
-    private RouteCandidatePolygon buildCandidatePath(int currentPointID, int nextPointID, int LOTNodeL, int LOTNodeLPrime) {
-        final RouteCandidatePolygon routeCandidate = new RouteCandidatePolygonThrough(this, currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime);
-        routeCandidate.calcPaths();
+    private RouteCandidatePolygon buildCandidatePath(int currentPointID, int nextPointID, int lotNodeL, int lotNodeLPrime) {
+        final Path startToDetourEntry = this.lotNodes.getLotNodePathFor(currentPointID, lotNodeL);
+        final Path detourEntryToDetourExit = this.pathSkeletonRouter.getPathByFromEndNodeID(lotNodeL, lotNodeLPrime);
+        final Path detourExitToEnd = this.lotNodes.getLotNodePathFor(lotNodeLPrime, nextPointID);
+        final Path directRoute = this.getNewRoutingAlgorithm().calcPath(currentPointID, nextPointID);
+
+        final RouteCandidatePolygon routeCandidate = new RouteCandidatePolygon(currentPointID, nextPointID, lotNodeL, lotNodeLPrime, startToDetourEntry, detourEntryToDetourExit,
+                                                                               detourExitToEnd, directRoute);
 
         return routeCandidate;
     }
@@ -124,10 +131,6 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         final NodesInPolygonFindingVisitor visitor = new NodesInPolygonFindingVisitor(polygon, nodeAccess);
         this.locationIndex.query(minimumPolygonBoundingBox, visitor);
         return visitor.getNodesInPolygon();
-    }
-
-    public ManyToManyRouting getPathSkeletonRouter() {
-        return this.pathSkeletonRouter;
     }
 
     private static class NodesInPolygonFindingVisitor extends LocationIndex.Visitor {

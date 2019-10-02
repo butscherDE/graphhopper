@@ -7,14 +7,13 @@ import com.graphhopper.routing.RoutingAlgorithmFactory;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
-import com.graphhopper.util.StopWatch;
 import javafx.util.Pair;
 import org.locationtech.jts.util.Stopwatch;
 
 import java.util.*;
 
 /**
- * Takes a set of polygon entry exit points as well as a set of via routing points and extracts the local optimal touch nodes for each point.
+ * Takes a set of polygon entry exit points as well as a set of via routing points and extracts the local optimal touch nodes for each via point.
  */
 public class LOTNodeExtractor {
     private final Graph graph;
@@ -50,26 +49,55 @@ public class LOTNodeExtractor {
     }
 
     private void extractData() {
-        this.saveDistancesBetweenAllViaPointsAndEntryExitPoints();
+        this.savePathBetweenAllViaPointsAndEntryExitPoints();
         this.saveLOTNodesForEachViaPoint();
     }
 
-    private void saveDistancesBetweenAllViaPointsAndEntryExitPoints() {
-        for (final int viaPoint : this.viaPoints) {
-            for (final int entryExitPoint : this.entryExitPoints) {
-                saveDistanceBetween(viaPoint, entryExitPoint);
-            }
+    private void savePathBetweenAllViaPointsAndEntryExitPoints() {
+        savePathFromStartPoint();
+        savePathFromIntermediatePoints();
+        savePathFromRouteEndpoint();
+    }
+
+    private void savePathFromStartPoint() {
+        final int firstViaPoint = this.viaPoints.get(0);
+        savePathToAllEntryExitPoints(firstViaPoint);
+    }
+
+    private void savePathFromIntermediatePoints() {
+        for (int i = 1; i < this.viaPoints.size() - 2; i++) {
+            final int currentViaPoint = this.viaPoints.get(i);
+            savePathToAllEntryExitPoints(currentViaPoint);
+            savePathFromAllEntryExitPoints(currentViaPoint);
         }
     }
 
-    private void saveDistanceBetween(final int viaPoint, final int entryExitPoint) {
-        final Path path = this.calcPathBetween(viaPoint, entryExitPoint);
-        this.viaPointToEntryExitPointPath.put(new Pair<>(viaPoint, entryExitPoint), path);
+    private void savePathFromRouteEndpoint() {
+        final int lastViaPoint = this.viaPoints.get(this.viaPoints.size() - 1);
+        savePathToAllEntryExitPoints(lastViaPoint);
+        savePathFromAllEntryExitPoints(lastViaPoint);
     }
 
-    private Path calcPathBetween(final int viaPoint, final int entryExitPoint) {
+    private void savePathToAllEntryExitPoints(final int viaPointNodeId) {
+        for (final int entryExitPoint : this.entryExitPoints) {
+            savePathBetween(viaPointNodeId, entryExitPoint);
+        }
+    }
+
+    private void savePathFromAllEntryExitPoints(final int viaPointNodeId) {
+        for (final int entryExitPoint : this.entryExitPoints) {
+            savePathBetween(entryExitPoint, viaPointNodeId);
+        }
+    }
+
+    private void savePathBetween(final int startNodeId, final int endNodeId) {
+        final Path path = this.calcPathBetween(startNodeId, endNodeId);
+        this.viaPointToEntryExitPointPath.put(new Pair<>(startNodeId, endNodeId), path);
+    }
+
+    private Path calcPathBetween(final int startNodeId, final int endNodeId) {
         final RoutingAlgorithm routingAlgorithm = this.routingAlgorithmFactory.createAlgo(graph, algorithmOptions);
-        return routingAlgorithm.calcPath(viaPoint, entryExitPoint);
+        return routingAlgorithm.calcPath(startNodeId, endNodeId);
     }
 
     private void saveLOTNodesForEachViaPoint() {
