@@ -28,10 +28,11 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     protected void findCandidateRoutes() {
-        List<Integer> nodesInPolygon = getNodesInPolygon();
+        final List<Integer> nodesInPolygon = getNodesInPolygon();
         final List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
         final List<Integer> viaPointNodeIds = this.extractNodeIdsFromQueryResults();
-        final LOTNodeExtractor LOTNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
+        final LOTNodeExtractor lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
+
         final List<QueryResult> queryResults = createQueryResults(polygonEntryExitPoints, flagEncoder);
         this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
         this.pathSkeletonRouter.findPathBetweenAllNodePairs();
@@ -39,7 +40,8 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
         for (int i = 0; i < viaPointNodeIds.size() - 1; i++) {
             final int viaPointNodeId = viaPointNodeIds.get(i);
-            buildRouteCandidatesForCurrentPoint(LOTNodes.getLotNodesFor(viaPointNodeId));
+            final int nextViaPointNodeId = viaPointNodeIds.get(i + 1);
+            buildRouteCandidatesForCurrentPoint(viaPointNodeId, nextViaPointNodeId, lotNodes.getLotNodesFor(viaPointNodeId));
         }
     }
 
@@ -72,22 +74,18 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return nodeIds;
     }
 
-    private void buildRouteCandidatesForCurrentPoint(List<Integer> currentPointsLOTNodes) {
-        int pointInQueryResultsIndex = this.queryResults.size() - 2;
-        int currentPointID = this.queryResults.get(pointInQueryResultsIndex).getClosestNode();
-        int nextPointID = this.queryResults.get(pointInQueryResultsIndex + 1).getClosestNode();
-
+    private void buildRouteCandidatesForCurrentPoint(final int currentViaPoint, final int nextViaPoint, List<Integer> currentPointsLOTNodes) {
         for (final int LOTNodeL : currentPointsLOTNodes) {
             for (final int LOTNodeLPrime : currentPointsLOTNodes) {
                 if (LOTNodeL != LOTNodeLPrime) {
-                    this.routeCandidates.getCandidates().add(buildCandidatePath(currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime));
+                    this.routeCandidates.getCandidates().add(buildCandidatePath(currentViaPoint, nextViaPoint, LOTNodeL, LOTNodeLPrime));
                 }
             }
         }
     }
 
     private RouteCandidatePolygon buildCandidatePath(int currentPointID, int nextPointID, int LOTNodeL, int LOTNodeLPrime) {
-        RouteCandidatePolygon routeCandidate = new RouteCandidatePolygonThrough(this, currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime);
+        final RouteCandidatePolygon routeCandidate = new RouteCandidatePolygonThrough(this, currentPointID, nextPointID, LOTNodeL, LOTNodeLPrime);
         routeCandidate.calcPaths();
 
         return routeCandidate;
@@ -95,7 +93,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
         final List<Integer> entryExitPoints = new ArrayList<>();
-        final EdgeExplorer edgeExplorer = this.graph.createEdgeExplorer();//ghStorage.getBaseGraph().createEdgeExplorer();
+        final EdgeExplorer edgeExplorer = this.graph.createEdgeExplorer();
 
         addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(nodesInPolygon, entryExitPoints, edgeExplorer);
 

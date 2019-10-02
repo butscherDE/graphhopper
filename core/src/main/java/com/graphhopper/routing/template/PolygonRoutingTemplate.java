@@ -71,7 +71,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private void pruneLowerQuantileInROIcandidateRoutes() {
         // Assumes that routeCandidates was already sorted descending to roi distance after pruning dominated route candidates
-        int startIndex = (int) (this.routeCandidates.getCandidates().size() * 0.75) + 1;
+        final int startIndex = (int) (this.routeCandidates.getCandidates().size() * 0.75) + 1;
 
         for (int i = startIndex; i < this.routeCandidates.getCandidates().size(); i++) {
             this.routeCandidates.getCandidates().remove(i);
