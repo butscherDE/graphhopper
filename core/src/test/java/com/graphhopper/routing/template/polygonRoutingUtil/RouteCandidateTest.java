@@ -49,6 +49,24 @@ public class RouteCandidateTest {
         assertEquals(-1, comparisionResult);
     }
 
+    @Test
+    public void testMissingPathStartToDetourEntry() {
+        RouteCandidatePolygon test = setupSmallerRouteCandidate();
+        test.startToDetourEntry = new Path(this.graphMocker.graph, this.graphMocker.weighting);
+    }
+
+    @Test
+    public void testMissingPathDetourEntryToDetourExit() {
+        RouteCandidatePolygon test = setupSmallerRouteCandidate();
+        test.detourEntryToDetourExit = new Path(this.graphMocker.graph, this.graphMocker.weighting);
+    }
+
+    @Test
+    public void testMissingPathDetourExitToEnd() {
+        RouteCandidatePolygon test = setupSmallerRouteCandidate();
+        test.detourExitToEnd = new Path(this.graphMocker.graph, this.graphMocker.weighting);
+    }
+
     private RouteCandidatePolygon setupSmallerRouteCandidate() {
         Path startToDetourEntry = createTestSubPath(7, 28, 1);
         Path detourEntryToDetourExit = createTestSubPath(72, 29, 1).setFromNode(0);
