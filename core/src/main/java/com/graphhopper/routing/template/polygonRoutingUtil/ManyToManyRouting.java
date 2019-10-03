@@ -3,10 +3,7 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.QueryGraph;
 import com.graphhopper.routing.RoutingAlgorithmFactory;
-import com.graphhopper.routing.template.util.QueryGraphCreator;
-import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.Graph;
-import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
 
 import java.util.List;
@@ -37,8 +34,7 @@ public class ManyToManyRouting extends MultiRouting {
 
     void calculatePaths() {
         for (int fromNode : nodesToBuildRoutesWith) {
-            final OneToManyRouting
-                    oneToManyRouting =
+            final OneToManyRouting oneToManyRouting =
                     new OneToManyRouting(fromNode, this.nodesToBuildRoutesWith, nodesToConsiderForRouting, this.queryGraph, this.routingAlgorithmFactory, this.algorithmOptions);
             oneToManyRouting.findPathBetweenAllNodePairs();
             this.allFoundPaths.putAll(oneToManyRouting.getAllFoundPathsMap());

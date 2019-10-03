@@ -3,6 +3,7 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.util.EdgeIteratorState;
+import com.graphhopper.util.StopWatch;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -28,11 +29,15 @@ public class OneToManyRouting extends MultiRouting {
     }
 
     void calculatePaths() {
+        StopWatch sw = new StopWatch("one to many routing complete");
+        sw.start();
         for (final int toNode : toNodes) {
             final RoutingAlgorithm routingAlgorithm = buildRoutingAlgorithmForFromToPair(toNode);
             final Path path = routingAlgorithm.calcPath(this.fromNode, toNode);
             this.allFoundPaths.put(new Pair<>(this.fromNode, toNode), path);
         }
+        sw.stop();
+        System.out.println(sw.toString());
     }
 
     private RoutingAlgorithm buildRoutingAlgorithmForFromToPair(int toNode) {

@@ -2,6 +2,7 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
+import com.graphhopper.Trip;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
@@ -11,6 +12,7 @@ import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
+import com.graphhopper.util.StopWatch;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
@@ -30,15 +32,36 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     protected void findCandidateRoutes() {
+        StopWatch sw = new StopWatch("finding nodes in polygon");
+        sw.start();
         final List<Integer> nodesInPolygon = getNodesInPolygon();
+        sw.stop();
+        System.out.println(sw.toString());
+        System.out.println("# nodes in Polygon: " + nodesInPolygon.size());
+
+        sw = new StopWatch("finding entry exit points");
+        sw.start();
         final List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
+        sw.stop();
+        System.out.println(sw.toString());
+        System.out.println("# Entry/Exit Points: " + polygonEntryExitPoints.size());
+
         final List<Integer> viaPointNodeIds = this.extractNodeIdsFromQueryResults();
+
+        sw = new StopWatch("LOT node generation");
+        sw.start();
         lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
+        sw.stop();
+        System.out.println(sw.toString());
 
         final List<QueryResult> queryResults = createQueryResults(polygonEntryExitPoints, flagEncoder);
+
+        sw = new StopWatch("Generate path skeleton");
+        sw.start();
         this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
         this.pathSkeletonRouter.findPathBetweenAllNodePairs();
-
+        sw.stop();
+        System.out.println(sw.toString());
 
         for (int i = 0; i < viaPointNodeIds.size() - 1; i++) {
             final int viaPointNodeId = viaPointNodeIds.get(i);
