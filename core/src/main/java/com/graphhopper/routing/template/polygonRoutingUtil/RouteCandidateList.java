@@ -17,11 +17,11 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
     }
 
     public void sortByGainAscending() {
-        Collections.sort(this.getCandidates());
+        Collections.sort(this.candidates);
     }
 
     private void sortRouteCandidatesToDistanceInROIDescending() {
-        Collections.sort(this.getCandidates(), new Comparator<RouteCandidatePolygon>() {
+        Collections.sort(this.candidates, new Comparator<RouteCandidatePolygon>() {
             @Override
             public int compare(RouteCandidatePolygon rc1, RouteCandidatePolygon rc2) {
                 double distanceDifference = rc1.getDistanceInROI() - rc2.getDistanceInROI();
@@ -42,7 +42,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
     public List<Path> getFirstAsPathList(int nOfFirstElements, QueryGraph queryGraph, AlgorithmOptions algorithmOptions) {
         final List<Path> paths = new ArrayList<>(nOfFirstElements);
 
-        final int endOfCandidates = getCandidates().size() - 1;
+        final int endOfCandidates = this.candidates.size() - 1;
         paths.addAll(addPathsBasedOnIntersectionStatus(nOfFirstElements, queryGraph, algorithmOptions, endOfCandidates, false));
         paths.addAll(addPathsBasedOnIntersectionStatus(nOfFirstElements, queryGraph, algorithmOptions, endOfCandidates, true));
 
@@ -54,7 +54,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         List<Path> paths = new ArrayList<>(nOfFirstElements);
         int indexIntoCandidates = endOfCandidates;
         while (indexIntoCandidates >= 0 && paths.size() < nOfFirstElements) {
-            final RouteCandidatePolygon candidate = this.getCandidates().get(indexIntoCandidates);
+            final RouteCandidatePolygon candidate = this.candidates.get(indexIntoCandidates);
 
             if (candidate.isDetourSelfIntersecting(queryGraph, algorithmOptions) == addSelfIntersecting) {
                 paths.add(candidate.getMergedPath(queryGraph, algorithmOptions));
@@ -72,7 +72,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
 
         int currentPruningCandidateIndex = 1;
         while (indexInCandidateBounds(currentPruningCandidateIndex)) {
-            RouteCandidatePolygon currentPruningCandidate = this.getCandidates().get(currentPruningCandidateIndex);
+            RouteCandidatePolygon currentPruningCandidate = this.candidates.get(currentPruningCandidateIndex);
 
             boolean foundDominatingPath = isThisCandidateDominatedByAny(currentPruningCandidateIndex, currentPruningCandidate);
 
@@ -84,7 +84,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         boolean foundDominatingPath = false;
         for (int i = currentPruningCandidateIndex - 1; i >= 0 && !foundDominatingPath; i--) {
             // routeCandidates must be sorted by now. Therefore dominators can only bbe found on lower indices than the current pruning candidate.
-            RouteCandidatePolygon possiblyBetterRouteCandidate = this.getCandidates().get(i);
+            RouteCandidatePolygon possiblyBetterRouteCandidate = this.candidates.get(i);
 
             if (isPruningCandidateDominated(currentPruningCandidate, possiblyBetterRouteCandidate)) {
                 foundDominatingPath = true;
@@ -95,7 +95,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
 
     private int pruneOrUpdateIndex(int currentPruningCandidateIndex, boolean foundDominatingPath) {
         if (foundDominatingPath) {
-            this.getCandidates().remove(currentPruningCandidateIndex);
+            this.candidates.remove(currentPruningCandidateIndex);
         } else {
             currentPruningCandidateIndex++;
         }
@@ -108,11 +108,29 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
     }
 
     private boolean indexInCandidateBounds(int currentPruningCandidateIndex) {
-        return currentPruningCandidateIndex < this.getCandidates().size();
+        return currentPruningCandidateIndex < this.candidates.size();
     }
 
-    public List<T> getCandidates() {
-        return candidates;
+    public int size() {
+        return this.candidates.size();
+    }
+
+    public void remove(Object o) {
+        this.candidates.remove(o);
+    }
+
+    public void add(T o) {
+        if (o.isLegalCandidate()) {
+            this.candidates.add(o);
+        }
+    }
+
+    public void clear() {
+        this.candidates.clear();
+    }
+
+    public T get(int i) {
+        return this.candidates.get(i);
     }
 
     void setCandidates(List<T> candidates) {

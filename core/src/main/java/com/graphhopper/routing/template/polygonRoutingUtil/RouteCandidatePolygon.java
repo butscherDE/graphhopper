@@ -40,6 +40,7 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
     private void mergePath(QueryGraph queryGraph, AlgorithmOptions algoOpts) {
         PathMerge completePathCandidate = new PathMerge(queryGraph, algoOpts.getWeighting());
 
+        System.out.println(this.toString());
         completePathCandidate.addPath(startToDetourEntry);
         completePathCandidate.addPath(detourEntryToDetourExit);
         completePathCandidate.addPath(detourExitToEnd);
@@ -132,5 +133,26 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
                     "detour distance: " + getDetourDistance() + ", " +
                     "gain: " + this.getGain();
         return sb;
+    }
+
+    public boolean isLegalCandidate() {
+        return isAllSubpathsValid();
+    }
+
+    private boolean isAllSubpathsValid() {
+        boolean allValid = true;
+        allValid &= isSubpathValid(this.startToDetourEntry);
+        allValid &= isSubpathValid(this.detourEntryToDetourExit);
+        allValid &= isSubpathValid(this.detourExitToEnd);
+
+        return allValid;
+    }
+
+    private static boolean isSubpathValid(final Path path) {
+        if (path != null) {
+            return path.isFound();
+        } else {
+            throw new IllegalStateException("Calculate paths before validating them.");
+        }
     }
 }
