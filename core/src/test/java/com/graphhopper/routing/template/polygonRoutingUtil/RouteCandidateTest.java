@@ -5,7 +5,6 @@ import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.PathMerge;
 import com.graphhopper.routing.QueryGraph;
-import com.graphhopper.routing.template.PolygonThroughRoutingTemplate;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
@@ -14,6 +13,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+// TODO Test with empty subpaths
 public class RouteCandidateTest {
     private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double[]{5, 10, 10, 5}, new double[]{5, 5, 10, 10})).setVehicle("car");
     private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();

@@ -2,7 +2,6 @@ package com.graphhopper.routing;
 
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
-import com.graphhopper.storage.SPTEntry;
 import com.graphhopper.util.EdgeIteratorState;
 
 import java.util.List;
@@ -19,6 +18,16 @@ public class PathMerge extends Path {
     }
 
     public void addPath(final Path newPath) {
+        if (isPathNotEmpty(newPath)) {
+            addIfNewPathIsntEmpty(newPath);
+        }
+    }
+
+    private boolean isPathNotEmpty(Path newPath) {
+        return newPath.edgeIds.size() > 0;
+    }
+
+    private void addIfNewPathIsntEmpty(Path newPath) {
         if (this.edgeIds.size() > 0) {
             addIfThisPathIsntEmpty(newPath);
         } else {
