@@ -34,7 +34,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     @Override
     public List<Path> calcPaths(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
         if (this.ghRequest.getPoints().size() != 2) {
-            // TODO implement for more than start & endpoint
+            // TODO implement for more than start & endpoint but also via points
             throw new NotImplementedException();
         }
         this.setCalcPathsParams(queryGraph, algoFactory, algoOpts);

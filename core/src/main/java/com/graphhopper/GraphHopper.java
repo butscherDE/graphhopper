@@ -1160,7 +1160,7 @@ public class GraphHopper implements GraphHopperAPI {
     }
 
     private boolean validPolygonInRequest(GHRequest request) {
-        return request.getPolygon().size() > 2;
+        return request.getPolygon().isRepresentingArea();
     }
 
     /**
