@@ -84,7 +84,6 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     public boolean isReady(PathMerger pathMerger, Translation translation) {
         this.failOnNumPathsInvalid(this.ghRequest, this.pathList);
 
-        // TODO check if all waypoints have been queried. Respectively: The entry exit points: Are they queried? Do They have to be queried or mustnt they be queried?
         this.altResponse.setWaypoints(getWaypoints());
         this.ghResponse.add(this.altResponse);
         System.out.println(this.pathList.get(0).getNodesInPathOrder().toString());

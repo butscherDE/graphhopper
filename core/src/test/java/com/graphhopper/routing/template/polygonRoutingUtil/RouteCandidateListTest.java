@@ -11,6 +11,7 @@ import com.graphhopper.storage.Graph;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
+import javax.management.Query;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -27,43 +28,43 @@ public class RouteCandidateListTest {
         Path detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         Path detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         this.candidateList.add(new RouteCandidateMocker(3, 6, 1, "a", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
         startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         this.candidateList.add(new RouteCandidateMocker(2, 3, 1, "b", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
         startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         this.candidateList.add(new RouteCandidateMocker(6, 6, 5, "c", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
         startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         this.candidateList.add(new RouteCandidateMocker(4, 5, 3, "d", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
         startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         this.candidateList.add(new RouteCandidateMocker(8, 4, 6, "e", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
         startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         this.candidateList.add(new RouteCandidateMocker(6, 1, 3, "f", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
         startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
         this.candidateList.add(new RouteCandidateMocker(7, 1, 6, "g", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
     }
 
     @Test
@@ -122,6 +123,26 @@ public class RouteCandidateListTest {
         final int sizeBeforeAdding = this.candidateList.size();
         this.candidateList.add(testingCandidate);
         assertEquals(sizeBeforeAdding, this.candidateList.size());
+    }
+
+    @Test
+    public void selfintersectingRouteNotAlsoAdded() {
+        addTestingCandidates();
+
+        RouteCandidateMocker selfintersectingCandidate = createSelfintersectingRouteCandidate();
+        this.candidateList.add(selfintersectingCandidate);
+
+        assertEquals(true, selfintersectingCandidate.isDetourSelfIntersecting(new QueryGraph(this.graphMocker.graph), this.graphMocker.algorithmOptions));
+        assertEquals(1, this.candidateList.getFirstAsPathList(1, new QueryGraph(this.graphMocker.graph), this.graphMocker.algorithmOptions).size());
+    }
+
+    private RouteCandidateMocker createSelfintersectingRouteCandidate() {
+        Path startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        Path detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit.addEdge(1);
+        detourEntryToDetourExit.addEdge(1);
+        Path detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        return new RouteCandidateMocker(1, 1, 1, "selfintersecting", startToDetourEntry, detourEntryToDetourExit, detourExitToEnd, null);
     }
 
     class RouteCandidateMocker extends RouteCandidatePolygon {

@@ -20,15 +20,15 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         Collections.sort(this.candidates);
     }
 
-    private void sortRouteCandidatesToDistanceInROIDescending() {
+    private void sortRouteCandidatesToTimeInROIDescending() {
         Collections.sort(this.candidates, new Comparator<RouteCandidatePolygon>() {
             @Override
             public int compare(RouteCandidatePolygon rc1, RouteCandidatePolygon rc2) {
-                double distanceDifference = rc1.getTimeInROI() - rc2.getTimeInROI();
+                double timeDifference = rc1.getTimeInROI() - rc2.getTimeInROI();
                 int output;
-                if (distanceDifference < 0) {
+                if (timeDifference < 0) {
                     output = 1;
-                } else if (distanceDifference == 0) {
+                } else if (timeDifference == 0) {
                     output = 0;
                 } else {
                     output = -1;
@@ -44,7 +44,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
 
         final int endOfCandidates = this.candidates.size() - 1;
         paths.addAll(addPathsBasedOnIntersectionStatus(nOfFirstElements, queryGraph, algorithmOptions, endOfCandidates, false));
-        paths.addAll(addPathsBasedOnIntersectionStatus(nOfFirstElements, queryGraph, algorithmOptions, endOfCandidates, true));
+        paths.addAll(addPathsBasedOnIntersectionStatus(nOfFirstElements - paths.size(), queryGraph, algorithmOptions, endOfCandidates, true));
 
         return paths;
     }
@@ -68,7 +68,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
 
     // Do it in a skyline problem pruning fashion
     public void pruneDominatedCandidateRoutes() {
-        this.sortRouteCandidatesToDistanceInROIDescending();
+        this.sortRouteCandidatesToTimeInROIDescending();
 
         int currentPruningCandidateIndex = 1;
         while (indexInCandidateBounds(currentPruningCandidateIndex)) {
