@@ -86,7 +86,6 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
     private void mergePath(QueryGraph queryGraph, AlgorithmOptions algoOpts) {
         PathMerge completePathCandidate = new PathMerge(queryGraph, algoOpts.getWeighting());
 
-        System.out.println(this.toString());
         completePathCandidate.addPath(startToDetourEntry);
         completePathCandidate.addPath(detourEntryToDetourExit);
         completePathCandidate.addPath(detourExitToEnd);

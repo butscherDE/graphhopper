@@ -1,13 +1,12 @@
 package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.GHRequest;
-import com.graphhopper.routing.AlgorithmOptions;
-import com.graphhopper.routing.Path;
-import com.graphhopper.routing.PathMerge;
-import com.graphhopper.routing.QueryGraph;
+import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
+
+import javax.management.Query;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -55,8 +54,8 @@ public class RouteCandidateTest {
         Path detourExitToEnd = createTestSubPath(12, 3, 1);
         Path directRouteStartEnd = createDirectRoute(2);
 
-        RouteCandidatePolygon test = new RouteCandidatePolygon( 1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
-                                                                detourExitToEnd, directRouteStartEnd);
+        RouteCandidatePolygon test = new RouteCandidatePolygon(1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
+                                                               detourExitToEnd, directRouteStartEnd);
 
         return test;
     }
@@ -136,5 +135,46 @@ public class RouteCandidateTest {
         candidate.mergedPath.setFromNode(from);
         candidate.mergedPath.setEndNode(to);
         candidate.mergedPath.extract();
+    }
+
+    @Test
+    public void testMerging() {
+        final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
+
+        final Path startToPolygonEntry = createStartToPolygonEntry(routingAlgorithmFactory);
+        final Path polygonEntryToPolygonExit = createPolygonEntryToPolygonExit(routingAlgorithmFactory);
+        final Path polygonExitToEnd = createPolygonExitToEnd(routingAlgorithmFactory);
+
+        final RouteCandidatePolygon testCandidate = new RouteCandidatePolygon(0, 4, 1, 3, startToPolygonEntry, polygonEntryToPolygonExit, polygonExitToEnd, null);
+        final Path mergedPath = testCandidate.getMergedPath(new QueryGraph(this.graphMocker.graph), this.graphMocker.algorithmOptions);
+
+        assertEquals(4, mergedPath.getDistance(), 0);
+        assertEquals(4, mergedPath.getTime(), 0);
+    }
+
+    private Path createStartToPolygonEntry(RoutingAlgorithmFactory routingAlgorithmFactory) {
+        final Path startToPolygonEntry = createPath(routingAlgorithmFactory, 0, 1);
+        startToPolygonEntry.setTime(1);
+        startToPolygonEntry.setDistance(1);
+        return startToPolygonEntry;
+    }
+
+    private Path createPolygonEntryToPolygonExit(RoutingAlgorithmFactory routingAlgorithmFactory) {
+        final Path polygonEntryToPolygonExit = createPath(routingAlgorithmFactory, 1, 3);
+        polygonEntryToPolygonExit.setTime(2);
+        polygonEntryToPolygonExit.setDistance(2);
+        return polygonEntryToPolygonExit;
+    }
+
+    private Path createPolygonExitToEnd(RoutingAlgorithmFactory routingAlgorithmFactory) {
+        final Path polygonExitToEnd = createPath(routingAlgorithmFactory, 3, 4);
+        polygonExitToEnd.setTime(1);
+        polygonExitToEnd.setDistance(1);
+        return polygonExitToEnd;
+    }
+
+    private Path createPath(RoutingAlgorithmFactory routingAlgorithmFactory, int from, int to) {
+        RoutingAlgorithm routingAlgorithm = routingAlgorithmFactory.createAlgo(this.graphMocker.graph, this.graphMocker.algorithmOptions);
+        return routingAlgorithm.calcPath(from, to);
     }
 }

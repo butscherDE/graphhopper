@@ -47,6 +47,7 @@ public class PathMerge extends Path {
         addOtherPathsEdgesToThisPath(otherPathsEdges);
         this.weight += newPath.getWeight();
         this.distance += newPath.distance;
+        this.time += newPath.time;
         this.endNode = newPath.endNode;
     }
 

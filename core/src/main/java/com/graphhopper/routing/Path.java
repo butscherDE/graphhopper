@@ -88,6 +88,7 @@ public class Path {
     }
 
     protected void buildThisPathFromAnotherPath(Path p) {
+        time = p.time;
         weight = p.weight;
         edgeIds = new GHIntArrayList(p.edgeIds);
         sptEntry = p.sptEntry;

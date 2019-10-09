@@ -11,7 +11,6 @@ import com.graphhopper.storage.Graph;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
-import javax.management.Query;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
