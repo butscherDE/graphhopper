@@ -24,7 +24,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         Collections.sort(this.candidates, new Comparator<RouteCandidatePolygon>() {
             @Override
             public int compare(RouteCandidatePolygon rc1, RouteCandidatePolygon rc2) {
-                double distanceDifference = rc1.getDistanceInROI() - rc2.getDistanceInROI();
+                double distanceDifference = rc1.getTimeInROI() - rc2.getTimeInROI();
                 int output;
                 if (distanceDifference < 0) {
                     output = 1;
@@ -103,8 +103,8 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
     }
 
     private boolean isPruningCandidateDominated(RouteCandidatePolygon currentPruningCandidate, RouteCandidatePolygon possiblyBetterRouteCandidate) {
-        return possiblyBetterRouteCandidate.getDistance() < currentPruningCandidate.getDistance() &&
-               possiblyBetterRouteCandidate.getDistanceInROI() > currentPruningCandidate.getDistanceInROI();
+        return possiblyBetterRouteCandidate.getTime() < currentPruningCandidate.getTime() &&
+               possiblyBetterRouteCandidate.getTimeInROI() > currentPruningCandidate.getTimeInROI();
     }
 
     private boolean indexInCandidateBounds(int currentPruningCandidateIndex) {

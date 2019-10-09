@@ -22,10 +22,10 @@ public class RouteCandidateTest {
     public void testCorrectDistanceMetricsSmaller() {
         RouteCandidatePolygon testSmaller = setupSmallerRouteCandidate();
 
-        assertEquals(1, testSmaller.getDistanceInROI(), 0);
-        assertEquals(3, testSmaller.getDistance(), 0);
-        assertEquals(2, testSmaller.directRouteStartEnd.getDistance(), 0);
-        assertEquals(1, testSmaller.getDetourDistance(), 0);
+        assertEquals(1, testSmaller.getTimeInROI(), 0);
+        assertEquals(3, testSmaller.getTime(), 0);
+        assertEquals(2, testSmaller.directRouteStartEnd.getTime(), 0);
+        assertEquals(1, testSmaller.getDetourTime(), 0);
         assertEquals(0.5, testSmaller.getGain(), 0);
     }
 
@@ -33,10 +33,10 @@ public class RouteCandidateTest {
     public void testCorrectDistanceMetricsGreater() {
         RouteCandidatePolygon testGreater = setupGreaterRouteCandidate();
 
-        assertEquals(2, testGreater.getDistanceInROI(), 0);
-        assertEquals(6, testGreater.getDistance(), 0);
-        assertEquals(5, testGreater.directRouteStartEnd.getDistance(), 0);
-        assertEquals(1, testGreater.getDetourDistance(), 0);
+        assertEquals(2, testGreater.getTimeInROI(), 0);
+        assertEquals(6, testGreater.getTime(), 0);
+        assertEquals(5, testGreater.directRouteStartEnd.getTime(), 0);
+        assertEquals(1, testGreater.getDetourTime(), 0);
         assertEquals(1, testGreater.getGain(), 0);
     }
 
@@ -73,24 +73,24 @@ public class RouteCandidateTest {
         return test;
     }
 
-    private Path createTestSubPath(int edgeId, int endNode, int distance) {
+    private Path createTestSubPath(int edgeId, int endNode, int time) {
         Path startPolygon = new PathMerge(graphMocker.graph, graphMocker.weighting);
 
         startPolygon.addEdge(edgeId);
         startPolygon.setEndNode(endNode);
-        startPolygon.setDistance(distance);
+        startPolygon.setTime(time);
         startPolygon.setFound(true);
 
         return startPolygon;
     }
 
-    private Path createDirectRoute(int distance) {
+    private Path createDirectRoute(int time) {
         Path directRoute = new PathMerge(graphMocker.graph, graphMocker.weighting);
 
         directRoute.addEdge(3);
         directRoute.addEdge(8);
         directRoute.setEndNode(3);
-        directRoute.setDistance(distance);
+        directRoute.setTime(time);
         directRoute.setFound(true);
 
         return directRoute;

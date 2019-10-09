@@ -125,35 +125,35 @@ public class RouteCandidateListTest {
     }
 
     class RouteCandidateMocker extends RouteCandidatePolygon {
-        final double polygonRouteDistance;
-        final double roiDistance;
-        final double directDistance;
+        final double polygonRouteTime;
+        final double roiTime;
+        final double directTime;
         final String name;
 
-        RouteCandidateMocker(final double polygonRouteDistance, final double distanceInROI, final double directDistance,
+        RouteCandidateMocker(final double polygonRouteTime, final double timeInRoi, final double directTime,
                              final String name, final Path startToDetourEntry, final Path detourEntryToDetourExit, final Path detourExitToEnd,
                              final Path directRouteStartEnd) {
             super(0, 3, 1, 2, startToDetourEntry, detourEntryToDetourExit, detourExitToEnd, directRouteStartEnd);
 
-            this.polygonRouteDistance = polygonRouteDistance;
-            this.roiDistance = distanceInROI;
-            this.directDistance = directDistance;
+            this.polygonRouteTime = polygonRouteTime;
+            this.roiTime = timeInRoi;
+            this.directTime = directTime;
             this.name = name;
         }
 
         @Override
-        public double getDistance() {
-            return this.polygonRouteDistance;
+        public double getTime() {
+            return this.polygonRouteTime;
         }
 
         @Override
-        public double getDistanceInROI() {
-            return this.roiDistance;
+        public double getTimeInROI() {
+            return this.roiTime;
         }
 
         @Override
-        public double getDetourDistance() {
-            return this.getDistance() - this.directDistance;
+        public double getDetourTime() {
+            return this.getTime() - this.directTime;
         }
 
         @Override

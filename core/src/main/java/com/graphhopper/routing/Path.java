@@ -182,6 +182,8 @@ public class Path {
         return time;
     }
 
+    public void setTime(final long time) { this.time = time;}
+
     /**
      * This weight will be updated during the algorithm. The initial value is maximum double.
      */

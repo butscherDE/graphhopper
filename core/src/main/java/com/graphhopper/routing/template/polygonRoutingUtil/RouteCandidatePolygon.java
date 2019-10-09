@@ -1,7 +1,6 @@
 package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.routing.*;
-import com.graphhopper.routing.template.PolygonRoutingTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +28,53 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
         this.detourEntryToDetourExit = detourEntryToDetourExit;
         this.detourExitToEnd = detourExitToEnd;
         this.directRouteStartEnd = directRouteStartEnd;
+
+        if (startNodeID == 906161 || startNodeID == 270195
+            || endNodeID == 906161 || endNodeID == 270195
+            || polygonEntryNodeID == 906161 || polygonEntryNodeID == 270195
+            || polygonExitNodeID == 906161 || polygonExitNodeID == 270195) {
+            System.out.println("hit2");
+        }
+
+//        if (startToDetourEntry.getNodesInPathOrder().contains(906161) && startToDetourEntry.getNodesInPathOrder().contains(270195)) {
+//            System.out.println("hit3");
+//        }
+//
+//        if (detourEntryToDetourExit.getNodesInPathOrder().contains(906161) && detourEntryToDetourExit.getNodesInPathOrder().contains(270195)) {
+//            System.out.println("hit4");
+//        }
+//
+//        if (detourExitToEnd.getNodesInPathOrder().contains(906161) && detourExitToEnd.getNodesInPathOrder().contains(270195)) {
+//            System.out.println("hit5");
+//        }
+//
+//        if (directRouteStartEnd.getNodesInPathOrder().contains(906161) && directRouteStartEnd.getNodesInPathOrder().contains(270195)) {
+//            System.out.println("hit6");
+//        }
+//
+//        for (EdgeIteratorState state : startToDetourEntry.calcEdges()) {
+//            if (state.getEdge() == 17733429) {
+//                System.out.println("hit7");
+//            }
+//        }
+//
+//        for (EdgeIteratorState state : detourEntryToDetourExit.calcEdges()) {
+//            if (state.getEdge() == 17733429) {
+//                System.out.println("hit8");
+//            }
+//        }
+//
+//        for (EdgeIteratorState state : detourExitToEnd.calcEdges()) {
+//            if (state.getEdge() == 17733429) {
+//                System.out.println("hit9");
+//            }
+//        }
+//
+//        for (EdgeIteratorState state : directRouteStartEnd.calcEdges()) {
+//            if (state.getEdge() == 17733429) {
+//                System.out.println("hit10");
+//            }
+//        }
     }
 
     public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
@@ -51,8 +97,8 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
         this.mergedPath = completePathCandidate;
     }
 
-    public double getDistance() {
-        return this.startToDetourEntry.getDistance() + this.detourEntryToDetourExit.getDistance() + this.detourExitToEnd.getDistance();
+    public double getTime() {
+        return this.startToDetourEntry.getTime() + this.detourEntryToDetourExit.getTime() + this.detourExitToEnd.getTime();
     }
 
     /**
@@ -60,29 +106,19 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
      *
      * @return The approximated time spent in the region of interest
      */
-    public double getDistanceInROI() {
-        return this.detourEntryToDetourExit.getDistance();
+    public double getTimeInROI() {
+        return this.detourEntryToDetourExit.getTime();
     }
 
     public double getGain() {
         // + 1 to avoid division by zero
-        return this.getDistanceInROI() / (this.getDetourDistance() + 1);
+        return this.getTimeInROI() / (this.getDetourTime() + 1);
     }
 
-    public double getDetourDistance() {
-        return this.getDistance() - this.directRouteStartEnd.getDistance();
+    public double getDetourTime() {
+        return this.getTime() - this.directRouteStartEnd.getTime();
     }
 
-    /**
-     * Uses the sweepline algorithm of Michael Ian Shamos and Dan Hoey to find intersecting line segments induced by the edges of the merged path.
-     * <p>
-     * Reference:
-     * Michael Ian Shamos and Dan Hoey. Geometric intersection problems. In Proceedings
-     * of the 17th Annual IEEE Symposium on Foundations of Computer Science
-     * (FOCS '76), pages 208{215, 1976.
-     *
-     * @return true if at least one intersection occurs and false otherwise.
-     */
     public boolean isDetourSelfIntersecting(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
         mergePathIfNotDone(queryGraph, algoOpts);
 
@@ -128,9 +164,9 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
                     "endNodeID: " + endNodeID + ", " +
                     "polygonEntryNodeID: " + polygonEntryNodeID + ", " +
                     "polygonExitNodeID: " + polygonExitNodeID + ", " +
-                    "Distance: " + this.getDistance() + ", " +
-                    "DistanceInROI: " + getDistanceInROI() + ", " +
-                    "detour distance: " + getDetourDistance() + ", " +
+                    "Distance: " + this.getTime() + ", " +
+                    "DistanceInROI: " + getTimeInROI() + ", " +
+                    "detour distance: " + getDetourTime() + ", " +
                     "gain: " + this.getGain();
         return sb;
     }

@@ -745,6 +745,10 @@ public class QueryGraph implements Graph {
         return new UnsupportedOperationException("QueryGraph cannot be modified.");
     }
 
+    public Graph getMainGraph() {
+        return this.mainGraph;
+    }
+
     class QueryGraphTurnExt extends TurnCostExtension {
         private final TurnCostExtension mainTurnExtension;
 

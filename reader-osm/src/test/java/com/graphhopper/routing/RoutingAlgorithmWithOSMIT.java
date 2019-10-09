@@ -291,7 +291,7 @@ public class RoutingAlgorithmWithOSMIT {
     @Test
     public void testNorthBayreuthHikeFastestAnd3D() {
         List<OneRun> list = new ArrayList<>();
-        // prefer hiking route 'Teufelsloch Unterwaiz' and 'Rotmain-Wanderweg'        
+        // prefer hiking route 'Teufelsloch Unterwaiz' and 'Rotmain-Wanderweg'
         list.add(new OneRun(49.974972, 11.515657, 49.991022, 11.512299, 2365, 66));
         // prefer hiking route 'Markgrafenweg Bayreuth Kulmbach' but avoid tertiary highway from Pechgraben
         list.add(new OneRun(49.990967, 11.545258, 50.023182, 11.555386, 5636, 97));
@@ -469,8 +469,8 @@ public class RoutingAlgorithmWithOSMIT {
     public void testCampoGrande() {
         // test not only NE quadrant of earth!
 
-        // bzcat campo-grande.osm.bz2 
-        //   | ./bin/osmosis --read-xml enableDateParsing=no file=- --bounding-box top=-20.4 left=-54.6 bottom=-20.6 right=-54.5 --write-xml file=- 
+        // bzcat campo-grande.osm.bz2
+        //   | ./bin/osmosis --read-xml enableDateParsing=no file=- --bounding-box top=-20.4 left=-54.6 bottom=-20.6 right=-54.5 --write-xml file=-
         //   | bzip2 > campo-grande.extracted.osm.bz2
         List<OneRun> list = new ArrayList<>();
         list.add(new OneRun(-20.4, -54.6, -20.6, -54.54, 25516, 271));
@@ -560,7 +560,7 @@ public class RoutingAlgorithmWithOSMIT {
 
             if (osmFile.contains("krautsand"))
                 hopper.setMinNetworkSize(0, 0);
-            // avoid that path.getDistance is too different to path.getPoint.calcDistance
+            // avoid that path.getTime is too different to path.getPoint.calcDistance
             hopper.setWayPointMaxDistance(0);
 
             // always enable landmarks, add maximum information to reduce warnings
@@ -633,7 +633,7 @@ public class RoutingAlgorithmWithOSMIT {
         int MAX = 100;
         final FlagEncoder carEncoder = encodingManager.getEncoder("car");
 
-        // testing if algorithms are independent. should be. so test only two algorithms. 
+        // testing if algorithms are independent. should be. so test only two algorithms.
         // also the preparing is too costly to be called for every thread
         int algosLength = 2;
         final Weighting weighting = new ShortestWeighting(encodingManager.getEncoder("car"));
