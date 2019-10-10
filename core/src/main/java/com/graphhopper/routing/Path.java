@@ -88,6 +88,7 @@ public class Path {
     }
 
     protected void buildThisPathFromAnotherPath(Path p) {
+        time = p.time;
         weight = p.weight;
         edgeIds = new GHIntArrayList(p.edgeIds);
         sptEntry = p.sptEntry;
@@ -181,6 +182,8 @@ public class Path {
     public long getTime() {
         return time;
     }
+
+    public void setTime(final long time) { this.time = time;}
 
     /**
      * This weight will be updated during the algorithm. The initial value is maximum double.

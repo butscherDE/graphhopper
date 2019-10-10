@@ -21,49 +21,49 @@ public class RouteCandidateListTest {
     private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double[]{5, 10, 10, 5}, new double[]{5, 5, 10, 10})).setVehicle("car");
 
     private void addTestingCandidates() {
-        this.candidateList.getCandidates().clear();
+        this.candidateList.clear();
 
-        Path startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        Path detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        Path detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        this.candidateList.getCandidates().add(new RouteCandidateMocker(3, 6, 1, "a", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+        Path startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        Path detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        Path detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        this.candidateList.add(new RouteCandidateMocker(3, 6, 1, "a", startToDetourEntry,
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
-        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        this.candidateList.getCandidates().add(new RouteCandidateMocker(2, 3, 1, "b", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        this.candidateList.add(new RouteCandidateMocker(2, 3, 1, "b", startToDetourEntry,
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
-        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        this.candidateList.getCandidates().add(new RouteCandidateMocker(6, 6, 5, "c", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        this.candidateList.add(new RouteCandidateMocker(6, 6, 5, "c", startToDetourEntry,
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
-        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        this.candidateList.getCandidates().add(new RouteCandidateMocker(4, 5, 3, "d", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        this.candidateList.add(new RouteCandidateMocker(4, 5, 3, "d", startToDetourEntry,
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
-        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        this.candidateList.getCandidates().add(new RouteCandidateMocker(8, 4, 6, "e", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        this.candidateList.add(new RouteCandidateMocker(8, 4, 6, "e", startToDetourEntry,
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
-        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        this.candidateList.getCandidates().add(new RouteCandidateMocker(6, 1, 3, "f", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        this.candidateList.add(new RouteCandidateMocker(6, 1, 3, "f", startToDetourEntry,
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
 
-        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting);
-        this.candidateList.getCandidates().add(new RouteCandidateMocker(7, 1, 6, "g", startToDetourEntry,
-                                                                        detourEntryToDetourExit, detourExitToEnd, null));
+        startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        this.candidateList.add(new RouteCandidateMocker(7, 1, 6, "g", startToDetourEntry,
+                                                        detourEntryToDetourExit, detourExitToEnd, null));
     }
 
     @Test
@@ -71,9 +71,9 @@ public class RouteCandidateListTest {
         addTestingCandidates();
         this.candidateList.pruneDominatedCandidateRoutes();
 
-        assertEquals("a", this.candidateList.getCandidates().get(0).name);
-        assertEquals("c", this.candidateList.getCandidates().get(1).name);
-        assertEquals("b", this.candidateList.getCandidates().get(2).name);
+        assertEquals("a", this.candidateList.get(0).name);
+        assertEquals("c", this.candidateList.get(1).name);
+        assertEquals("b", this.candidateList.get(2).name);
     }
 
     @Test
@@ -91,36 +91,89 @@ public class RouteCandidateListTest {
         assertEquals(3, topCandidates.size());
     }
 
+    @Test
+    public void testIllegalStartToDetourSubpath() {
+        addTestingCandidates();
+        final RouteCandidateMocker testingCandidate = this.candidateList.get(0);
+        testingCandidate.startToDetourEntry.setFound(false);
+
+        illegalCandidateNotAdded(testingCandidate);
+    }
+
+    @Test
+    public void testIllegalDetourEntryToDetourExitSubpath() {
+        addTestingCandidates();
+        final RouteCandidateMocker testingCandidate = this.candidateList.get(0);
+        testingCandidate.detourEntryToDetourExit.setFound(false);
+
+        illegalCandidateNotAdded(testingCandidate);
+    }
+
+    @Test
+    public void testIllegalDetourExitToEndSubpath() {
+        addTestingCandidates();
+        final RouteCandidateMocker testingCandidate = this.candidateList.get(0);
+        testingCandidate.detourExitToEnd.setFound(false);
+
+        illegalCandidateNotAdded(testingCandidate);
+    }
+
+    private void illegalCandidateNotAdded(RouteCandidateMocker testingCandidate) {
+        final int sizeBeforeAdding = this.candidateList.size();
+        this.candidateList.add(testingCandidate);
+        assertEquals(sizeBeforeAdding, this.candidateList.size());
+    }
+
+    @Test
+    public void selfintersectingRouteNotAlsoAdded() {
+        addTestingCandidates();
+
+        RouteCandidateMocker selfintersectingCandidate = createSelfintersectingRouteCandidate();
+        this.candidateList.add(selfintersectingCandidate);
+
+        assertEquals(true, selfintersectingCandidate.isDetourSelfIntersecting(new QueryGraph(this.graphMocker.graph), this.graphMocker.algorithmOptions));
+        assertEquals(1, this.candidateList.getFirstAsPathList(1, new QueryGraph(this.graphMocker.graph), this.graphMocker.algorithmOptions).size());
+    }
+
+    private RouteCandidateMocker createSelfintersectingRouteCandidate() {
+        Path startToDetourEntry = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        Path detourEntryToDetourExit = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        detourEntryToDetourExit.addEdge(1);
+        detourEntryToDetourExit.addEdge(1);
+        Path detourExitToEnd = new PathMerge(graphMocker.graph, graphMocker.weighting).setFound(true);
+        return new RouteCandidateMocker(1, 1, 1, "selfintersecting", startToDetourEntry, detourEntryToDetourExit, detourExitToEnd, null);
+    }
+
     class RouteCandidateMocker extends RouteCandidatePolygon {
-        final double polygonRouteDistance;
-        final double roiDistance;
-        final double directDistance;
+        final double polygonRouteTime;
+        final double roiTime;
+        final double directTime;
         final String name;
 
-        RouteCandidateMocker(final double polygonRouteDistance, final double distanceInROI, final double directDistance,
+        RouteCandidateMocker(final double polygonRouteTime, final double timeInRoi, final double directTime,
                              final String name, final Path startToDetourEntry, final Path detourEntryToDetourExit, final Path detourExitToEnd,
                              final Path directRouteStartEnd) {
             super(0, 3, 1, 2, startToDetourEntry, detourEntryToDetourExit, detourExitToEnd, directRouteStartEnd);
 
-            this.polygonRouteDistance = polygonRouteDistance;
-            this.roiDistance = distanceInROI;
-            this.directDistance = directDistance;
+            this.polygonRouteTime = polygonRouteTime;
+            this.roiTime = timeInRoi;
+            this.directTime = directTime;
             this.name = name;
         }
 
         @Override
-        public double getDistance() {
-            return this.polygonRouteDistance;
+        public double getTime() {
+            return this.polygonRouteTime;
         }
 
         @Override
-        public double getDistanceInROI() {
-            return this.roiDistance;
+        public double getTimeInROI() {
+            return this.roiTime;
         }
 
         @Override
-        public double getDetourDistance() {
-            return this.getDistance() - this.directDistance;
+        public double getDetourTime() {
+            return this.getTime() - this.directTime;
         }
 
         @Override

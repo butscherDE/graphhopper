@@ -92,7 +92,7 @@ public abstract class AbstractRoutingAlgorithmTester {
         EdgeIterator iter = g.createEdgeExplorer().setBaseNode(node);
         while (iter.next()) {
             iter.setDistance(iter.fetchWayGeometry(3).calcDistance(distCalc));
-            // System.out.println(node + "->" + adj + ": " + iter.getDistance());
+            // System.out.println(node + "->" + adj + ": " + iter.getTime());
         }
     }
 
@@ -472,7 +472,7 @@ public abstract class AbstractRoutingAlgorithmTester {
         graph.edge(8, 6, 1, true);
 
         // run the same query twice, this can be interesting because in the second call algorithms that pre-process
-        // the graph might depend on the state of the graph after the first call 
+        // the graph might depend on the state of the graph after the first call
         Path p1 = createAlgo(graph).calcPath(0, 4);
         Path p2 = createAlgo(graph).calcPath(0, 4);
 

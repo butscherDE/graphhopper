@@ -34,7 +34,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     @Override
     public List<Path> calcPaths(QueryGraph queryGraph, RoutingAlgorithmFactory algoFactory, AlgorithmOptions algoOpts) {
         if (this.ghRequest.getPoints().size() != 2) {
-            // TODO implement for more than start & endpoint
+            // TODO implement for more than start & endpoint but also via points
             throw new NotImplementedException();
         }
         this.setCalcPathsParams(queryGraph, algoFactory, algoOpts);
@@ -71,10 +71,10 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private void pruneLowerQuantileInROIcandidateRoutes() {
         // Assumes that routeCandidates was already sorted descending to roi distance after pruning dominated route candidates
-        final int startIndex = (int) (this.routeCandidates.getCandidates().size() * 0.75) + 1;
+        final int startIndex = (int) (this.routeCandidates.size() * 0.75) + 1;
 
-        for (int i = startIndex; i < this.routeCandidates.getCandidates().size(); i++) {
-            this.routeCandidates.getCandidates().remove(i);
+        for (int i = startIndex; i < this.routeCandidates.size(); i++) {
+            this.routeCandidates.remove(i);
         }
     }
 
@@ -84,9 +84,9 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     public boolean isReady(PathMerger pathMerger, Translation translation) {
         this.failOnNumPathsInvalid(this.ghRequest, this.pathList);
 
-        // TODO check if all waypoints have been queried. Respectively: The entry exit points: Are they queried? Do They have to be queried or mustnt they be queried?
         this.altResponse.setWaypoints(getWaypoints());
         this.ghResponse.add(this.altResponse);
+        System.out.println(this.pathList.get(0).getNodesInPathOrder().toString());
         pathMerger.doWork(this.altResponse, this.pathList, this.encodingManager, translation);
         return true;
     }

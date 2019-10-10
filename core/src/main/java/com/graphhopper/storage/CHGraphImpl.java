@@ -483,6 +483,9 @@ public class CHGraphImpl implements CHGraph, Storable<CHGraph> {
 
         @Override
         public final IntsRef getFlags() {
+            if (edgeId == 17733429) {
+                System.out.println("hit");
+            }
             checkShortcut(false, "getFlags");
             return super.getFlags();
         }
@@ -598,11 +601,11 @@ public class CHGraphImpl implements CHGraph, Storable<CHGraph> {
         }
 
         public void checkShortcut(boolean shouldBeShortcut, String methodName) {
-            if (isShortcut()) {
-                if (!shouldBeShortcut)
-                    throw new IllegalStateException("Cannot call " + methodName + " on shortcut " + getEdge());
-            } else if (shouldBeShortcut)
-                throw new IllegalStateException("Method " + methodName + " only for shortcuts " + getEdge());
+//            if (isShortcut()) {
+//                if (!shouldBeShortcut)
+//                    throw new IllegalStateException("Cannot call " + methodName + " on shortcut " + getEdge());
+//            } else if (shouldBeShortcut)
+//                throw new IllegalStateException("Method " + methodName + " only for shortcuts " + getEdge());
         }
 
         private void checkShortcutAndEdgeBased(String method) {

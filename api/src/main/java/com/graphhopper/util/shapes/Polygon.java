@@ -284,4 +284,8 @@ public class Polygon implements Shape {
     public int size() {
         return this.lat.length;
     }
+
+    public boolean isRepresentingArea() {
+        return this.size() > 2;
+    }
 }

@@ -103,7 +103,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         for (final int LOTNodeL : currentPointsLOTNodes) {
             for (final int LOTNodeLPrime : currentPointsLOTNodes) {
                 if (LOTNodeL != LOTNodeLPrime) {
-                    this.routeCandidates.getCandidates().add(buildCandidatePath(currentViaPoint, nextViaPoint, LOTNodeL, LOTNodeLPrime));
+                    this.routeCandidates.add(buildCandidatePath(currentViaPoint, nextViaPoint, LOTNodeL, LOTNodeLPrime));
                 }
             }
         }

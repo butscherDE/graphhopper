@@ -25,7 +25,7 @@ package com.graphhopper.util;
  * <pre>
  * EdgeExplorer explorer = graph.createEdgeExplorer();
  * EdgeIterator iter = explorer.setBaseNode(nodeId);
- * // calls to iter.getAdjNode(), getDistance() without calling next() will cause undefined behaviour!
+ * // calls to iter.getAdjNode(), getTime() without calling next() will cause undefined behaviour!
  * while(iter.next()) {
  *   int baseNodeId = iter.getBaseNode(); // equal to nodeId
  *   int adjacentNodeId = iter.getAdjNode(); // this is the node where this edge state is "pointing to"
