@@ -418,6 +418,13 @@ function deleteCoord(e) {
     routeLatLng(ghRequest, false);
 }
 
+function deletePolygon(e) {
+    var latlng = e.relatedTarget.getLatLng();
+    ghRequest.polygon.removeSingle(latlng);
+    mapLayer.clearLayers();
+    routeLatLng(ghRequest, false);
+}
+
 function setEndCoord(e) {
     var index = ghRequest.route.size() - 1;
     ghRequest.route.set(e.latlng.wrap(), index);
@@ -654,11 +661,12 @@ function routeLatLng(request, doQuery) {
 
             geoJsons.push(geojsonFeature);
             mapLayer.addDataToRoutingLayer(geojsonFeature);
-            let polyCoord = []
+            let polyCoord = [];
+            var marker;
             for (var polyIndex = 0; polyIndex < request.polygon.length; polyIndex++) {
                 latlng = [request.polygon[polyIndex].lng,request.polygon[polyIndex].lat];
                 polyCoord.push(latlng)
-                mapLayer.createPolygonMarker(polyIndex, latlng, request);
+                generatePolyFlags(polyIndex,latlng,request)
             }
             if (request.polygon[0] !== undefined) {
                 polyCoord.push([request.polygon[0].lng,request.polygon[0].lat])
@@ -772,7 +780,21 @@ function routeLatLng(request, doQuery) {
         });
     });
 }
-
+function generatePolyFlags(polyIndex, latlng, request){
+                marker = mapLayer.createPolygonMarker(polyIndex, latlng, request, deletePolygon);
+                marker.on('dragend', function (e) {
+                            mapLayer.clearLayers();
+                            // inconsistent leaflet API: event.target.getLatLng vs. mouseEvent.latlng?
+                            var latlng = e.target.getLatLng();
+                            autocomplete.hide();
+                            console.log(polyIndex)
+                            request.polygon.getIndex(polyIndex).setCoord(latlng.lat, latlng.lng);
+                            //resolveIndex(polyIndex);
+                            // do not wait for resolving and avoid zooming when dragging
+                            request.do_zoom = false;
+                            routeLatLng(request, false);
+                        });
+}
 function mySubmit() {
     var fromStr,
             toStr,

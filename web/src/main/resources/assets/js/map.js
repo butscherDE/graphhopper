@@ -431,18 +431,20 @@ var polygonIcon = L.icon({
     iconAnchor: [12, 40]
 });
 
-module.exports.createPolygonMarker = function(index, coord, ghRequest) {
-console.log("lala1")
-
-console.log(coord)
-    return L.marker([coord[1], coord[0]], {icon: polygonIcon, draggable:false}).addTo(map);
+module.exports.createPolygonMarker = function(index, coord, ghRequest, deletePolygon) {
+    return L.marker([coord[1], coord[0]], {icon: new L.NumberedDivIconPolygon({number: index + 1}), draggable:true,
+          contextmenu: true,
+          contextmenuItems: defaultContextmenuItems.concat([{
+                  text: "Delete from Polygon",
+                  callback: deletePolygon,
+                  disabled: false, // prevent to and from
+                  index: 0
+              }]),
+          contextmenuInheritItems: false})
+    .addTo(polygonLayer);
 }
 
 module.exports.createMarker = function (index, coord, setToEnd, setToStart, deleteCoord, ghRequest) {
-console.log("lala2")
-
-console.log(coord)
-
     var toFrom = getToFrom(index, ghRequest);
     return L.marker([coord.lat, coord.lng], {
         icon: ((toFrom === FROM) ? iconFrom : ((toFrom === TO) ? iconTo : new L.NumberedDivIcon({number: index}))),
