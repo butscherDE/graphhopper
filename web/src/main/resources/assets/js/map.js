@@ -3,6 +3,7 @@ var tileLayers = require('./config/tileLayers.js');
 var translate = require('./translate.js');
 
 var routingLayer;
+var polygonLayer;
 var map;
 var menuStart;
 var polyItem;
@@ -90,7 +91,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
     };
         var _polyItem = {
             text: "Add Polygon Coordinate",
-            icon: './img/marker-small-green.png',
+            icon: './img/marker-small-purple.png',
             callback: setPolygonCoord,
             index: 3
         };
@@ -197,6 +198,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
         }).addTo(map);
 
     routingLayer = L.geoJson().addTo(map);
+    polygonLayer = L.geoJson().addTo(map);
 
     routingLayer.options = {
         // use style provided by the 'properties' entry of the geojson added by addDataToRoutingLayer
@@ -217,6 +219,12 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
         contextmenuInheritItems: false
     };
 
+    polygonLayer.options = {
+        // use style provided by the 'properties' entry of the geojson added by addDataToRoutingLayer
+        style: function (feature) {
+            return feature.properties && feature.properties.style;
+        },
+    };
 }
 
 function focus(coord, zoom, index) {
@@ -231,6 +239,7 @@ function focus(coord, zoom, index) {
 
 module.exports.clearLayers = function () {
     routingLayer.clearLayers();
+    polygonLayer.clearLayers();
 };
 
 module.exports.getRoutingLayer = function () {
@@ -247,6 +256,10 @@ module.exports.getSubLayers = function(name) {
 module.exports.addDataToRoutingLayer = function (geoJsonFeature) {
     routingLayer.addData(geoJsonFeature);
 };
+
+module.exports.addDataToPolygonLayer = function (geoJsonFeature) {
+    polygonLayer.addData(geoJsonFeature);
+}
 
 module.exports.eachLayer = function (callback) {
     routingLayer.eachLayer(callback);
@@ -411,7 +424,25 @@ var iconTo = L.icon({
     iconAnchor: [12, 40]
 });
 
+var polygonIcon = L.icon({
+    iconUrl: './img/marker-icon-purple.png',
+    shadowSize: [50, 64],
+    shadowAnchor: [4, 62],
+    iconAnchor: [12, 40]
+});
+
+module.exports.createPolygonMarker = function(index, coord, ghRequest) {
+console.log("lala1")
+
+console.log(coord)
+    return L.marker([coord[1], coord[0]], {icon: polygonIcon, draggable:false}).addTo(map);
+}
+
 module.exports.createMarker = function (index, coord, setToEnd, setToStart, deleteCoord, ghRequest) {
+console.log("lala2")
+
+console.log(coord)
+
     var toFrom = getToFrom(index, ghRequest);
     return L.marker([coord.lat, coord.lng], {
         icon: ((toFrom === FROM) ? iconFrom : ((toFrom === TO) ? iconTo : new L.NumberedDivIcon({number: index}))),

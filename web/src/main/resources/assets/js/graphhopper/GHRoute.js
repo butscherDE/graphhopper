@@ -69,8 +69,6 @@ GHroute.prototype = {
         return this.length;
     },
     add: function (value, to) {
-        console.log(value);
-        console.log("lala");
         if (GHroute.isArray(value)) {
             for (var i = 0; i < value.length; i++) {
                 Array.prototype.push.call(this, (value[i] instanceof GHInput) ? value[i] : new GHInput(value[i]));

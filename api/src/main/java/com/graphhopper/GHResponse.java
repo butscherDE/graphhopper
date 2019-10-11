@@ -18,6 +18,7 @@
 package com.graphhopper;
 
 import com.graphhopper.util.PMap;
+import com.graphhopper.util.shapes.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ public class GHResponse {
     private final List<Throwable> errors = new ArrayList<>(4);
     private final PMap hintsMap = new PMap();
     private final List<PathWrapper> pathWrappers = new ArrayList<>(5);
+    public Polygon polygon = new Polygon(new double[] {}, new double[] {});
     private String debugInfo = "";
 
     public GHResponse() {

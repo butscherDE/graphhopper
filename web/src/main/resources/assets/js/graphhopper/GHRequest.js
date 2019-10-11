@@ -198,7 +198,7 @@ GHRequest.prototype.createPointParams = function (useRawInput) {
         polygon = this.polygon.getIndex(i);
         str += "&";
         if (typeof polygon.input == 'undefined')
-            str += "polygon=";
+            str += "";
         else if (useRawInput)
             str += "polygon=" + encodeURIComponent(polygon.input);
         else
@@ -211,16 +211,12 @@ GHRequest.prototype.createPointParams = function (useRawInput) {
 
 GHRequest.prototype.createPath = function (url, skipParameters) {
     for (var key in this.api_params) {
-    console.log(key)
-
         if(skipParameters && skipParameters[key])
             continue;
 
         var val = this.api_params[key];
         url += this.flatParameter(key, val);
     }
-    console.log(url)
-
     return url;
 };
 

@@ -944,6 +944,7 @@ public class GraphHopper implements GraphHopperAPI {
     @Override
     public GHResponse route(GHRequest request) {
         GHResponse response = new GHResponse();
+        response.polygon = request.getPolygon();
         calcPaths(request, response);
         return response;
     }

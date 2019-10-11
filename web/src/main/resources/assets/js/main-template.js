@@ -82,7 +82,6 @@ $(document).ready(function (e) {
             // https://github.com/defunkt/jquery-pjax/issues/143#issuecomment-6194330
 
             var state = History.getState();
-            console.log(state);
             initFromParams(state.data, true);
         });
     }
@@ -247,6 +246,17 @@ function initFromParams(params, doQuery) {
         enableTime: true
     });
 
+    console.log(params.polygon)
+    if (Array.isArray(params.polygon)) {
+        console.log(params.polygon);
+        for (var i = 0; i < params.polygon.length; i++) {
+            ghRequest.polygon.set(params.polygon[i], i, true);
+        }
+    } else if (params.polygon !== undefined) {
+        ghRequest.polygon.set(params.polygon, 0, true);
+    }
+    console.log(params.polygon)
+
     if (ghRequest.getEarliestDepartureTime()) {
         flatpickr.setDate(ghRequest.getEarliestDepartureTime());
     }
@@ -392,18 +402,12 @@ function setIntermediateCoord(e) {
 }
 
 function setPolygonCoord(e) {
-//    var routeLayers = mapLayer.getSubLayers("route");
-//    var routeSegments = routeLayers.map(function (rl) {
-//        return {
-//            coordinates: rl.getLatLngs(),
-//            wayPoints: rl.feature.properties.snapped_waypoints.coordinates.map(function (wp) {
-//                return L.latLng(wp[1], wp[0]);
-//            })
-//        };
-//    });
     var index = ghRequest.polygon.size();
-    ghRequest.polygon.add(e.latlng.wrap(), index);
-//    resolveIndex(index);
+    ghRequest.polygon.set(e.latlng.wrap(), index, true);
+    console.log(e.latlng.wrap());
+//    mapLayer.createPolygonMarker(index, e.latlng.wrap(), ghRequest);
+
+    //resolveIndex(index);
     routeIfAllResolved();
 }
 
@@ -550,7 +554,6 @@ function routeLatLng(request, doQuery) {
     $("button#" + request.getVehicle().toLowerCase()).addClass("selectvehicle");
 
     var urlForAPI = request.createURL();
-    console.log(urlForAPI);
     routeResultsDiv.html('<img src="img/indicator.gif"/> Search Route ...');
     request.doRequest(urlForAPI, function (json) {
         routeResultsDiv.html("");
@@ -607,6 +610,8 @@ function routeLatLng(request, doQuery) {
         var defaultRouteStyle = {color: "#00cc33", "weight": 5, "opacity": 0.6};
         var highlightRouteStyle = {color: "#00cc33", "weight": 6, "opacity": 0.8};
         var alternativeRouteStye = {color: "darkgray", "weight": 6, "opacity": 0.8};
+        var polygonStyle = {color: "#FA00FF", "weight": 6, "opacity": 0.8};
+
         var geoJsons = [];
         var firstHeader;
 
@@ -649,6 +654,28 @@ function routeLatLng(request, doQuery) {
 
             geoJsons.push(geojsonFeature);
             mapLayer.addDataToRoutingLayer(geojsonFeature);
+            let polyCoord = []
+            for (var polyIndex = 0; polyIndex < request.polygon.length; polyIndex++) {
+                latlng = [request.polygon[polyIndex].lng,request.polygon[polyIndex].lat];
+                polyCoord.push(latlng)
+                mapLayer.createPolygonMarker(polyIndex, latlng, request);
+            }
+            if (request.polygon[0] !== undefined) {
+                polyCoord.push([request.polygon[0].lng,request.polygon[0].lat])
+            }
+
+            const geojsonPolygon = {
+                "type": "Feature",
+                "geometry": {type:"LineString",coordinates:polyCoord},
+                "properties": {
+                    "style": polygonStyle,
+                    name: "route",
+                }
+            };
+                 console.log(geojsonPolygon)
+
+             mapLayer.addDataToPolygonLayer(geojsonPolygon);
+
             var oneTab = $("<div class='route_result_tab'>");
             routeResultsDiv.append(oneTab);
             tabHeader.click(createClickHandler(geoJsons, pathIndex, tabHeader, oneTab, request.hasElevation(), request.useMiles, path.details));
