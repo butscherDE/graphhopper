@@ -53,6 +53,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
         sw.stop();
         System.out.println(sw.toString());
+        System.out.println("# LOT nodes: " + lotNodes.getLotNodesFor(viaPointNodeIds.get(0)).size());
 
         final List<QueryResult> queryResults = createQueryResults(polygonEntryExitPoints, flagEncoder);
 

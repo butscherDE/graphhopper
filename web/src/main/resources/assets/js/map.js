@@ -5,6 +5,7 @@ var translate = require('./translate.js');
 var routingLayer;
 var map;
 var menuStart;
+var polyItem;
 var menuIntermediate;
 var menuEnd;
 var elevationControl = null;
@@ -47,7 +48,7 @@ function adjustMapSize() {
     // somehow this does not work: map.invalidateSize();
 }
 
-function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selectLayer, useMiles) {
+function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, selectLayer, useMiles) {
     adjustMapSize();
     // console.log("init map at " + JSON.stringify(bounds));
 
@@ -87,6 +88,13 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selec
         callback: setStartCoord,
         index: 0
     };
+        var _polyItem = {
+            text: "Add Polygon Coordinate",
+            icon: './img/marker-small-green.png',
+            callback: setPolygonCoord,
+            index: 3
+        };
+
     var _intItem = {
         text: translate.tr('set_intermediate'),
         icon: './img/marker-small-blue.png',
@@ -103,6 +111,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selec
     menuStart = map.contextmenu.insertItem(_startItem, _startItem.index);
     menuIntermediate = map.contextmenu.insertItem(_intItem, _intItem.index);
     menuEnd = map.contextmenu.insertItem(_endItem, _endItem.index);
+    menuPoly = map.contextmenu.insertItem(_polyItem, _polyItem.index);
 
     var zoomControl = new L.Control.Zoom({
         position: 'topleft',

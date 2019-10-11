@@ -163,7 +163,8 @@ $(document).ready(function (e) {
                 }
                 metaVersionInfo = messages.extractMetaVersionInfo(json);
 
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, urlParams.layer, urlParams.use_miles);
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, urlParams.layer,
+                urlParams.use_miles);
 
                 // execute query
                 initFromParams(urlParams, true);
@@ -180,7 +181,7 @@ $(document).ready(function (e) {
                     "maxLat": 90
                 };
                 nominatim.setBounds(bounds);
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, urlParams.layer, urlParams.use_miles);
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, urlParams.layer, urlParams.use_miles);
             });
 
     var language_code = urlParams.locale && urlParams.locale.split('-', 1)[0];
@@ -390,6 +391,22 @@ function setIntermediateCoord(e) {
     routeIfAllResolved();
 }
 
+function setPolygonCoord(e) {
+//    var routeLayers = mapLayer.getSubLayers("route");
+//    var routeSegments = routeLayers.map(function (rl) {
+//        return {
+//            coordinates: rl.getLatLngs(),
+//            wayPoints: rl.feature.properties.snapped_waypoints.coordinates.map(function (wp) {
+//                return L.latLng(wp[1], wp[0]);
+//            })
+//        };
+//    });
+    var index = ghRequest.polygon.size();
+    ghRequest.polygon.add(e.latlng.wrap(), index);
+//    resolveIndex(index);
+    routeIfAllResolved();
+}
+
 function deleteCoord(e) {
     var latlng = e.relatedTarget.getLatLng();
     ghRequest.route.removeSingle(latlng);
@@ -533,6 +550,7 @@ function routeLatLng(request, doQuery) {
     $("button#" + request.getVehicle().toLowerCase()).addClass("selectvehicle");
 
     var urlForAPI = request.createURL();
+    console.log(urlForAPI);
     routeResultsDiv.html('<img src="img/indicator.gif"/> Search Route ...');
     request.doRequest(urlForAPI, function (json) {
         routeResultsDiv.html("");

@@ -30,6 +30,7 @@ if (!Function.prototype.bind) {
 var GHRequest = function (host, api_key) {
     this.host = host;
     this.route = new GHRoute(new GHInput(), new GHInput());
+    this.polygon = new GHRoute();
     this.from = this.route.first();
     this.to = this.route.last();
     this.features = {};
@@ -61,7 +62,8 @@ var GHRequest = function (host, api_key) {
 
 GHRequest.prototype.init = function (params) {
     for (var key in params) {
-        if (key === "point" || key === "mathRandom" || key === "do_zoom" || key === "layer" || key === "use_miles")
+        if (key === "point" || key === "mathRandom" || key === "do_zoom" || key === "layer" || key === "use_miles" ||
+        key === "polygon")
             continue;
 
         var val = params[key];
@@ -191,17 +193,34 @@ GHRequest.prototype.createPointParams = function (useRawInput) {
         else
             str += "point=" + encodeURIComponent(point.toString());
     }
+
+    for (i = 0, l = this.polygon.size(); i < l; i++) {
+        polygon = this.polygon.getIndex(i);
+        str += "&";
+        if (typeof polygon.input == 'undefined')
+            str += "polygon=";
+        else if (useRawInput)
+            str += "polygon=" + encodeURIComponent(polygon.input);
+        else
+            str += "polygon=" + encodeURIComponent(polygon.toString());
+    }
+
+
     return (str);
 };
 
 GHRequest.prototype.createPath = function (url, skipParameters) {
     for (var key in this.api_params) {
+    console.log(key)
+
         if(skipParameters && skipParameters[key])
             continue;
 
         var val = this.api_params[key];
         url += this.flatParameter(key, val);
     }
+    console.log(url)
+
     return url;
 };
 

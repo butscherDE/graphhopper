@@ -28,53 +28,6 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
         this.detourEntryToDetourExit = detourEntryToDetourExit;
         this.detourExitToEnd = detourExitToEnd;
         this.directRouteStartEnd = directRouteStartEnd;
-
-        if (startNodeID == 906161 || startNodeID == 270195
-            || endNodeID == 906161 || endNodeID == 270195
-            || polygonEntryNodeID == 906161 || polygonEntryNodeID == 270195
-            || polygonExitNodeID == 906161 || polygonExitNodeID == 270195) {
-            System.out.println("hit2");
-        }
-
-//        if (startToDetourEntry.getNodesInPathOrder().contains(906161) && startToDetourEntry.getNodesInPathOrder().contains(270195)) {
-//            System.out.println("hit3");
-//        }
-//
-//        if (detourEntryToDetourExit.getNodesInPathOrder().contains(906161) && detourEntryToDetourExit.getNodesInPathOrder().contains(270195)) {
-//            System.out.println("hit4");
-//        }
-//
-//        if (detourExitToEnd.getNodesInPathOrder().contains(906161) && detourExitToEnd.getNodesInPathOrder().contains(270195)) {
-//            System.out.println("hit5");
-//        }
-//
-//        if (directRouteStartEnd.getNodesInPathOrder().contains(906161) && directRouteStartEnd.getNodesInPathOrder().contains(270195)) {
-//            System.out.println("hit6");
-//        }
-//
-//        for (EdgeIteratorState state : startToDetourEntry.calcEdges()) {
-//            if (state.getEdge() == 17733429) {
-//                System.out.println("hit7");
-//            }
-//        }
-//
-//        for (EdgeIteratorState state : detourEntryToDetourExit.calcEdges()) {
-//            if (state.getEdge() == 17733429) {
-//                System.out.println("hit8");
-//            }
-//        }
-//
-//        for (EdgeIteratorState state : detourExitToEnd.calcEdges()) {
-//            if (state.getEdge() == 17733429) {
-//                System.out.println("hit9");
-//            }
-//        }
-//
-//        for (EdgeIteratorState state : directRouteStartEnd.calcEdges()) {
-//            if (state.getEdge() == 17733429) {
-//                System.out.println("hit10");
-//            }
-//        }
     }
 
     public Path getMergedPath(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
@@ -122,7 +75,6 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
         mergePathIfNotDone(queryGraph, algoOpts);
 
         return checkForRedundantNodes();
-        // TODO: Selfintersecting: Complete route or detour part?
     }
 
     private void mergePathIfNotDone(QueryGraph queryGraph, AlgorithmOptions algoOpts) {
