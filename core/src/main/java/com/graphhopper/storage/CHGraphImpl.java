@@ -483,9 +483,6 @@ public class CHGraphImpl implements CHGraph, Storable<CHGraph> {
 
         @Override
         public final IntsRef getFlags() {
-            if (edgeId == 17733429) {
-                System.out.println("hit");
-            }
             checkShortcut(false, "getFlags");
             return super.getFlags();
         }

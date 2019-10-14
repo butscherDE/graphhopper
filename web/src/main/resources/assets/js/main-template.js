@@ -82,7 +82,6 @@ $(document).ready(function (e) {
             // https://github.com/defunkt/jquery-pjax/issues/143#issuecomment-6194330
 
             var state = History.getState();
-            console.log(state);
             initFromParams(state.data, true);
         });
     }
@@ -163,7 +162,8 @@ $(document).ready(function (e) {
                 }
                 metaVersionInfo = messages.extractMetaVersionInfo(json);
 
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, urlParams.layer, urlParams.use_miles);
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, urlParams.layer,
+                urlParams.use_miles);
 
                 // execute query
                 initFromParams(urlParams, true);
@@ -180,7 +180,7 @@ $(document).ready(function (e) {
                     "maxLat": 90
                 };
                 nominatim.setBounds(bounds);
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, urlParams.layer, urlParams.use_miles);
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, urlParams.layer, urlParams.use_miles);
             });
 
     var language_code = urlParams.locale && urlParams.locale.split('-', 1)[0];
@@ -245,6 +245,17 @@ function initFromParams(params, doQuery) {
         time_24hr: true,
         enableTime: true
     });
+
+    console.log(params.polygon)
+    if (Array.isArray(params.polygon)) {
+        console.log(params.polygon);
+        for (var i = 0; i < params.polygon.length; i++) {
+            ghRequest.polygon.set(params.polygon[i], i, true);
+        }
+    } else if (params.polygon !== undefined) {
+        ghRequest.polygon.set(params.polygon, 0, true);
+    }
+    console.log(params.polygon)
 
     if (ghRequest.getEarliestDepartureTime()) {
         flatpickr.setDate(ghRequest.getEarliestDepartureTime());
@@ -390,9 +401,26 @@ function setIntermediateCoord(e) {
     routeIfAllResolved();
 }
 
+function setPolygonCoord(e) {
+    var index = ghRequest.polygon.size();
+    ghRequest.polygon.set(e.latlng.wrap(), index, true);
+    console.log(e.latlng.wrap());
+//    mapLayer.createPolygonMarker(index, e.latlng.wrap(), ghRequest);
+
+    //resolveIndex(index);
+    routeIfAllResolved();
+}
+
 function deleteCoord(e) {
     var latlng = e.relatedTarget.getLatLng();
     ghRequest.route.removeSingle(latlng);
+    mapLayer.clearLayers();
+    routeLatLng(ghRequest, false);
+}
+
+function deletePolygon(e) {
+    var latlng = e.relatedTarget.getLatLng();
+    ghRequest.polygon.removeSingle(latlng);
     mapLayer.clearLayers();
     routeLatLng(ghRequest, false);
 }
@@ -589,6 +617,8 @@ function routeLatLng(request, doQuery) {
         var defaultRouteStyle = {color: "#00cc33", "weight": 5, "opacity": 0.6};
         var highlightRouteStyle = {color: "#00cc33", "weight": 6, "opacity": 0.8};
         var alternativeRouteStye = {color: "darkgray", "weight": 6, "opacity": 0.8};
+        var polygonStyle = {color: "#FA00FF", "weight": 6, "opacity": 0.8};
+
         var geoJsons = [];
         var firstHeader;
 
@@ -631,6 +661,29 @@ function routeLatLng(request, doQuery) {
 
             geoJsons.push(geojsonFeature);
             mapLayer.addDataToRoutingLayer(geojsonFeature);
+            let polyCoord = [];
+            var marker;
+            for (var polyIndex = 0; polyIndex < request.polygon.length; polyIndex++) {
+                latlng = [request.polygon[polyIndex].lng,request.polygon[polyIndex].lat];
+                polyCoord.push(latlng)
+                generatePolyFlags(polyIndex,latlng,request)
+            }
+            if (request.polygon[0] !== undefined) {
+                polyCoord.push([request.polygon[0].lng,request.polygon[0].lat])
+            }
+
+            const geojsonPolygon = {
+                "type": "Feature",
+                "geometry": {type:"LineString",coordinates:polyCoord},
+                "properties": {
+                    "style": polygonStyle,
+                    name: "route",
+                }
+            };
+                 console.log(geojsonPolygon)
+
+             mapLayer.addDataToPolygonLayer(geojsonPolygon);
+
             var oneTab = $("<div class='route_result_tab'>");
             routeResultsDiv.append(oneTab);
             tabHeader.click(createClickHandler(geoJsons, pathIndex, tabHeader, oneTab, request.hasElevation(), request.useMiles, path.details));
@@ -727,7 +780,21 @@ function routeLatLng(request, doQuery) {
         });
     });
 }
-
+function generatePolyFlags(polyIndex, latlng, request){
+                marker = mapLayer.createPolygonMarker(polyIndex, latlng, request, deletePolygon);
+                marker.on('dragend', function (e) {
+                            mapLayer.clearLayers();
+                            // inconsistent leaflet API: event.target.getLatLng vs. mouseEvent.latlng?
+                            var latlng = e.target.getLatLng();
+                            autocomplete.hide();
+                            console.log(polyIndex)
+                            request.polygon.getIndex(polyIndex).setCoord(latlng.lat, latlng.lng);
+                            //resolveIndex(polyIndex);
+                            // do not wait for resolving and avoid zooming when dragging
+                            request.do_zoom = false;
+                            routeLatLng(request, false);
+                        });
+}
 function mySubmit() {
     var fromStr,
             toStr,

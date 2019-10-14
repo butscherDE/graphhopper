@@ -3,8 +3,10 @@ var tileLayers = require('./config/tileLayers.js');
 var translate = require('./translate.js');
 
 var routingLayer;
+var polygonLayer;
 var map;
 var menuStart;
+var polyItem;
 var menuIntermediate;
 var menuEnd;
 var elevationControl = null;
@@ -47,7 +49,7 @@ function adjustMapSize() {
     // somehow this does not work: map.invalidateSize();
 }
 
-function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selectLayer, useMiles) {
+function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, selectLayer, useMiles) {
     adjustMapSize();
     // console.log("init map at " + JSON.stringify(bounds));
 
@@ -87,6 +89,13 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selec
         callback: setStartCoord,
         index: 0
     };
+        var _polyItem = {
+            text: "Add Polygon Coordinate",
+            icon: './img/marker-small-purple.png',
+            callback: setPolygonCoord,
+            index: 3
+        };
+
     var _intItem = {
         text: translate.tr('set_intermediate'),
         icon: './img/marker-small-blue.png',
@@ -103,6 +112,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selec
     menuStart = map.contextmenu.insertItem(_startItem, _startItem.index);
     menuIntermediate = map.contextmenu.insertItem(_intItem, _intItem.index);
     menuEnd = map.contextmenu.insertItem(_endItem, _endItem.index);
+    menuPoly = map.contextmenu.insertItem(_polyItem, _polyItem.index);
 
     var zoomControl = new L.Control.Zoom({
         position: 'topleft',
@@ -188,6 +198,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selec
         }).addTo(map);
 
     routingLayer = L.geoJson().addTo(map);
+    polygonLayer = L.geoJson().addTo(map);
 
     routingLayer.options = {
         // use style provided by the 'properties' entry of the geojson added by addDataToRoutingLayer
@@ -208,6 +219,12 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, selec
         contextmenuInheritItems: false
     };
 
+    polygonLayer.options = {
+        // use style provided by the 'properties' entry of the geojson added by addDataToRoutingLayer
+        style: function (feature) {
+            return feature.properties && feature.properties.style;
+        },
+    };
 }
 
 function focus(coord, zoom, index) {
@@ -222,6 +239,7 @@ function focus(coord, zoom, index) {
 
 module.exports.clearLayers = function () {
     routingLayer.clearLayers();
+    polygonLayer.clearLayers();
 };
 
 module.exports.getRoutingLayer = function () {
@@ -238,6 +256,10 @@ module.exports.getSubLayers = function(name) {
 module.exports.addDataToRoutingLayer = function (geoJsonFeature) {
     routingLayer.addData(geoJsonFeature);
 };
+
+module.exports.addDataToPolygonLayer = function (geoJsonFeature) {
+    polygonLayer.addData(geoJsonFeature);
+}
 
 module.exports.eachLayer = function (callback) {
     routingLayer.eachLayer(callback);
@@ -401,6 +423,26 @@ var iconTo = L.icon({
     shadowAnchor: [4, 62],
     iconAnchor: [12, 40]
 });
+
+var polygonIcon = L.icon({
+    iconUrl: './img/marker-icon-purple.png',
+    shadowSize: [50, 64],
+    shadowAnchor: [4, 62],
+    iconAnchor: [12, 40]
+});
+
+module.exports.createPolygonMarker = function(index, coord, ghRequest, deletePolygon) {
+    return L.marker([coord[1], coord[0]], {icon: new L.NumberedDivIconPolygon({number: index + 1}), draggable:true,
+          contextmenu: true,
+          contextmenuItems: defaultContextmenuItems.concat([{
+                  text: "Delete from Polygon",
+                  callback: deletePolygon,
+                  disabled: false, // prevent to and from
+                  index: 0
+              }]),
+          contextmenuInheritItems: false})
+    .addTo(polygonLayer);
+}
 
 module.exports.createMarker = function (index, coord, setToEnd, setToStart, deleteCoord, ghRequest) {
     var toFrom = getToFrom(index, ghRequest);

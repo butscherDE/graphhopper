@@ -189,6 +189,7 @@ public class WebHelper {
             if (ar.getFare() != null) {
                 jsonPath.put("fare", NumberFormat.getCurrencyInstance(Locale.ROOT).format(ar.getFare()));
             }
+            jsonPath.putPOJO("polygon", ghRsp.polygon.getCoordinatesAsGHPoints());
         }
         return json;
     }
