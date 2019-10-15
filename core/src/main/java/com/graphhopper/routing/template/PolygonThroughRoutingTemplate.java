@@ -23,6 +23,9 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private ManyToManyRouting pathSkeletonRouter;
     private final FlagEncoder flagEncoder;
     private LOTNodeExtractor lotNodes;
+    private List<Integer> nodesInPolygon;
+    private List<Integer> polygonEntryExitPoints;
+    private LOTNodeExtractor lotNodes1;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex,
                                          EncodingManager encodingManager) {
@@ -32,43 +35,57 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     protected void findCandidateRoutes() {
-        StopWatch sw = new StopWatch("finding nodes in polygon");
-        sw.start();
-        final List<Integer> nodesInPolygon = getNodesInPolygon();
-        sw.stop();
-        System.out.println(sw.toString());
-        System.out.println("# nodes in Polygon: " + nodesInPolygon.size());
-
-        sw = new StopWatch("finding entry exit points");
-        sw.start();
-        final List<Integer> polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
-        sw.stop();
-        System.out.println(sw.toString());
-        System.out.println("# Entry/Exit Points: " + polygonEntryExitPoints.size());
-
-        final List<Integer> viaPointNodeIds = this.extractNodeIdsFromQueryResults();
-
-        sw = new StopWatch("LOT node generation");
-        sw.start();
-        lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
-        sw.stop();
-        System.out.println(sw.toString());
-        System.out.println("# LOT nodes: " + lotNodes.getLotNodesFor(viaPointNodeIds.get(0)).size());
-
+        final StopWatch swFindNodesInPolygon = generateNodesInPolygonAndMeasureTime();
+        final StopWatch swFindEntryExitPoints = findPolygonEntryExitPointsAndMeasureTime();
+        final List<Integer> viaPointNodeIds = extractNodeIdsFromQueryResults();
+        final StopWatch swLOTNodes = findLotNodesAndMeasureTime(viaPointNodeIds);
         final List<QueryResult> queryResults = createQueryResults(polygonEntryExitPoints, flagEncoder);
+        final StopWatch swPathSkeleton = findPathSkeletonAndMeasureTime(queryResults);
 
-        sw = new StopWatch("Generate path skeleton");
-        sw.start();
-        this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
-        this.pathSkeletonRouter.findPathBetweenAllNodePairs();
-        sw.stop();
-        System.out.println(sw.toString());
+        System.out.println("Candidate Routes found\n" +
+                           "Nodes in polygon : " + nodesInPolygon.size() + " in " + swFindNodesInPolygon.getSeconds() + "\n" +
+                           "Entry/Exit points: " + polygonEntryExitPoints.size() + " in " + swFindEntryExitPoints.getSeconds() + "\n" +
+                           "LOT Nodes        : " + lotNodes.size() + " in " + swLOTNodes.getSeconds() + "\n" +
+                           "Path Skeleton    : " + "in " + swPathSkeleton.getSeconds());
 
         for (int i = 0; i < viaPointNodeIds.size() - 1; i++) {
             final int viaPointNodeId = viaPointNodeIds.get(i);
             final int nextViaPointNodeId = viaPointNodeIds.get(i + 1);
             buildRouteCandidatesForCurrentPoint(viaPointNodeId, nextViaPointNodeId, lotNodes.getLotNodesFor(viaPointNodeId));
         }
+    }
+
+    private StopWatch findPathSkeletonAndMeasureTime(List<QueryResult> queryResults) {
+        final StopWatch swPathSkeleton = new StopWatch("Generate path skeleton");
+        swPathSkeleton.start();
+        this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
+        this.pathSkeletonRouter.findPathBetweenAllNodePairs();
+        swPathSkeleton.stop();
+        return swPathSkeleton;
+    }
+
+    private StopWatch findLotNodesAndMeasureTime(List<Integer> viaPointNodeIds) {
+        final StopWatch swLOTNodes = new StopWatch("LOT node generation");
+        swLOTNodes.start();
+        this.lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
+        swLOTNodes.stop();
+        return swLOTNodes;
+    }
+
+    private StopWatch findPolygonEntryExitPointsAndMeasureTime() {
+        StopWatch swFindEntryExitPoints = new StopWatch("finding entry exit points");
+        swFindEntryExitPoints.start();
+        this.polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
+        swFindEntryExitPoints.stop();
+        return swFindEntryExitPoints;
+    }
+
+    private StopWatch generateNodesInPolygonAndMeasureTime() {
+        StopWatch swFindNodesInPolygon = new StopWatch("finding nodes in polygon");
+        swFindNodesInPolygon.start();
+        this.nodesInPolygon = getNodesInPolygon();
+        swFindNodesInPolygon.stop();
+        return swFindNodesInPolygon;
     }
 
     private List<QueryResult> createQueryResults(final List<Integer> nodes, final FlagEncoder flagEncoder) {

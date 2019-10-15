@@ -10,6 +10,7 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.util.PathMerger;
 import com.graphhopper.util.Translation;
+import com.sun.org.apache.xpath.internal.operations.String;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -56,13 +57,6 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         return this.pathList;
     }
 
-    private void extractBestPathCandidate() {
-        // TODO Maybe more? Dont know what happens in the gui then.
-        this.routeCandidates.sortByGainAscending();
-        final List<Path> bestPath = this.routeCandidates.getFirstAsPathList(1, this.graph, this.algorithmOptions);
-        this.pathList.addAll(bestPath);
-    }
-
     private void prepareRouteCandidateList() {
         this.findCandidateRoutes();
         this.routeCandidates.pruneDominatedCandidateRoutes();
@@ -78,6 +72,34 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         }
     }
 
+    private void extractBestPathCandidate() {
+        // TODO Maybe more? Dont know what happens in the gui then.
+        this.routeCandidates.sortByGainAscending();
+        printAllCandidatesInSortedOrder();
+        deleteBestN(0);
+        final List<Path> bestPath = this.routeCandidates.getFirstAsPathList(1, this.graph, this.algorithmOptions);
+        this.pathList.addAll(bestPath);
+    }
+
+    private void printAllCandidatesInSortedOrder() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("All non pruned route Candidates: ");
+
+        for (int i = 0; i < this.routeCandidates.size(); i++) {
+            sb.append(this.routeCandidates.get(i).toString());
+            sb.append("\n");
+        }
+
+        System.out.println(sb.toString());
+    }
+
+    // TODO used for experimenting delete when no more needed.
+    private void deleteBestN(final int n) {
+        for (int i = 0; i < n; i++) {
+            this.routeCandidates.remove(this.routeCandidates.size() - 1);
+        }
+    }
+
     protected abstract void findCandidateRoutes();
 
     @Override
@@ -86,7 +108,6 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
         this.altResponse.setWaypoints(getWaypoints());
         this.ghResponse.add(this.altResponse);
-        System.out.println(this.pathList.get(0).getNodesInPathOrder().toString());
         pathMerger.doWork(this.altResponse, this.pathList, this.encodingManager, translation);
         return true;
     }

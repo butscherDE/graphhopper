@@ -119,6 +119,8 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         this.candidates.remove(o);
     }
 
+    public void remove(int i) { this.candidates.remove(i); }
+
     public void add(T o) {
         if (o.isLegalCandidate()) {
             this.candidates.add(o);

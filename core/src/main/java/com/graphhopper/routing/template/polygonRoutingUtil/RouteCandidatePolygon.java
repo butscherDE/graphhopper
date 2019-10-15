@@ -115,9 +115,9 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
                     "endNodeID: " + endNodeID + ", " +
                     "polygonEntryNodeID: " + polygonEntryNodeID + ", " +
                     "polygonExitNodeID: " + polygonExitNodeID + ", " +
-                    "Distance: " + this.getTime() + ", " +
-                    "DistanceInROI: " + getTimeInROI() + ", " +
-                    "detour distance: " + getDetourTime() + ", " +
+                    "Time: " + this.getTime() + ", " +
+                    "TimeInROI: " + getTimeInROI() + ", " +
+                    "TimeDetour: " + getDetourTime() + ", " +
                     "gain: " + this.getGain();
         return sb;
     }
