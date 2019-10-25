@@ -93,6 +93,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
             text: "Add Polygon Coordinate",
             icon: './img/marker-small-purple.png',
             callback: setPolygonCoord,
+            disabled: true,
             index: 3
         };
 
@@ -272,6 +273,8 @@ module.exports.setDisabledForMapsContextMenu = function (entry, value) {
         map.contextmenu.setDisabled(menuEnd, value);
     if (entry === 'intermediate')
         map.contextmenu.setDisabled(menuIntermediate, value);
+    if (entry === 'polygon')
+        map.contextmenu.setDisabled(menuPoly, value);
 };
 
 module.exports.fitMapToBounds = function (bounds) {

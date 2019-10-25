@@ -51,6 +51,9 @@ var debug = false;
 var ghRequest = new GHRequest(host, ghenv.routing.api_key);
 var bounds = {};
 
+var startIsSet = false;
+var endIsSet = false;
+
 var metaVersionInfo;
 
 // usage: log('inside coolFunc',this,arguments);
@@ -383,6 +386,9 @@ function setStartCoord(e) {
     ghRequest.route.set(e.latlng.wrap(), 0);
     resolveFrom();
     routeIfAllResolved();
+    startIsSet = true;
+
+    enablePolygonCoordsIfPossible();
 }
 
 function setIntermediateCoord(e) {
@@ -404,10 +410,7 @@ function setIntermediateCoord(e) {
 function setPolygonCoord(e) {
     var index = ghRequest.polygon.size();
     ghRequest.polygon.set(e.latlng.wrap(), index, true);
-    console.log(e.latlng.wrap());
-//    mapLayer.createPolygonMarker(index, e.latlng.wrap(), ghRequest);
 
-    //resolveIndex(index);
     routeIfAllResolved();
 }
 
@@ -430,6 +433,22 @@ function setEndCoord(e) {
     ghRequest.route.set(e.latlng.wrap(), index);
     resolveTo();
     routeIfAllResolved();
+    endIsSet = true;
+
+    enablePolygonCoordsIfPossible();
+}
+
+function enablePolygonCoordsIfPossible() {
+    if (isStartAndEndpointSet())
+        enablePolygonContextMenuOption();
+}
+
+function isStartAndEndpointSet() {
+    return startIsSet && endIsSet;
+}
+
+function enablePolygonContextMenuOption() {
+        mapLayer.setDisabledForMapsContextMenu('polygon', false);
 }
 
 function routeIfAllResolved(doQuery) {
