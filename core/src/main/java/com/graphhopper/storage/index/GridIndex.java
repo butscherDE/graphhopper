@@ -16,7 +16,7 @@ public class GridIndex implements LocationIndex {
     private final Graph graph;
     private final NodeAccess nodeAccess;
     private int resolution = -1;
-    private List<List<List<Integer>>> index;
+    private GridCell[][] index;
 
     public GridIndex(final Graph graph) {
         this.graph = graph;
@@ -28,34 +28,40 @@ public class GridIndex implements LocationIndex {
         failOnInvalidResolutionGiven(resolution);
 
         this.resolution = resolution;
-        addRowsToGrid(resolution);
-        addColumnsToGrid(resolution);
+        initIndex();
 
         return this;
-    }
-
-    private void addRowsToGrid(int resolution) {
-        this.index = new ArrayList<>(resolution);
-    }
-
-    private void addColumnsToGrid(int resolution) {
-        for (int i = 0; i < resolution; i++) {
-            this.index.add(new ArrayList<List<Integer>>(resolution));
-
-            addIndexForGridCell(resolution, i);
-        }
-    }
-
-    private void addIndexForGridCell(int resolution, int i) {
-        for (int j = 0; j < resolution; j++) {
-            this.index.get(i).add(new ArrayList<Integer>());
-        }
     }
 
     private void failOnInvalidResolutionGiven(int resolution) {
         if (resolution < 1) {
             throw new IllegalArgumentException("Resolution must be > 0.");
         }
+    }
+
+    private void initIndex() {
+        final double[] latitudeIntervalSteps = getIntervalValuesForDirection(MAX_LATITUDE);
+        final double[] longitudeIntervalSteps = getIntervalValuesForDirection(MAX_LONGITUDE);
+
+        index = new GridCell[this.resolution][this.resolution];
+
+        for (int i = 0; i < this.resolution; i++) {
+            for (int j = 0; j < this.resolution; j++) {
+                final BBox gridCellBoundingBox = new BBox(longitudeIntervalSteps[j + 1], longitudeIntervalSteps[j], latitudeIntervalSteps[j], latitudeIntervalSteps[j + 1]);
+                index[i][j] = new GridCell(gridCellBoundingBox);
+            }
+        }
+    }
+
+    private double[] getIntervalValuesForDirection(final double maxValueOfDirection) {
+        final int numValues = this.resolution + 1;
+        final double[] intervalValues = new double[numValues];
+
+        for (int i = 0; i < numValues; i++) {
+            intervalValues[i] = (maxValueOfDirection * 2 * i) / this.resolution - maxValueOfDirection;
+        }
+
+        return intervalValues;
     }
 
     @Override
@@ -106,7 +112,7 @@ public class GridIndex implements LocationIndex {
         final int latitudeIndex = getLatitudeIndex(nodeId);
         final int longitudeIndex = getLongitudeIndex(nodeId);
 
-        this.index.get(latitudeIndex).get(longitudeIndex).add(nodeId);
+        this.index[latitudeIndex][longitudeIndex].nodes.add(nodeId);
     }
 
     private int getLatitudeIndex(int nodeId) {
@@ -141,7 +147,39 @@ public class GridIndex implements LocationIndex {
 
     @Override
     public void query(BBox queryBBox, Visitor function) {
+        executeQueryForEachIndexCell(queryBBox, function);
+    }
 
+    private void executeQueryForEachIndexCell(BBox queryBBox, Visitor function) {
+        for (int i = 0; i < this.resolution; i++) {
+            for (int j = 0; j < this.resolution; j++) {
+                executeQueryOnCell(queryBBox, function, i, j);
+            }
+        }
+    }
+
+    private void executeQueryOnCell(BBox queryBBox, Visitor function, int i, int j) {
+        final BBox gridCellBoundingBox = this.index[i][j].boundingBox;
+
+        callVisitorOnNodesInCellIfBBoxIntersectsCell(queryBBox, function, i, j, gridCellBoundingBox);
+    }
+
+    private void callVisitorOnNodesInCellIfBBoxIntersectsCell(BBox queryBBox, Visitor function, int i, int j, BBox gridCellBoundingBox) {
+        if (queryBBoxIntersectsCell(queryBBox, gridCellBoundingBox)) {
+            final List<Integer> cellsNodes = index[i][j].nodes;
+
+            callVisitorOnEachNodeInCell(function, cellsNodes);
+        }
+    }
+
+    private boolean queryBBoxIntersectsCell(BBox queryBBox, BBox gridCellBoundingBox) {
+        return gridCellBoundingBox.intersects(queryBBox);
+    }
+
+    private void callVisitorOnEachNodeInCell(Visitor function, List<Integer> cellsNodes) {
+        for (final int node : cellsNodes) {
+            function.onNode(node);
+        }
     }
 
     @Override
@@ -172,5 +210,15 @@ public class GridIndex implements LocationIndex {
     @Override
     public long getCapacity() {
         return 0;
+    }
+
+    private class GridCell {
+        public final List<Integer> nodes;
+        public final BBox boundingBox;
+
+        public GridCell(final BBox boundingBox) {
+            this.nodes = new ArrayList<>();
+            this.boundingBox = boundingBox;
+        }
     }
 }
