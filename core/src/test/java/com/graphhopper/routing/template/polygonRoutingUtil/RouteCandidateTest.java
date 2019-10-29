@@ -19,7 +19,7 @@ public class RouteCandidateTest {
 
     @Test
     public void testCorrectDistanceMetricsSmaller() {
-        RouteCandidatePolygon testSmaller = setupSmallerRouteCandidate();
+        RouteCandidate testSmaller = setupSmallerRouteCandidate();
 
         assertEquals(1, testSmaller.getTimeInROI(), 0);
         assertEquals(3, testSmaller.getTime(), 0);
@@ -30,7 +30,7 @@ public class RouteCandidateTest {
 
     @Test
     public void testCorrectDistanceMetricsGreater() {
-        RouteCandidatePolygon testGreater = setupGreaterRouteCandidate();
+        RouteCandidate testGreater = setupGreaterRouteCandidate();
 
         assertEquals(2, testGreater.getTimeInROI(), 0);
         assertEquals(6, testGreater.getTime(), 0);
@@ -41,8 +41,8 @@ public class RouteCandidateTest {
 
     @Test
     public void testCorrectComparision() {
-        RouteCandidatePolygon testSmaller = setupSmallerRouteCandidate();
-        RouteCandidatePolygon testGreater = setupGreaterRouteCandidate();
+        RouteCandidate testSmaller = setupSmallerRouteCandidate();
+        RouteCandidate testGreater = setupGreaterRouteCandidate();
 
         final int comparisionResult = testSmaller.compareTo(testGreater);
         assertEquals(-1, comparisionResult);
@@ -50,41 +50,41 @@ public class RouteCandidateTest {
 
     @Test
     public void testMissingPathStartToDetourEntry() {
-        RouteCandidatePolygon test = setupSmallerRouteCandidate();
+        RouteCandidate test = setupSmallerRouteCandidate();
         test.startToDetourEntry = new Path(this.graphMocker.graph, this.graphMocker.weighting);
     }
 
     @Test
     public void testMissingPathDetourEntryToDetourExit() {
-        RouteCandidatePolygon test = setupSmallerRouteCandidate();
+        RouteCandidate test = setupSmallerRouteCandidate();
         test.detourEntryToDetourExit = new Path(this.graphMocker.graph, this.graphMocker.weighting);
     }
 
     @Test
     public void testMissingPathDetourExitToEnd() {
-        RouteCandidatePolygon test = setupSmallerRouteCandidate();
+        RouteCandidate test = setupSmallerRouteCandidate();
         test.detourExitToEnd = new Path(this.graphMocker.graph, this.graphMocker.weighting);
     }
 
-    private RouteCandidatePolygon setupSmallerRouteCandidate() {
+    private RouteCandidate setupSmallerRouteCandidate() {
         Path startToDetourEntry = createTestSubPath(7, 28, 1);
         Path detourEntryToDetourExit = createTestSubPath(72, 29, 1).setFromNode(0);
         Path detourExitToEnd = createTestSubPath(12, 3, 1);
         Path directRouteStartEnd = createDirectRoute(2);
 
-        RouteCandidatePolygon test = new RouteCandidatePolygon(1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
+        RouteCandidate test = new RouteCandidate(1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
                                                                detourExitToEnd, directRouteStartEnd);
 
         return test;
     }
 
-    private RouteCandidatePolygon setupGreaterRouteCandidate() {
+    private RouteCandidate setupGreaterRouteCandidate() {
         Path startToDetourEntry = createTestSubPath(7, 28, 2);
         Path detourEntryToDetourExit = createTestSubPath(72, 29, 2).setFromNode(0);
         Path detourExitToEnd = createTestSubPath(12, 3, 2);
         Path directRouteStartEnd = createDirectRoute(5);
 
-        RouteCandidatePolygon test = new RouteCandidatePolygon(1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
+        RouteCandidate test = new RouteCandidate(1, 3, 28, 29, startToDetourEntry, detourEntryToDetourExit,
                                                                detourExitToEnd, directRouteStartEnd);
 
         return test;
@@ -115,8 +115,8 @@ public class RouteCandidateTest {
 
     @Test
     public void testSelfintersection() {
-        final RouteCandidatePolygon testNonSelfintersecting = setupNonSelfintersectingRouteCandidate();
-        final RouteCandidatePolygon testSelfintersecting = setupSelfintersectingRouteCandidate();
+        final RouteCandidate testNonSelfintersecting = setupNonSelfintersectingRouteCandidate();
+        final RouteCandidate testSelfintersecting = setupSelfintersectingRouteCandidate();
 
         final QueryGraph queryGraph = new QueryGraph(graphMocker.graph);
         final AlgorithmOptions algorithmOptions = new AlgorithmOptions("dijkstrabi", graphMocker.weighting);
@@ -125,28 +125,28 @@ public class RouteCandidateTest {
         assertTrue(testSelfintersecting.isDetourSelfIntersecting(queryGraph, algorithmOptions));
     }
 
-    private RouteCandidatePolygon setupNonSelfintersectingRouteCandidate() {
+    private RouteCandidate setupNonSelfintersectingRouteCandidate() {
         return createSimpleMergedCandidate(0, 3, 0, 3, 8);
     }
 
-    private RouteCandidatePolygon setupSelfintersectingRouteCandidate() {
+    private RouteCandidate setupSelfintersectingRouteCandidate() {
         return createSimpleMergedCandidate(0, 3, 0, 3, 9, 73, 10, 8);
     }
 
-    private RouteCandidatePolygon createSimpleMergedCandidate(final int from, final int to, final int... edgeIds) {
-        RouteCandidatePolygon candidate = createRouteCandidateWithMergedPath(from, to);
+    private RouteCandidate createSimpleMergedCandidate(final int from, final int to, final int... edgeIds) {
+        RouteCandidate candidate = createRouteCandidateWithMergedPath(from, to);
         setupRouteCandidatesParameters(from, to, candidate, edgeIds);
 
         return candidate;
     }
 
-    private RouteCandidatePolygon createRouteCandidateWithMergedPath(int from, int to) {
-        RouteCandidatePolygon candidate = new RouteCandidatePolygon(from, to, -1, -1, null, null, null, null);
+    private RouteCandidate createRouteCandidateWithMergedPath(int from, int to) {
+        RouteCandidate candidate = new RouteCandidate(from, to, -1, -1, null, null, null, null);
         candidate.mergedPath = new PathMerge(graphMocker.graph, graphMocker.weighting);
         return candidate;
     }
 
-    private void setupRouteCandidatesParameters(int from, int to, RouteCandidatePolygon candidate, int[] edgeIds) {
+    private void setupRouteCandidatesParameters(int from, int to, RouteCandidate candidate, int[] edgeIds) {
         for (final int edgeId : edgeIds) {
             candidate.mergedPath.addEdge(edgeId);
         }
@@ -163,7 +163,7 @@ public class RouteCandidateTest {
         final Path polygonEntryToPolygonExit = createPolygonEntryToPolygonExit(routingAlgorithmFactory);
         final Path polygonExitToEnd = createPolygonExitToEnd(routingAlgorithmFactory);
 
-        final RouteCandidatePolygon testCandidate = new RouteCandidatePolygon(0, 4, 1, 3, startToPolygonEntry, polygonEntryToPolygonExit, polygonExitToEnd, null);
+        final RouteCandidate testCandidate = new RouteCandidate(0, 4, 1, 3, startToPolygonEntry, polygonEntryToPolygonExit, polygonExitToEnd, null);
         final Path mergedPath = testCandidate.getMergedPath(new QueryGraph(this.graphMocker.graph), this.graphMocker.algorithmOptions);
 
         assertEquals(4, mergedPath.getDistance(), 0);

@@ -2,7 +2,6 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.Trip;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.template.polygonRoutingUtil.*;
 import com.graphhopper.routing.util.EncodingManager;
@@ -127,14 +126,14 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         }
     }
 
-    private RouteCandidatePolygon buildCandidatePath(int currentPointID, int nextPointID, int lotNodeL, int lotNodeLPrime) {
+    private RouteCandidate buildCandidatePath(int currentPointID, int nextPointID, int lotNodeL, int lotNodeLPrime) {
         final Path startToDetourEntry = this.lotNodes.getLotNodePathFor(currentPointID, lotNodeL);
         final Path detourEntryToDetourExit = this.pathSkeletonRouter.getPathByFromEndNodeID(lotNodeL, lotNodeLPrime);
         final Path detourExitToEnd = this.lotNodes.getLotNodePathFor(lotNodeLPrime, nextPointID);
         final Path directRoute = this.getNewRoutingAlgorithm().calcPath(currentPointID, nextPointID);
 
-        final RouteCandidatePolygon routeCandidate = new RouteCandidatePolygon(currentPointID, nextPointID, lotNodeL, lotNodeLPrime, startToDetourEntry, detourEntryToDetourExit,
-                                                                               detourExitToEnd, directRoute);
+        final RouteCandidate routeCandidate = new RouteCandidate(currentPointID, nextPointID, lotNodeL, lotNodeLPrime, startToDetourEntry, detourEntryToDetourExit,
+                                                                 detourExitToEnd, directRoute);
 
         return routeCandidate;
     }

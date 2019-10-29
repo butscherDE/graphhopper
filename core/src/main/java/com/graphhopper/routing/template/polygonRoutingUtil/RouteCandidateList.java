@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class RouteCandidateList<T extends RouteCandidatePolygon> {
+public class RouteCandidateList<T extends RouteCandidate> {
     private List<T> candidates;
 
     public RouteCandidateList() {
@@ -21,9 +21,9 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
     }
 
     private void sortRouteCandidatesToTimeInROIDescending() {
-        Collections.sort(this.candidates, new Comparator<RouteCandidatePolygon>() {
+        Collections.sort(this.candidates, new Comparator<RouteCandidate>() {
             @Override
-            public int compare(RouteCandidatePolygon rc1, RouteCandidatePolygon rc2) {
+            public int compare(RouteCandidate rc1, RouteCandidate rc2) {
                 double timeDifference = rc1.getTimeInROI() - rc2.getTimeInROI();
                 int output;
                 if (timeDifference < 0) {
@@ -54,7 +54,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         List<Path> paths = new ArrayList<>(nOfFirstElements);
         int indexIntoCandidates = endOfCandidates;
         while (indexIntoCandidates >= 0 && paths.size() < nOfFirstElements) {
-            final RouteCandidatePolygon candidate = this.candidates.get(indexIntoCandidates);
+            final RouteCandidate candidate = this.candidates.get(indexIntoCandidates);
 
             if (candidate.isDetourSelfIntersecting(queryGraph, algorithmOptions) == addSelfIntersecting) {
                 paths.add(candidate.getMergedPath(queryGraph, algorithmOptions));
@@ -72,7 +72,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
 
         int currentPruningCandidateIndex = 1;
         while (indexInCandidateBounds(currentPruningCandidateIndex)) {
-            RouteCandidatePolygon currentPruningCandidate = this.candidates.get(currentPruningCandidateIndex);
+            RouteCandidate currentPruningCandidate = this.candidates.get(currentPruningCandidateIndex);
 
             boolean foundDominatingPath = isThisCandidateDominatedByAny(currentPruningCandidateIndex, currentPruningCandidate);
 
@@ -80,11 +80,11 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         }
     }
 
-    private boolean isThisCandidateDominatedByAny(int currentPruningCandidateIndex, RouteCandidatePolygon currentPruningCandidate) {
+    private boolean isThisCandidateDominatedByAny(int currentPruningCandidateIndex, RouteCandidate currentPruningCandidate) {
         boolean foundDominatingPath = false;
         for (int i = currentPruningCandidateIndex - 1; i >= 0 && !foundDominatingPath; i--) {
             // routeCandidates must be sorted by now. Therefore dominators can only bbe found on lower indices than the current pruning candidate.
-            RouteCandidatePolygon possiblyBetterRouteCandidate = this.candidates.get(i);
+            RouteCandidate possiblyBetterRouteCandidate = this.candidates.get(i);
 
             if (isPruningCandidateDominated(currentPruningCandidate, possiblyBetterRouteCandidate)) {
                 foundDominatingPath = true;
@@ -102,7 +102,7 @@ public class RouteCandidateList<T extends RouteCandidatePolygon> {
         return currentPruningCandidateIndex;
     }
 
-    private boolean isPruningCandidateDominated(RouteCandidatePolygon currentPruningCandidate, RouteCandidatePolygon possiblyBetterRouteCandidate) {
+    private boolean isPruningCandidateDominated(RouteCandidate currentPruningCandidate, RouteCandidate possiblyBetterRouteCandidate) {
         return possiblyBetterRouteCandidate.getTime() < currentPruningCandidate.getTime() &&
                possiblyBetterRouteCandidate.getTimeInROI() > currentPruningCandidate.getTimeInROI();
     }

@@ -16,6 +16,7 @@ public class ManyToManyRouting extends MultiRouting {
     private final RoutingAlgorithmFactory routingAlgorithmFactory;
     private final AlgorithmOptions algorithmOptions;
 
+    // TODO from / to ?! lot nodes for start and end point.
     public ManyToManyRouting(final List<Integer> nodesToConsiderForRouting, final List<Integer> nodesToBuildRoutesWith, final Graph graph, final List<QueryResult> queryResults,
                              final RoutingAlgorithmFactory routingAlgorithmFactory, final AlgorithmOptions algorithmOptions) {
         this.nodesToConsiderForRouting = nodesToConsiderForRouting;

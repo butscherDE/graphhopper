@@ -4,13 +4,12 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidateList;
-import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidatePolygon;
+import com.graphhopper.routing.template.polygonRoutingUtil.RouteCandidate;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.util.PathMerger;
 import com.graphhopper.util.Translation;
-import com.sun.org.apache.xpath.internal.operations.String;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     QueryGraph graph;
     AlgorithmOptions algorithmOptions;
     RoutingAlgorithmFactory algoFactory;
-    RouteCandidateList<RouteCandidatePolygon> routeCandidates;
+    RouteCandidateList<RouteCandidate> routeCandidates;
 
     PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);

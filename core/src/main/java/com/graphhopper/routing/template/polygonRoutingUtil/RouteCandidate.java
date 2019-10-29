@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * A route candidate as in Prof. Dr. Sabine Storandts Paper Region-Aware Route Planning.
  */
-public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> {
+public class RouteCandidate implements Comparable<RouteCandidate> {
     Path startToDetourEntry;
     Path detourEntryToDetourExit;
     Path detourExitToEnd;
@@ -17,9 +17,9 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
     final int startNodeID, endNodeID, polygonEntryNodeID, polygonExitNodeID;
     PathMerge mergedPath = null;
 
-    public RouteCandidatePolygon(final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
-                                 final int polygonExitNodeID, final Path startToDetourEntry, final Path detourEntryToDetourExit, final Path detourExitToEnd,
-                                 final Path directRouteStartEnd) {
+    public RouteCandidate(final int startNodeID, final int endNodeID, final int polygonEntryNodeID,
+                          final int polygonExitNodeID, final Path startToDetourEntry, final Path detourEntryToDetourExit, final Path detourExitToEnd,
+                          final Path directRouteStartEnd) {
         this.startNodeID = startNodeID;
         this.endNodeID = endNodeID;
         this.polygonEntryNodeID = polygonEntryNodeID;
@@ -98,7 +98,7 @@ public class RouteCandidatePolygon implements Comparable<RouteCandidatePolygon> 
     }
 
     @Override
-    public int compareTo(RouteCandidatePolygon o) {
+    public int compareTo(RouteCandidate o) {
         final double gainDifference = this.getGain() - o.getGain();
         if (gainDifference < 0) {
             return -1;

@@ -144,7 +144,7 @@ public class RouteCandidateListTest {
         return new RouteCandidateMocker(1, 1, 1, "selfintersecting", startToDetourEntry, detourEntryToDetourExit, detourExitToEnd, null);
     }
 
-    class RouteCandidateMocker extends RouteCandidatePolygon {
+    class RouteCandidateMocker extends RouteCandidate {
         final double polygonRouteTime;
         final double roiTime;
         final double directTime;
