@@ -57,8 +57,10 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private StopWatch findPathSkeletonAndMeasureTime(List<QueryResult> queryResults) {
         final StopWatch swPathSkeleton = new StopWatch("Generate path skeleton");
         swPathSkeleton.start();
+
         this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
         this.pathSkeletonRouter.findPathBetweenAllNodePairs();
+
         swPathSkeleton.stop();
         return swPathSkeleton;
     }
@@ -66,15 +68,26 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private StopWatch findLotNodesAndMeasureTime(List<Integer> viaPointNodeIds) {
         final StopWatch swLOTNodes = new StopWatch("LOT node generation");
         swLOTNodes.start();
+
         this.lotNodes = LOTNodeExtractor.createExtractedData(this.graph, this.algoFactory, this.algorithmOptions, viaPointNodeIds, polygonEntryExitPoints);
+        failIfNotEnoughLotNodes();
+
         swLOTNodes.stop();
         return swLOTNodes;
+    }
+
+    private void failIfNotEnoughLotNodes() {
+        if (this.lotNodes.size() < 1) {
+            throw new IllegalStateException("Not enough entry / exit points found to enter or exit the given polygon");
+        }
     }
 
     private StopWatch findPolygonEntryExitPointsAndMeasureTime() {
         StopWatch swFindEntryExitPoints = new StopWatch("finding entry exit points");
         swFindEntryExitPoints.start();
+
         this.polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
+
         swFindEntryExitPoints.stop();
         return swFindEntryExitPoints;
     }
@@ -82,9 +95,18 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private StopWatch generateNodesInPolygonAndMeasureTime() {
         StopWatch swFindNodesInPolygon = new StopWatch("finding nodes in polygon");
         swFindNodesInPolygon.start();
+
         this.nodesInPolygon = getNodesInPolygon();
+        failOnNotEnoughNodesInPolygon();
+
         swFindNodesInPolygon.stop();
         return swFindNodesInPolygon;
+    }
+
+    private void failOnNotEnoughNodesInPolygon() {
+        if (this.nodesInPolygon.size() < 1) {
+            throw new IllegalStateException("Not enough nodes in polygon. Most likely the polygon doesn't contain intersections.");
+        }
     }
 
     private List<QueryResult> createQueryResults(final List<Integer> nodes, final FlagEncoder flagEncoder) {
