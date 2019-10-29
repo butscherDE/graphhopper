@@ -7,6 +7,7 @@ import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.shapes.GHPoint;
+import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class PolygonThroughRoutingTemplateTest {
 
         printPath(paths);
 
-        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[] {0, 7, 44, 46, 54, 56, 49, 32, 12, 13, 5, 6})), paths.get(0).getNodesInPathOrder());
+        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[]{0, 7, 44, 46, 54, 56, 49, 32, 12, 13, 5, 6})), paths.get(0).getNodesInPathOrder());
     }
 
     private QueryGraph createQueryGraph(GHRequest request, RoutingTemplate routingTemplate) {
@@ -54,6 +55,20 @@ public class PolygonThroughRoutingTemplateTest {
         while (aei.next()) {
             System.out.println(aei.toString());
         }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void failOnEmptyPolygon() {
+        final Polygon emptyPolygon = new Polygon(new double[]{24, 24, 23, 23}, new double[]{2, 3, 3, 2});
+        final GHRequest request = buildRequest(new GHPoint(25, 0), new GHPoint(25, 46));
+        request.setPolygon(emptyPolygon);
+        final GHResponse response = new GHResponse();
+        final RoutingTemplate routingTemplate = new PolygonThroughRoutingTemplate(request, response, this.graphMocker.locationIndex, this.graphMocker.encodingManager);
+        final RoutingAlgorithmFactory algorithmFactory = new RoutingAlgorithmFactorySimple();
+        final AlgorithmOptions algorithmOptions = graphMocker.algorithmOptions;
+        final QueryGraph queryGraph = createQueryGraph(request, routingTemplate);
+
+        List<Path> paths = routingTemplate.calcPaths(queryGraph, algorithmFactory, algorithmOptions);
     }
 
     private GHRequest buildRequest(GHPoint... startViaEndPoints) {
