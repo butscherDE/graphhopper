@@ -25,7 +25,7 @@ package com.graphhopper.util.shapes;
  */
 public interface Shape {
     /**
-     * @return true if edges or areas of this and the specified shapes overlap
+     * @return true if edges or areas of this and the specified shapes isOverlapping
      */
     boolean intersects(Shape o);
 

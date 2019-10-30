@@ -185,6 +185,32 @@ public class BBox implements Shape, Cloneable {
         return this.minLon < o.maxLon && this.minLat < o.maxLat && o.minLon < this.maxLon && o.minLat < this.maxLat;
     }
 
+    /**
+     * Find out whether two bounding boxes share an area.
+     *
+     * @param o The other bounding box to test against.
+     * @return True if the two bounding boxes share the same area.
+     */
+    public boolean isOverlapping(BBox o) {
+        return ! (thisBBoxBelowOtherBBox(o) || thisBBoxAboveOtherBBox(o) || thisBBoxLeftOfOtherBBox(o) || thisBBoxRightOfOtherBBox(o));
+    }
+
+    private boolean thisBBoxBelowOtherBBox(BBox o) {
+        return this.maxLat < o.minLat;
+    }
+
+    private boolean thisBBoxAboveOtherBBox(BBox o) {
+        return this.minLat > o.maxLat;
+    }
+
+    private boolean thisBBoxLeftOfOtherBBox(BBox o) {
+        return this.maxLon < o.minLon;
+    }
+
+    private boolean thisBBoxRightOfOtherBBox(BBox o) {
+        return this.minLon > o.maxLon;
+    }
+
     @Override
     public boolean contains(double lat, double lon) {
         return lat <= maxLat && lat >= minLat && lon <= maxLon && lon >= minLon;
