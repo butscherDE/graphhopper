@@ -40,14 +40,14 @@ public class GridIndex implements LocationIndex {
     }
 
     private void initIndex() {
-        final double[] latitudeIntervalSteps = getIntervalValuesForDirection(MAX_LATITUDE);
+        final double[] latitudeIntervalSteps = getIntervalValuesForDirection((-1) * MAX_LATITUDE);
         final double[] longitudeIntervalSteps = getIntervalValuesForDirection(MAX_LONGITUDE);
 
         index = new GridCell[this.resolution][this.resolution];
 
         for (int i = 0; i < this.resolution; i++) {
             for (int j = 0; j < this.resolution; j++) {
-                final BBox gridCellBoundingBox = new BBox(longitudeIntervalSteps[j + 1], longitudeIntervalSteps[j], latitudeIntervalSteps[j], latitudeIntervalSteps[j + 1]);
+                final BBox gridCellBoundingBox = new BBox(longitudeIntervalSteps[j], longitudeIntervalSteps[j + 1], latitudeIntervalSteps[i + 1], latitudeIntervalSteps[i]);
                 index[i][j] = new GridCell(gridCellBoundingBox);
             }
         }
@@ -116,7 +116,7 @@ public class GridIndex implements LocationIndex {
     }
 
     private int getLatitudeIndex(int nodeId) {
-        final double latitude = this.nodeAccess.getLatitude(nodeId);
+        final double latitude = this.nodeAccess.getLatitude(nodeId) * (-1);
         return getIndexByCoordinate(latitude, MAX_LATITUDE);
     }
 
@@ -161,19 +161,19 @@ public class GridIndex implements LocationIndex {
     private void executeQueryOnCell(BBox queryBBox, Visitor function, int i, int j) {
         final BBox gridCellBoundingBox = this.index[i][j].boundingBox;
 
-        callVisitorOnNodesInCellIfBBoxIntersectsCell(queryBBox, function, i, j, gridCellBoundingBox);
+        callVisitorOnNodesInCellIfBBoxOverlapsCell(queryBBox, function, i, j, gridCellBoundingBox);
     }
 
-    private void callVisitorOnNodesInCellIfBBoxIntersectsCell(BBox queryBBox, Visitor function, int i, int j, BBox gridCellBoundingBox) {
-        if (queryBBoxIntersectsCell(queryBBox, gridCellBoundingBox)) {
+    private void callVisitorOnNodesInCellIfBBoxOverlapsCell(BBox queryBBox, Visitor function, int i, int j, BBox gridCellBoundingBox) {
+        if (queryBBoxOverlapsCell(queryBBox, gridCellBoundingBox)) {
             final List<Integer> cellsNodes = index[i][j].nodes;
 
             callVisitorOnEachNodeInCell(function, cellsNodes);
         }
     }
 
-    private boolean queryBBoxIntersectsCell(BBox queryBBox, BBox gridCellBoundingBox) {
-        return gridCellBoundingBox.intersects(queryBBox);
+    private boolean queryBBoxOverlapsCell(BBox queryBBox, BBox gridCellBoundingBox) {
+        return gridCellBoundingBox.isOverlapping(queryBBox);
     }
 
     private void callVisitorOnEachNodeInCell(Visitor function, List<Integer> cellsNodes) {

@@ -55,7 +55,7 @@ public class GridIndexTest {
 
     @Test
     public void testCorrectQueryExecution() {
-        final LocationIndex locationIndex = new GridIndex(this.graphMocker.graph).setResolution(180);
+        final LocationIndex locationIndex = new GridIndex(this.graphMocker.graph).setResolution(180).prepareIndex();
         final LoggingVisitor visitor = new LoggingVisitor();
 
         final BBox queryBBox = new BBox(8, 11, 9, 16);
