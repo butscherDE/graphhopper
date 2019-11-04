@@ -1,6 +1,8 @@
 package com.graphhopper.storage.index;
 
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
+import com.graphhopper.routing.util.EdgeFilter;
+import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.BBox;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -55,7 +57,7 @@ public class GridIndexTest {
 
     @Test
     public void testCorrectQueryExecution() {
-        final LocationIndex locationIndex = new GridIndex(this.graphMocker.graph).setResolution(180).prepareIndex();
+        final LocationIndex locationIndex = create180LocationIndex();
         final LoggingVisitor visitor = new LoggingVisitor();
 
         final BBox queryBBox = new BBox(8, 11, 9, 16);
@@ -67,6 +69,10 @@ public class GridIndexTest {
         assertEquals(3, visitor.nodesFound.size());
     }
 
+    private LocationIndex create180LocationIndex() {
+        return new GridIndex(this.graphMocker.graph).setResolution(180).prepareIndex();
+    }
+
     private class LoggingVisitor extends LocationIndex.Visitor {
         public final List<Integer> nodesFound = new ArrayList<Integer>();
 
@@ -74,5 +80,52 @@ public class GridIndexTest {
         public void onNode(int nodeId) {
             this.nodesFound.add(nodeId);
         }
+    }
+
+    @Test
+    public void closestNodeWithoutEdgeFilter() {
+        final QueryResult queryResult = getQueryResultWithoutEdgeFilter();
+
+        assertEquals(43, queryResult.getClosestNode());
+    }
+
+    @Test
+    public void closestEdgeWithoutEdgeFilter() {
+        final QueryResult queryResult = getQueryResultWithoutEdgeFilter();
+
+        assertEquals(26, queryResult.getClosestEdge());
+    }
+
+    private QueryResult getQueryResultWithoutEdgeFilter() {
+        final LocationIndex locationIndex = create180LocationIndex();
+        return locationIndex.findClosest(17, 8, EdgeFilter.ALL_EDGES);
+    }
+
+    @Test
+    public void closestNodeWithEdgeFilter() {
+        final QueryResult queryResult = getQueryResultWithEdgeFilter();
+
+        assertEquals(44, queryResult.getClosestNode());
+    }
+
+    @Test
+    public void closestEdgeWithEdgeFilter() {
+        final QueryResult queryResult = getQueryResultWithEdgeFilter();
+
+        assertEquals(27, queryResult.getClosestEdge());
+    }
+
+    private QueryResult getQueryResultWithEdgeFilter() {
+        final LocationIndex locationIndex = create180LocationIndex();
+        return locationIndex.findClosest(17, 8, getEdgeFilterThatExchangesClosestEdge());
+    }
+
+    private EdgeFilter getEdgeFilterThatExchangesClosestEdge() {
+        return new EdgeFilter() {
+            @Override
+            public boolean accept(EdgeIteratorState edgeState) {
+                return (edgeState.getBaseNode() != 43) && (edgeState.getAdjNode() != 43);
+            }
+        };
     }
 }
