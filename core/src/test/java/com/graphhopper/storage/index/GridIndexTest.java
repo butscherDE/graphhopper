@@ -93,7 +93,7 @@ public class GridIndexTest {
     public void closestEdgeWithoutEdgeFilter() {
         final QueryResult queryResult = getQueryResultWithoutEdgeFilter();
 
-        assertEquals(26, queryResult.getClosestEdge());
+        assertEquals(102, queryResult.getClosestEdge().getEdge());
     }
 
     private QueryResult getQueryResultWithoutEdgeFilter() {
@@ -112,7 +112,7 @@ public class GridIndexTest {
     public void closestEdgeWithEdgeFilter() {
         final QueryResult queryResult = getQueryResultWithEdgeFilter();
 
-        assertEquals(27, queryResult.getClosestEdge());
+        assertEquals(28, queryResult.getClosestEdge().getEdge());
     }
 
     private QueryResult getQueryResultWithEdgeFilter() {

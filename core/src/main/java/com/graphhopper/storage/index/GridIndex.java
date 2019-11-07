@@ -137,7 +137,7 @@ public class GridIndex implements LocationIndex {
 
     @Override
     public QueryResult findClosest(double lat, double lon, EdgeFilter edgeFilter) {
-        return new QueryResultCreator(lat, lon).createQueryResult();
+        return new QueryResultCreator(lat, lon, edgeFilter).createQueryResult();
     }
 
     @Override
@@ -230,6 +230,7 @@ public class GridIndex implements LocationIndex {
     private class QueryResultCreator {
         private final double queryLatitude;
         private final double queryLongitude;
+        private final EdgeFilter edgeFilter;
         private final QueryResult queryResult;
 
         private int closestNode = -1;
@@ -242,10 +243,11 @@ public class GridIndex implements LocationIndex {
         private int[] latitudeIndices;
         private int[] longitudeIndices;
 
-        public QueryResultCreator(final double queryLatitude, final double queryLongitude) {
+        public QueryResultCreator(final double queryLatitude, final double queryLongitude, final EdgeFilter edgeFilter) {
             this.queryLatitude = queryLatitude;
             this.queryLongitude = queryLongitude;
             this.queryResult = new QueryResult(queryLatitude, queryLongitude);
+            this.edgeFilter = edgeFilter;
         }
 
         public QueryResult createQueryResult() {
@@ -276,7 +278,7 @@ public class GridIndex implements LocationIndex {
         }
 
         private void createIntialSearchSpace() {
-            latitudeIndex = getIndexByCoordinate(queryLatitude, MAX_LATITUDE);
+            latitudeIndex = getIndexByCoordinate(queryLatitude * (-1), MAX_LATITUDE);
             longitudeIndex = getIndexByCoordinate(queryLongitude, MAX_LONGITUDE);
 
             currentSearchSpace = getGridCellQueriedAndItsNeighbors(latitudeIndex, longitudeIndex);
@@ -284,10 +286,6 @@ public class GridIndex implements LocationIndex {
 
         private void findClosestNodeInSourrondingGridCells() {
             for (final GridCell cell : currentSearchSpace) {
-                if (cell == null) {
-                    System.out.println();
-                }
-
                 for (final int otherNode : cell.nodes) {
                     updateClosestNodeIfCloser(otherNode);
                 }
@@ -300,8 +298,17 @@ public class GridIndex implements LocationIndex {
 
             final double distance = DISTANCE_CALCULATOR.calcNormalizedDist(queryLatitude, queryLongitude, otherNodeLatitude, otherNodeLongitude);
             if (distance < closestNodeDistance) {
-                closestNode = otherNode;
-                closestNodeDistance = distance;
+                updateCloserNodeBasedOnEdgeFilter(otherNode, distance);
+            }
+        }
+
+        private void updateCloserNodeBasedOnEdgeFilter(int otherNode, double distance) {
+            final EdgeIterator neighborExplorer = graph.createEdgeExplorer().setBaseNode(otherNode);
+            while (neighborExplorer.next() && closestNode != otherNode) {
+                if (edgeFilter.accept(neighborExplorer)) {
+                    closestNode = otherNode;
+                    closestNodeDistance = distance;
+                }
             }
         }
 
@@ -322,7 +329,7 @@ public class GridIndex implements LocationIndex {
 
         private GridCell[] getGridCellQueriedAndItsNeighbors(int latitudeIndex, int longitudeIndex) {
             getInitialLatIndices(latitudeIndex);
-            getInitialLonIndices(latitudeIndex);
+            getInitialLonIndices(longitudeIndex);
 
             return new GridCell[]{index[latitudeIndices[0]][longitudeIndices[0]],
                                   index[latitudeIndices[0]][longitudeIndices[1]],
@@ -399,7 +406,7 @@ public class GridIndex implements LocationIndex {
             final double neighbourLongitude = nodeAccess.getLongitude(neighbourFinder.getAdjNode());
 
             final double distance = DISTANCE_CALCULATOR.calcNormalizedDist(queryLatitude, queryLongitude, neighbourLatitude, neighbourLongitude);
-            if (distance < closestEdgeDistance) {
+            if (distance < closestEdgeDistance && edgeFilter.accept(neighbourFinder)) {
                 closestEdge = neighbourFinder.detach(false);
                 closestEdgeDistance = distance;
             }
