@@ -16,16 +16,19 @@ import java.util.List;
 public class GridIndex implements LocationIndex {
     private final static double MAX_LATITUDE = 90;
     private final static double MAX_LONGITUDE = 180;
-    private final static DistanceCalc DISTANCE_CALCULATOR = Helper.DIST_PLANE;
 
     private final Graph graph;
     private final NodeAccess nodeAccess;
+    private final DataAccess dataAccess;
+
     private int resolution = -1;
     private GridCell[][] index;
+    private DistanceCalc distanceCalculator = Helper.DIST_PLANE;
 
-    public GridIndex(final Graph graph) {
+    public GridIndex(final Graph graph, Directory dir) {
         this.graph = graph;
         this.nodeAccess = graph.getNodeAccess();
+        dataAccess = dir.find("location_index", DAType.getPreferredInt(dir.getDefaultType()));
     }
 
     @Override
@@ -142,7 +145,11 @@ public class GridIndex implements LocationIndex {
 
     @Override
     public LocationIndex setApproximation(boolean approxDist) {
-        return null;
+        if (approxDist)
+            distanceCalculator = Helper.DIST_PLANE;
+        else
+            distanceCalculator = Helper.DIST_EARTH;
+        return this;
     }
 
     @Override
@@ -189,27 +196,29 @@ public class GridIndex implements LocationIndex {
 
     @Override
     public boolean loadExisting() {
-        return false;
+        this.resolution = dataAccess.getHeader(0);
+        this.prepareIndex();
+        return true;
     }
 
     @Override
     public LocationIndex create(long byteCount) {
-        return null;
+        return prepareIndex();
     }
 
     @Override
     public void flush() {
-
+        dataAccess.setHeader(0, this.resolution);
     }
 
     @Override
     public void close() {
-
+        dataAccess.close();
     }
 
     @Override
     public boolean isClosed() {
-        return false;
+        return dataAccess.isClosed();
     }
 
     @Override
@@ -296,7 +305,7 @@ public class GridIndex implements LocationIndex {
             final double otherNodeLatitude = nodeAccess.getLatitude(otherNode);
             final double otherNodeLongitude = nodeAccess.getLongitude(otherNode);
 
-            final double distance = DISTANCE_CALCULATOR.calcNormalizedDist(queryLatitude, queryLongitude, otherNodeLatitude, otherNodeLongitude);
+            final double distance = distanceCalculator.calcNormalizedDist(queryLatitude, queryLongitude, otherNodeLatitude, otherNodeLongitude);
             if (distance < closestNodeDistance) {
                 updateCloserNodeBasedOnEdgeFilter(otherNode, distance);
             }
@@ -405,7 +414,7 @@ public class GridIndex implements LocationIndex {
             final double neighbourLatitude = nodeAccess.getLatitude(neighbourFinder.getAdjNode());
             final double neighbourLongitude = nodeAccess.getLongitude(neighbourFinder.getAdjNode());
 
-            final double distance = DISTANCE_CALCULATOR.calcNormalizedDist(queryLatitude, queryLongitude, neighbourLatitude, neighbourLongitude);
+            final double distance = distanceCalculator.calcNormalizedDist(queryLatitude, queryLongitude, neighbourLatitude, neighbourLongitude);
             if (distance < closestEdgeDistance && edgeFilter.accept(neighbourFinder)) {
                 closestEdge = neighbourFinder.detach(false);
                 closestEdgeDistance = distance;
