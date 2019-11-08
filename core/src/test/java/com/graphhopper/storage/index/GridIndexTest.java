@@ -2,6 +2,7 @@ package com.graphhopper.storage.index;
 
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.EdgeFilter;
+import com.graphhopper.storage.RAMDirectory;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.BBox;
 import org.junit.Assert;
@@ -24,7 +25,7 @@ public class GridIndexTest {
 
     @Test
     public void objectCanBeConstructed() {
-        final LocationIndex locationIndex = new GridIndex(this.graphMocker.graph);
+        final LocationIndex locationIndex = new GridIndex(this.graphMocker.graph, new RAMDirectory());
     }
 
     @Test
@@ -32,13 +33,13 @@ public class GridIndexTest {
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Resolution was not set or set to an invalid value. Must be > 0.");
 
-        LocationIndex locationIndex = new GridIndex(this.graphMocker.graph);
+        LocationIndex locationIndex = new GridIndex(this.graphMocker.graph, new RAMDirectory());
         Assert.assertNotNull(locationIndex.prepareIndex());
     }
 
     @Test
     public void indexGetsPrepared() {
-        LocationIndex locationIndex = new GridIndex(this.graphMocker.graph).setResolution(10);
+        LocationIndex locationIndex = new GridIndex(this.graphMocker.graph, new RAMDirectory()).setResolution(10);
         Assert.assertNotNull(locationIndex.prepareIndex());
     }
 
@@ -47,12 +48,12 @@ public class GridIndexTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("Resolution must be > 0.");
 
-        new GridIndex(this.graphMocker.graph).setResolution(-1);
+        new GridIndex(this.graphMocker.graph, new RAMDirectory()).setResolution(-1);
     }
 
     @Test
     public void legalValuesForResolution() {
-        new GridIndex(this.graphMocker.graph).setResolution(1).setResolution(2).setResolution(1337);
+        new GridIndex(this.graphMocker.graph, new RAMDirectory()).setResolution(1).setResolution(2).setResolution(1337);
     }
 
     @Test
@@ -70,7 +71,7 @@ public class GridIndexTest {
     }
 
     private LocationIndex create180LocationIndex() {
-        return new GridIndex(this.graphMocker.graph).setResolution(180).prepareIndex();
+        return new GridIndex(this.graphMocker.graph, new RAMDirectory()).setResolution(180).prepareIndex();
     }
 
     private class LoggingVisitor extends LocationIndex.Visitor {

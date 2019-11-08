@@ -37,6 +37,7 @@ import com.graphhopper.routing.weighting.*;
 import com.graphhopper.storage.*;
 import com.graphhopper.storage.change.ChangeGraphHelper;
 import com.graphhopper.storage.change.ChangeGraphResponse;
+import com.graphhopper.storage.index.GridIndex;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.LocationIndexTree;
 import com.graphhopper.storage.index.QueryResult;
@@ -1185,7 +1186,8 @@ public class GraphHopper implements GraphHopperAPI {
         if (locationIndex != null)
             throw new IllegalStateException("Cannot initialize locationIndex twice!");
 
-        locationIndex = createLocationIndex(ghStorage.getDirectory());
+//        locationIndex = createLocationIndex(ghStorage.getDirectory());
+        locationIndex = new GridIndex(ghStorage, ghStorage.getDirectory()).setResolution(180*10).prepareIndex();
     }
 
     private boolean isCHPrepared() {

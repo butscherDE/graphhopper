@@ -9,6 +9,7 @@ import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.shapes.BBox;
 
+import javax.management.Query;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -242,15 +243,18 @@ public class GridIndex implements LocationIndex {
         private final EdgeFilter edgeFilter;
         private final QueryResult queryResult;
 
-        private int closestNode = -1;
-        private double closestNodeDistance = Double.MAX_VALUE;
-        private EdgeIteratorState closestEdge = null;
-        private double closestEdgeDistance = Double.MAX_VALUE;
         private GridCell[] currentSearchSpace;
         private int latitudeIndex;
         private int longitudeIndex;
         private int[] latitudeIndices;
         private int[] longitudeIndices;
+        private int closestNode = -1;
+        private double closestNodeDistance = Double.MAX_VALUE;
+
+        private EdgeIteratorState closestEdge = null;
+        private double closestEdgeDistance = Double.MAX_VALUE;
+
+        private QueryResult.Position position = null;
 
         public QueryResultCreator(final double queryLatitude, final double queryLongitude, final EdgeFilter edgeFilter) {
             this.queryLatitude = queryLatitude;
@@ -262,6 +266,7 @@ public class GridIndex implements LocationIndex {
         public QueryResult createQueryResult() {
             findClosestNode();
             findClosestEdge();
+            definePosition();
             addValuesToQueryResult();
 
             return queryResult;
@@ -270,11 +275,23 @@ public class GridIndex implements LocationIndex {
         private void findClosestNode() {
             createIntialSearchSpace();
 
+            searchClosestNodesInEnlargingSpaces();
+
+            throwErrorIfNoNodeWasFound();
+        }
+
+        private void searchClosestNodesInEnlargingSpaces() {
             while (closestNodeNotFound() && searchSpaceNotExhausted()) {
                 findClosestNodeInSourrondingGridCells();
 
                 setEnlargedIndices();
                 setEnlargedSearchSpace();
+            }
+        }
+
+        private void throwErrorIfNoNodeWasFound() {
+            if (closestNode == -1) {
+                throw new IllegalStateException("No closest node found. Most likely the index wasn't prepared with prepareIndex()");
             }
         }
 
@@ -421,10 +438,21 @@ public class GridIndex implements LocationIndex {
             }
         }
 
+        private void definePosition() {
+            this.position = QueryResult.Position.TOWER;
+        }
+
+        private boolean isDifferenceBetweenNodesSmallerDelta(double latitudeDifference, double longitudeDifference) {
+            return (latitudeDifference + longitudeDifference) < 0.001;
+        }
+
         private void addValuesToQueryResult() {
             queryResult.setClosestNode(this.closestNode);
             queryResult.setQueryDistance(this.closestNodeDistance);
             queryResult.setClosestEdge(this.closestEdge);
+            queryResult.setSnappedPosition(this.position);
+            queryResult.setWayIndex(0);
+            queryResult.calcSnappedPoint(distanceCalculator);
         }
     }
 }
