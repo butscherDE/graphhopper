@@ -124,7 +124,16 @@ public class PolygonRoutingTestGraph {
                                 new Node(54, 15, 18),
                                 new Node(55, 15, 20),
                                 new Node(56, 15, 20),
-                                new Node(57, 13, 20)};
+                                new Node(57, 13, 20),
+                                new Node(100, 7, 42),
+                                new Node(101, 9, 44),
+                                new Node(102, 5, 44),
+                                new Node(103, 12, 51),
+                                new Node(104, 10, 51),
+                                new Node(105, 8, 51),
+                                new Node(106, 10, 47),
+                                new Node(107, 3, 47),
+                                new Node(108, 3, 41)};
     }
 
     private void setDistanceToEuclidean() {
@@ -273,6 +282,18 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(55, 56, 1, true);
         this.graph.edge(55, 57, 1, true);
         this.graph.edge(56, 57, 1, true);
+
+        // VisibilityCellTestScenarios
+        this.graph.edge(14, 106, 1, true);
+        this.graph.edge(18, 100, 1, true);
+        this.graph.edge(18, 108, 1, true);
+        this.graph.edge(100, 101, 1, true);
+        this.graph.edge(100, 102, 1, true);
+        this.graph.edge(103, 104, 1, true);
+        this.graph.edge(104, 105, 1, true);
+        this.graph.edge(104, 106, 1, true);
+        this.graph.edge(106, 107, 1, true);
+        this.graph.edge(107, 108, 1, true);
     }
 
     private Polygon createPolygon() {
