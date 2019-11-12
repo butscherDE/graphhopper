@@ -146,6 +146,16 @@ public class Polygon implements Shape {
 
     }
 
+    public boolean isOverlapping(final BBox boundingBox) {
+        boolean isOverlapping = false;
+
+        for (int i = 0; i < this.lat.length && !isOverlapping; i++) {
+            isOverlapping |= boundingBox.contains(this.lat[i], this.lon[i]);
+        }
+
+        return isOverlapping;
+    }
+
     @Override
     public boolean contains(Shape s) {
         throw new UnsupportedOperationException("Not supported yet.");

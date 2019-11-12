@@ -3,16 +3,11 @@ package com.graphhopper.storage.index;
 import com.graphhopper.routing.util.AllEdgesIterator;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.*;
-import com.graphhopper.util.DistanceCalc;
-import com.graphhopper.util.EdgeIterator;
-import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.util.Helper;
+import com.graphhopper.util.*;
 import com.graphhopper.util.shapes.BBox;
+import com.graphhopper.util.shapes.Polygon;
 
-import javax.management.Query;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
 
 public class GridIndex implements LocationIndex {
     private final static double MAX_LATITUDE = 90;
@@ -453,6 +448,169 @@ public class GridIndex implements LocationIndex {
             queryResult.setSnappedPosition(this.position);
             queryResult.setWayIndex(0);
             queryResult.calcSnappedPoint(distanceCalculator);
+        }
+    }
+
+    private class VisibilityCell {
+        private final Polygon cellShape;
+
+        private VisibilityCell(final List<Integer> nodeIds) {
+            final double[] latitudes = new double[nodeIds.size()];
+            final double[] longitudes = new double[nodeIds.size()];
+
+            for (int i = 0; i < nodeIds.size(); i++) {
+                latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i));
+                longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i));
+            }
+
+            this.cellShape = new Polygon(latitudes, longitudes, 0);
+        }
+
+        public boolean isOverlapping(final GridCell gridCell) {
+            return this.cellShape.isOverlapping(gridCell.boundingBox);
+        }
+    }
+
+    /**
+     * "Left" and "Right" are always imagined as walking from baseNode to adjacent node and then turn left or right.
+     *
+     * General schema: For each edge in the allEdgesIterator: Check if it was used in a left run, if not run left. Check if it was used in a right run if not run right
+     */
+    private class VisibilityCellsCreator {
+        final EdgeIterator allEdges = graph.getAllEdges();
+        final Map<EdgeIteratorState, Boolean> visitedLeft = new HashMap<>(graph.getEdges());
+        final Map<EdgeIteratorState, Boolean> visitedRight = new HashMap<>(graph.getEdges());
+        final EdgeExplorer neighborExplorer = graph.createEdgeExplorer();
+
+        EdgeIteratorState currentEdge;
+        int currentRunStartNode;
+        int currentRunEndNode;
+        EdgeIterator neighbors;
+
+        final List<VisibilityCell> allFoundCells = new ArrayList<>(graph.getNodes());
+
+        public List<VisibilityCell> create() {
+            startRunsOnEachEdgeInTheGraph();
+
+            return allFoundCells;
+        }
+
+        private void startRunsOnEachEdgeInTheGraph() {
+            while (allEdges.next()) {
+                currentEdge = allEdges.detach(false);
+                currentRunStartNode = currentEdge.getAdjNode();
+                currentRunEndNode = currentEdge.getBaseNode();
+
+                if (!visibilityCellOnTheLeftFound()) {
+                    allFoundCells.add(new CellRunnerLeft(visitedLeft).run());
+                }
+
+                if (!visibilityCellOnTheRightFound()) {
+                    allFoundCells.add(new CellRunnerRight(visitedRight).run());
+                }
+            }
+        }
+
+        private Boolean visibilityCellOnTheLeftFound() {
+            return visitedLeft.get(currentEdge);
+        }
+
+        private Boolean visibilityCellOnTheRightFound() {
+            return visitedRight.get(currentEdge);
+        }
+
+        private abstract class CellRunner {
+            private final Map<EdgeIteratorState, Boolean> visitedLeftOrRight;
+            final List<Integer> nodesOnCell = new ArrayList<>();
+
+            protected CellRunner(Map<EdgeIteratorState, Boolean> visitedLeftOrRight) {
+                this.visitedLeftOrRight = visitedLeftOrRight;
+            }
+
+            public VisibilityCell run() {
+                nodesOnCell.add(currentRunStartNode);
+
+                neighbors = neighborExplorer.setBaseNode(currentRunStartNode);
+                while (neighbors.getAdjNode() != currentRunEndNode) {
+                    final EdgeIteratorState rightmostNeighbor = getMostLeftOrRightOrientedEdge(neighbors);
+                    visitedRight.put(rightmostNeighbor, true);
+                    neighbors = neighborExplorer.setBaseNode(rightmostNeighbor.getAdjNode());
+                    nodesOnCell.add(rightmostNeighbor.getAdjNode());
+                }
+
+                return createVisibilityCell();
+            }
+
+            private EdgeIteratorState getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors) {
+                final int baseNode = neighbors.getBaseNode();
+
+                neighbors.next();
+                EdgeIteratorState leftOrRightMostNeighbor = neighbors.detach(false);
+                while (neighbors.next()) {
+                    final int possibleLeftOrRightPoint = neighbors.getAdjNode();
+                    if (queryPointLeftOrRight(baseNode, leftOrRightMostNeighbor.getAdjNode(), possibleLeftOrRightPoint)) {
+                        leftOrRightMostNeighbor = neighbors.detach(false);
+                    }
+                }
+
+                return leftOrRightMostNeighbor;
+            }
+
+            abstract boolean queryPointLeftOrRight(int baseNode, int adjNode, int possibleLeftPoint);
+
+            abstract VisibilityCell createVisibilityCell();
+
+            double getDeterminant(final int baseNode, final int adjNode, final int possibleLeftPoint) {
+                final double baseNodeX = nodeAccess.getLongitude(baseNode);
+                final double baseNodeY = nodeAccess.getLatitude(baseNode);
+                final double adjNodeX = nodeAccess.getLongitude(adjNode);
+                final double adjNodeY = nodeAccess.getLatitude(adjNode);
+                final double possibleLeftPointX = nodeAccess.getLongitude(possibleLeftPoint);
+                final double possibleLeftPointY = nodeAccess.getLatitude(possibleLeftPoint);
+
+                return (adjNodeX - baseNodeX)*(possibleLeftPointY - baseNodeY) - (adjNodeY - baseNodeY)*(possibleLeftPointX - baseNodeX);
+            }
+        }
+
+        private class CellRunnerLeft extends CellRunner {
+            private CellRunnerLeft(final Map<EdgeIteratorState, Boolean> visitedLeft) {
+                super(visitedLeft);
+            }
+
+            @Override
+            boolean queryPointLeftOrRight(int baseNode, int adjNode, int possibleLeftPoint) {
+                return queryPointLeft(baseNode, adjNode, possibleLeftPoint);
+            }
+
+            private boolean queryPointLeft(final int baseNode, final int adjNode, final int possibleLeftPoint) {
+                return getDeterminant(baseNode, adjNode, possibleLeftPoint) > 0;
+            }
+
+            @Override
+            VisibilityCell createVisibilityCell() {
+                Collections.reverse(nodesOnCell);
+                return new VisibilityCell(nodesOnCell);
+            }
+        }
+
+        private class CellRunnerRight extends CellRunner {
+            private CellRunnerRight(final Map<EdgeIteratorState, Boolean> visitedRight) {
+                super(visitedRight);
+            }
+
+            @Override
+            boolean queryPointLeftOrRight(int baseNode, int adjNode, int possibleLeftPoint) {
+                return queryPointRight(baseNode, adjNode, possibleLeftPoint);
+            }
+
+            private boolean queryPointRight(final int baseNode, final int adjNode, final int possibleRightPoint) {
+                return getDeterminant(baseNode, adjNode, possibleRightPoint) < 0;
+            }
+
+            @Override
+            VisibilityCell createVisibilityCell() {
+                return new VisibilityCell(nodesOnCell);
+            }
         }
     }
 }
