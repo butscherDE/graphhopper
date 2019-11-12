@@ -73,6 +73,7 @@ public class GridIndex implements LocationIndex {
         failOnInvalidResolutionSet();
 
         addAllNodesOfGraphToIndex();
+        //addAllVisibilityCellsOfGraphToIndex();
 
         return this;
     }
@@ -132,6 +133,29 @@ public class GridIndex implements LocationIndex {
     private int getIndexByCoordinate(final double latOrLong, final double maxValue) {
         final double nonNegativeLatitude = latOrLong + maxValue;
         return (int) (nonNegativeLatitude * this.resolution / (maxValue * 2));
+    }
+
+    private void addAllVisibilityCellsOfGraphToIndex() {
+        final List<VisibilityCell> visibilityCells = new VisibilityCellsCreator().create();
+
+        for (VisibilityCell visibilityCell : visibilityCells) {
+            addThisToAllOverlappingGridCells(visibilityCell);
+        }
+    }
+
+    private void addThisToAllOverlappingGridCells(VisibilityCell visibilityCell) {
+        for (int i = 0; i < this.index.length; i++) {
+            for (int j = 0; j < this.index[0].length; j++) {
+                addIfGridCellOverlapsVisibilityCell(visibilityCell, this.index[i][j]);
+            }
+        }
+    }
+
+    private void addIfGridCellOverlapsVisibilityCell(VisibilityCell visibilityCell, GridCell index) {
+        final GridCell gridCell = index;
+        if (visibilityCell.isOverlapping(gridCell)) {
+            gridCell.visibilityCells.add(visibilityCell);
+        }
     }
 
     @Override
@@ -223,11 +247,11 @@ public class GridIndex implements LocationIndex {
     }
 
     private class GridCell {
-        public final List<Integer> nodes;
+        public final List<Integer> nodes = new ArrayList<>();;
+        public final List<VisibilityCell> visibilityCells = new ArrayList<>();
         public final BBox boundingBox;
 
         public GridCell(final BBox boundingBox) {
-            this.nodes = new ArrayList<>();
             this.boundingBox = boundingBox;
         }
     }

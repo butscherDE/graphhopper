@@ -92,7 +92,7 @@ public class Polygon implements Shape {
             lon[i] = point.getLon();
         }
 
-        return new Polygon(lat,lon);
+        return new Polygon(lat, lon);
     }
 
     /**
@@ -139,21 +139,36 @@ public class Polygon implements Shape {
         boolean inside = false;
         int len = this.lat.length;
         for (int i = 0; i < len; i++) {
-            if (edgesAreIntersecting(rayStartLon, rayStartLat, lon, lat, this.lon[i], this.lat[i], this.lon[(i + 1) % len], this.lat[(i + 1) % len]))
+            if (edgesAreIntersecting(rayStartLon, rayStartLat, lon, lat, this.lon[i], this.lat[i], this.lon[(i + 1) % len], this.lat[(i + 1) % len])) {
                 inside = !inside;
+            }
         }
         return inside;
 
     }
 
     public boolean isOverlapping(final BBox boundingBox) {
+        boolean isOverlapping = isPolygonWithAtLeastOnePointInsideBoundingBox(boundingBox);
+
+        isOverlapping |= isBoundingBoxCompletelyInsideThisPolygon(boundingBox);
+
+        return isOverlapping;
+    }
+
+    private boolean isPolygonWithAtLeastOnePointInsideBoundingBox(BBox boundingBox) {
         boolean isOverlapping = false;
 
         for (int i = 0; i < this.lat.length && !isOverlapping; i++) {
             isOverlapping |= boundingBox.contains(this.lat[i], this.lon[i]);
         }
-
         return isOverlapping;
+    }
+
+    private boolean isBoundingBoxCompletelyInsideThisPolygon(final BBox boundingBox) {
+        return this.contains(boundingBox.minLat, boundingBox.minLon) &&
+               this.contains(boundingBox.minLat, boundingBox.maxLon) &&
+               this.contains(boundingBox.maxLat, boundingBox.minLon) &&
+               this.contains(boundingBox.maxLat, boundingBox.maxLon);
     }
 
     @Override
@@ -204,8 +219,12 @@ public class Polygon implements Shape {
         // of our line 1 and in that case no intersection is possible. Careful,
         // 0 is a special case, that's why we don't test ">=" and "<=",
         // but "<" and ">".
-        if (d1 > 0 && d2 > 0) return false;
-        if (d1 < 0 && d2 < 0) return false;
+        if (d1 > 0 && d2 > 0) {
+            return false;
+        }
+        if (d1 < 0 && d2 < 0) {
+            return false;
+        }
 
         // The fact that vector 2 intersected the infinite line 1 above doesn't
         // mean it also intersects the vector 1. Vector 1 is only a subset of that
@@ -223,13 +242,19 @@ public class Polygon implements Shape {
 
         // Again, if both have the same sign (and neither one is 0),
         // no intersection is possible.
-        if (d1 > 0 && d2 > 0) return false;
-        if (d1 < 0 && d2 < 0) return false;
+        if (d1 > 0 && d2 > 0) {
+            return false;
+        }
+        if (d1 < 0 && d2 < 0) {
+            return false;
+        }
 
         // If we get here, only two possibilities are left. Either the two
         // vectors intersect in exactly one point or they are collinear, which
         // means they intersect in any number of points from zero to infinite.
-        if ((a1 * b2) - (a2 * b1) == 0) return false;
+        if ((a1 * b2) - (a2 * b1) == 0) {
+            return false;
+        }
 
         // If they are not collinear, they must intersect in exactly one point.
         return true;
@@ -259,10 +284,12 @@ public class Polygon implements Shape {
     public static Polygon parsePoints(String pointsStr, double growFactor) {
         String[] arr = pointsStr.split(",");
 
-        if (arr.length % 2 == 1) throw new IllegalArgumentException("incorrect polygon specified");
+        if (arr.length % 2 == 1) {
+            throw new IllegalArgumentException("incorrect polygon specified");
+        }
 
-        double[] lats = new double[arr.length /2];
-        double[] lons = new double[arr.length /2];
+        double[] lats = new double[arr.length / 2];
+        double[] lons = new double[arr.length / 2];
 
         for (int j = 0; j < arr.length; j++) {
             if (j % 2 == 0) {
