@@ -1168,7 +1168,8 @@ public class GraphHopper implements GraphHopperAPI {
     }
 
     protected LocationIndex createLocationIndex(Directory dir) {
-        LocationIndexTree tmpIndex = new LocationIndexTree(ghStorage, dir);
+//        LocationIndexTree tmpIndex = new LocationIndexTree(ghStorage, dir);
+        LocationIndexTree tmpIndex = new GridIndex(ghStorage, dir);
         tmpIndex.setResolution(preciseIndexResolution);
         tmpIndex.setMaxRegionSearch(maxRegionSearch);
         if (!tmpIndex.loadExisting()) {
@@ -1186,8 +1187,8 @@ public class GraphHopper implements GraphHopperAPI {
         if (locationIndex != null)
             throw new IllegalStateException("Cannot initialize locationIndex twice!");
 
-//        locationIndex = createLocationIndex(ghStorage.getDirectory());
-        locationIndex = new GridIndex(ghStorage, ghStorage.getDirectory()).setResolution(180*10).prepareIndex();
+        locationIndex = createLocationIndex(ghStorage.getDirectory());
+//        locationIndex = new GridIndex(ghStorage, ghStorage.getDirectory()).setResolution(180*10).prepareIndex();
     }
 
     private boolean isCHPrepared() {

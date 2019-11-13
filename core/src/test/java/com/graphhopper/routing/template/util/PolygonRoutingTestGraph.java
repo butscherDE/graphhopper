@@ -446,8 +446,11 @@ public class PolygonRoutingTestGraph {
         final FlagEncoder carFlagEncoder = new CarFlagEncoder();
         this.flagEncoder = carFlagEncoder;
         this.encodingManager = EncodingManager.create(carFlagEncoder);
-    }    private void createTestGraph() {
+    }
+
+    private void createTestGraph() {
         this.graph = this.createPolygonTestGraph();
+        this.graph.flush();
     }
 
     private void createTestPolygon() {

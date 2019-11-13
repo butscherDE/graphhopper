@@ -18,6 +18,7 @@
 package com.graphhopper.util.shapes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -324,5 +325,15 @@ public class Polygon implements Shape {
 
     public boolean isRepresentingArea() {
         return this.size() > 2;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Polygon) {
+            final Polygon oPolygon = (Polygon) o;
+            return Arrays.equals(this.lat, oPolygon.lat) && Arrays.equals(this.lon, oPolygon.lon);
+        } else {
+            return super.equals(o);
+        }
     }
 }
