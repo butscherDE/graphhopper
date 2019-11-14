@@ -201,17 +201,10 @@ public class GridIndex extends LocationIndexTree {
             public VisibilityCell runAroundCellAndLogNodes() {
                 nodesOnCell.add(currentRunEndNode);
                 nodesOnCell.add(currentRunStartNode);
-                System.out.println("######################");
+
                 neighbors = neighborExplorer.setBaseNode(currentRunStartNode);
                 neighbors.next();
                 do {
-                    System.out.println(nodesOnCell.toString());
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
                     final EdgeIteratorState leftOrRightmostNeighbor = getMostLeftOrRightOrientedEdge(neighbors);
                     settleEdge(leftOrRightmostNeighbor);
                     nodesOnCell.add(leftOrRightmostNeighbor.getAdjNode());
@@ -227,19 +220,10 @@ public class GridIndex extends LocationIndexTree {
                 final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
                 final int lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
 
-                //TODO remove if no more required for debugging on first implementation
-//                EdgeIterator iterator = graph.createEdgeExplorer().setBaseNode(46);
-//                while (iterator.next()) {
-//                    System.out.println(iterator);
-//                    System.out.println(getAngle(46, 44, iterator));
-//                }
-
                 EdgeIteratorState leftOrRightMostNeighbor = neighbors.detach(false);
                 double leftOrRightMostAngle = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, neighbors);
                 while (neighbors.next()) {
                     final double angleToLastNode = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, neighbors);
-//                    System.out.println(neighbors);
-//                    System.out.println(angleToLastNode);
 
                     if (angleToLastNode > leftOrRightMostAngle) {
                         leftOrRightMostAngle = angleToLastNode;
@@ -250,23 +234,11 @@ public class GridIndex extends LocationIndexTree {
                 return leftOrRightMostNeighbor;
             }
 
-            abstract boolean queryPointLeftOrRight(int baseNode, int adjNode, int possibleLeftPoint);
             abstract double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge);
 
             abstract VisibilityCell createVisibilityCell();
 
             abstract void settleEdge(EdgeIteratorState edge);
-
-            double getDeterminant(final int baseNode, final int adjNode, final int possibleLeftPoint) {
-                final double baseNodeX = nodeAccess.getLongitude(baseNode);
-                final double baseNodeY = nodeAccess.getLatitude(baseNode);
-                final double adjNodeX = nodeAccess.getLongitude(adjNode);
-                final double adjNodeY = nodeAccess.getLatitude(adjNode);
-                final double possibleLeftPointX = nodeAccess.getLongitude(possibleLeftPoint);
-                final double possibleLeftPointY = nodeAccess.getLatitude(possibleLeftPoint);
-
-                return (adjNodeX - baseNodeX) * (possibleLeftPointY - baseNodeY) - (adjNodeY - baseNodeY) * (possibleLeftPointX - baseNodeX);
-            }
 
             double getAngle(final int lastEdgeReversedBaseNode, final int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge) {
                 final Vector2D lastEdgeVector = createLastEdgeVector(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode);
@@ -299,17 +271,8 @@ public class GridIndex extends LocationIndexTree {
 
         private class CellRunnerLeft extends CellRunner {
             @Override
-            boolean queryPointLeftOrRight(int baseNode, int adjNode, int possibleLeftPoint) {
-                return queryPointLeft(baseNode, adjNode, possibleLeftPoint);
-            }
-
-            @Override
             double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
                 return getAngle(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
-            }
-
-            private boolean queryPointLeft(final int baseNode, final int adjNode, final int possibleLeftPoint) {
-                return getDeterminant(baseNode, adjNode, possibleLeftPoint) > 0;
             }
 
             @Override
@@ -325,18 +288,9 @@ public class GridIndex extends LocationIndexTree {
 
         private class CellRunnerRight extends CellRunner {
             @Override
-            boolean queryPointLeftOrRight(int baseNode, int adjNode, int possibleLeftPoint) {
-                return queryPointRight(baseNode, adjNode, possibleLeftPoint);
-            }
-
-            @Override
             double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
                 final double angle = getAngle(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
                 return angle == 0 ? angle : angle * (-1) + 2 * Math.PI;
-            }
-
-            private boolean queryPointRight(final int baseNode, final int adjNode, final int possibleRightPoint) {
-                return getDeterminant(baseNode, adjNode, possibleRightPoint) < 0;
             }
 
             @Override
