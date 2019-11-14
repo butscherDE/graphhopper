@@ -31,20 +31,12 @@ public class GridIndex extends LocationIndexTree {
     @Override
     public LocationIndex setResolution(int resolution) {
         super.setResolution(resolution);
-//        failOnInvalidResolutionGiven(resolution);
-//
-//        this.resolution = resolution;
+
         this.resolution = (int) MAX_LONGITUDE * 10;
         initIndex();
 
 
         return this;
-    }
-
-    private void failOnInvalidResolutionGiven(int resolution) {
-        if (resolution < 1) {
-            throw new IllegalArgumentException("Resolution must be > 0.");
-        }
     }
 
     private void initIndex() {
@@ -134,12 +126,16 @@ public class GridIndex extends LocationIndexTree {
             final double[] latitudes = new double[nodeIds.size()];
             final double[] longitudes = new double[nodeIds.size()];
 
+            fillLatLonArraysForPolygonCreation(nodeIds, latitudes, longitudes);
+
+            this.cellShape = new Polygon(latitudes, longitudes, 0);
+        }
+
+        private void fillLatLonArraysForPolygonCreation(List<Integer> nodeIds, double[] latitudes, double[] longitudes) {
             for (int i = 0; i < nodeIds.size(); i++) {
                 latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i));
                 longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i));
             }
-
-            this.cellShape = new Polygon(latitudes, longitudes, 0);
         }
 
         public boolean isOverlapping(final GridCell gridCell) {
