@@ -199,21 +199,44 @@ public class GridIndex extends LocationIndexTree {
             final List<Integer> nodesOnCell = new ArrayList<>();
 
             public VisibilityCell runAroundCellAndLogNodes() {
-                nodesOnCell.add(currentRunEndNode);
-                nodesOnCell.add(currentRunStartNode);
+                addStartAndEndNodeOfCell();
 
-                neighbors = neighborExplorer.setBaseNode(currentRunStartNode);
-                neighbors.next();
+                initializeNeighborIterator();
                 do {
-                    final EdgeIteratorState leftOrRightmostNeighbor = getMostLeftOrRightOrientedEdge(neighbors);
-                    settleEdge(leftOrRightmostNeighbor);
-                    nodesOnCell.add(leftOrRightmostNeighbor.getAdjNode());
-
-                    neighbors = neighborExplorer.setBaseNode(leftOrRightmostNeighbor.getAdjNode());
-                    neighbors.next();
-                } while (nodesOnCell.get(nodesOnCell.size() - 1) != currentRunEndNode);
+                    processNextNeighborOnCell();
+                } while (lastCellNotReached());
 
                 return createVisibilityCell();
+            }
+
+            private void addStartAndEndNodeOfCell() {
+                nodesOnCell.add(currentRunEndNode);
+                nodesOnCell.add(currentRunStartNode);
+            }
+
+            private void initializeNeighborIterator() {
+                neighbors = neighborExplorer.setBaseNode(currentRunStartNode);
+                neighbors.next();
+            }
+
+            private void processNextNeighborOnCell() {
+                final EdgeIteratorState leftOrRightmostNeighbor = getMostLeftOrRightOrientedEdge(neighbors);
+                settleNextNeighbor(leftOrRightmostNeighbor);
+                getNextNeighborIterator(leftOrRightmostNeighbor);
+            }
+
+            private void settleNextNeighbor(EdgeIteratorState leftOrRightmostNeighbor) {
+                settleEdge(leftOrRightmostNeighbor);
+                nodesOnCell.add(leftOrRightmostNeighbor.getAdjNode());
+            }
+
+            private void getNextNeighborIterator(EdgeIteratorState leftOrRightmostNeighbor) {
+                neighbors = neighborExplorer.setBaseNode(leftOrRightmostNeighbor.getAdjNode());
+                neighbors.next();
+            }
+
+            private boolean lastCellNotReached() {
+                return nodesOnCell.get(nodesOnCell.size() - 1) != currentRunEndNode;
             }
 
             private EdgeIteratorState getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors) {
