@@ -28,6 +28,38 @@ public class GridIndex extends LocationIndexTree {
         dataAccess = dir.find("location_index", DAType.getPreferredInt(dir.getDefaultType()));
     }
 
+    public List<VisibilityCell> getOverlappingVisibilityCells(final Polygon polygon) {
+        final BBox polygonBoundingBox = polygon.getMinimalBoundingBox();
+        final List<VisibilityCell> overlappingVisibilityCells = new ArrayList<>();
+
+        for (int i = 0; i < this.index.length; i++) {
+            for (int j = 0; j < this.index[0].length; j++) {
+                addVisibilityCellsIfPolygonOverlapsCell(polygonBoundingBox, overlappingVisibilityCells, this.index[i][j]);
+            }
+        }
+
+        return overlappingVisibilityCells;
+    }
+
+    private void addVisibilityCellsIfPolygonOverlapsCell(BBox polygonBoundingBox, List<VisibilityCell> overlappingVisibilityCells, GridCell index) {
+        final GridCell gridCell = index;
+        if (polygonBoundingBox.isOverlapping(gridCell.boundingBox)) {
+            addAllOverlappingVisiblityCellsOfGridCell(overlappingVisibilityCells, gridCell);
+        }
+    }
+
+    private void addAllOverlappingVisiblityCellsOfGridCell(List<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
+        for (VisibilityCell visibilityCell : gridCell.visibilityCells) {
+            if (visibilityCell.isOverlapping(gridCell)) {
+                addVisibilityCellToResults(overlappingVisibilityCells, visibilityCell);
+            }
+        }
+    }
+
+    private void addVisibilityCellToResults(List<VisibilityCell> overlappingVisibilityCells, VisibilityCell visibilityCell) {
+        overlappingVisibilityCells.add(visibilityCell);
+    }
+
     @Override
     public LocationIndex setResolution(int resolution) {
         super.setResolution(resolution);
@@ -99,7 +131,7 @@ public class GridIndex extends LocationIndexTree {
     private void addIfGridCellOverlapsVisibilityCell(VisibilityCell visibilityCell, GridCell index) {
         final GridCell gridCell = index;
         if (visibilityCell.isOverlapping(gridCell)) {
-            gridCell.visibilityCells.add(visibilityCell);
+            addVisibilityCellToResults(gridCell.visibilityCells, visibilityCell);
         }
     }
 
@@ -174,11 +206,11 @@ public class GridIndex extends LocationIndexTree {
                 currentRunEndNode = currentEdge.getBaseNode();
 
                 if (!visibilityCellOnTheLeftFound()) {
-                    allFoundCells.add(new CellRunnerLeft().runAroundCellAndLogNodes());
+                    addVisibilityCellToResults(allFoundCells, new CellRunnerLeft().runAroundCellAndLogNodes());
                 }
 
                 if (!visibilityCellOnTheRightFound()) {
-                    allFoundCells.add(new CellRunnerRight().runAroundCellAndLogNodes());
+                    addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
                 }
             }
         }
