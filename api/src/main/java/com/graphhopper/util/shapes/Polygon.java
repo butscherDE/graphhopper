@@ -327,6 +327,22 @@ public class Polygon implements Shape {
         return this.size() > 2;
     }
 
+    public BBox getBoundingBox() {
+        double minLongitude = Double.MAX_VALUE;
+        double maxLongitude = Double.MIN_VALUE;
+        double minLatitude = Double.MAX_VALUE;
+        double maxLatitude = Double.MIN_VALUE;
+
+        for (int i = 0; i < this.lat.length; i++) {
+            minLongitude = Math.min(minLongitude, this.lon[i]);
+            maxLongitude = Math.max(maxLongitude, this.lon[i]);
+            minLatitude = Math.min(minLatitude, this.lat[i]);
+            maxLatitude = Math.max(maxLatitude, this.lat[i]);
+        }
+
+        return new BBox(minLongitude, maxLongitude, minLatitude, maxLatitude);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof Polygon) {
