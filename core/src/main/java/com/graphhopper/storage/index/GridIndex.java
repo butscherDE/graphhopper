@@ -15,7 +15,6 @@ public class GridIndex extends LocationIndexTree {
 
     private final Graph graph;
     private final NodeAccess nodeAccess;
-    private final DataAccess dataAccess;
 
     private int resolution = -1;
     private GridCell[][] index;
@@ -24,7 +23,6 @@ public class GridIndex extends LocationIndexTree {
         super(graph, dir);
         this.graph = graph;
         this.nodeAccess = graph.getNodeAccess();
-        dataAccess = dir.find("location_index", DAType.getPreferredInt(dir.getDefaultType()));
     }
 
     public List<VisibilityCell> getOverlappingVisibilityCells(final Polygon polygon) {
