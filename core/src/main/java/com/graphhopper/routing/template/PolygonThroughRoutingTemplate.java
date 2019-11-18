@@ -24,7 +24,6 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private LOTNodeExtractor lotNodes;
     private List<Integer> nodesInPolygon;
     private List<Integer> polygonEntryExitPoints;
-    private LOTNodeExtractor lotNodes1;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex,
                                          EncodingManager encodingManager) {
