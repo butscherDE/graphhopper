@@ -327,7 +327,7 @@ public class Polygon implements Shape {
         return this.size() > 2;
     }
 
-    public BBox getBoundingBox() {
+    public BBox getMinimalBoundingBox() {
         double minLongitude = Double.MAX_VALUE;
         double maxLongitude = Double.MIN_VALUE;
         double minLatitude = Double.MAX_VALUE;
