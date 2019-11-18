@@ -19,7 +19,6 @@ public class GridIndex extends LocationIndexTree {
 
     private int resolution = -1;
     private GridCell[][] index;
-    private DistanceCalc distanceCalculator = Helper.DIST_PLANE;
 
     public GridIndex(final Graph graph, Directory dir) {
         super(graph, dir);
