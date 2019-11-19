@@ -6,6 +6,7 @@ import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.math.Vector2D;
+import org.locationtech.jts.util.Stopwatch;
 
 import java.util.*;
 
@@ -97,8 +98,19 @@ public class GridIndex extends LocationIndexTree {
     public LocationIndex prepareIndex() {
         failOnInvalidResolutionSet();
 
+        final StopWatch swTree = new StopWatch("Tree preparation");
+        swTree.start();
         super.prepareIndex();
+        swTree.stop();
+
+        final StopWatch swVisi = new StopWatch("Visibility cells");
+        swVisi.start();
         addAllVisibilityCellsOfGraphToIndex();
+        swVisi.stop();
+
+        System.out.println(swTree.toString());
+        System.out.println(swVisi.toString());
+
 
         return this;
     }
@@ -112,18 +124,54 @@ public class GridIndex extends LocationIndexTree {
     private void addAllVisibilityCellsOfGraphToIndex() {
         final List<VisibilityCell> visibilityCells = new VisibilityCellsCreator().create();
 
+        final StopWatch sw2 = new StopWatch("add visi cells");
+        sw2.start();
         for (VisibilityCell visibilityCell : visibilityCells) {
             addThisToAllOverlappingGridCells(visibilityCell);
         }
+        sw2.stop();
+
+        System.out.println(sw2);
     }
 
     private void addThisToAllOverlappingGridCells(VisibilityCell visibilityCell) {
-        for (int i = 0; i < this.index.length; i++) {
-            for (int j = 0; j < this.index[0].length; j++) {
-                addIfGridCellOverlapsVisibilityCell(visibilityCell, this.index[i][j]);
+        final BBox visibilityCellMinBoundingBox = visibilityCell.cellShape.getMinimalBoundingBox();
+
+        final GridCell[][] relevantGridCells = getGridCellsToAddVisibilityCellTo(visibilityCellMinBoundingBox);
+
+        for (int i = 0; i < relevantGridCells.length; i++) {
+            for (int j = 0; j < relevantGridCells[0].length; j++) {
+                addIfGridCellOverlapsVisibilityCell(visibilityCell, relevantGridCells[i][j]);
             }
         }
     }
+
+    private GridCell[][] getGridCellsToAddVisibilityCellTo(final BBox visibilityCellMinBoundingBox) {
+        final int minLongitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.minLon, MAX_LONGITUDE);
+        final int maxLongitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.maxLon, MAX_LONGITUDE);
+        final int minLatitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.minLat, MAX_LATITUDE);
+        final int maxLatitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.maxLat, MAX_LATITUDE);
+
+        final int lengthLongitude = maxLongitudeIndex - minLongitudeIndex + 1;
+        final int lengthLatitude = maxLatitudeIndex - minLatitudeIndex + 1;
+        GridCell[][] relevantGridCells = new GridCell[lengthLongitude][lengthLatitude];
+
+        for (int i = minLongitudeIndex; i <= maxLongitudeIndex; i++) {
+            copyRelevantLatitudeCellsOfThisLongitude(relevantGridCells[i - minLongitudeIndex], minLatitudeIndex, lengthLatitude, i);
+        }
+
+        return relevantGridCells;
+    }
+
+    private void copyRelevantLatitudeCellsOfThisLongitude(GridCell[] dest, int minLatitudeIndex, int lengthLatitude, int i) {
+        System.arraycopy(index[i], minLatitudeIndex, dest, 0, lengthLatitude);
+    }
+
+    private int getIndexByCoordinate(final double latOrLong, final double maxValue) {
+        final double nonNegativeLatitude = latOrLong + maxValue;
+        return (int) (nonNegativeLatitude * this.resolution / (maxValue * 2));
+    }
+
 
     private void addIfGridCellOverlapsVisibilityCell(VisibilityCell visibilityCell, GridCell index) {
         final GridCell gridCell = index;
@@ -168,7 +216,7 @@ public class GridIndex extends LocationIndexTree {
         }
 
         public boolean isOverlapping(final GridCell gridCell) {
-            return this.cellShape.isOverlapping(gridCell.boundingBox);
+           return this.cellShape.isOverlapping(gridCell.boundingBox);
         }
     }
 
