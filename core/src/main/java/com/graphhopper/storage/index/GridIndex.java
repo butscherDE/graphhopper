@@ -27,12 +27,13 @@ public class GridIndex extends LocationIndexTree {
     }
 
     public List<VisibilityCell> getOverlappingVisibilityCells(final Polygon polygon) {
-        final BBox polygonBoundingBox = polygon.getMinimalBoundingBox();
+        final BBox polygonMinBoundingBox = polygon.getMinimalBoundingBox();
         final List<VisibilityCell> overlappingVisibilityCells = new ArrayList<>();
 
-        for (int i = 0; i < this.index.length; i++) {
-            for (int j = 0; j < this.index[0].length; j++) {
-                addVisibilityCellsIfPolygonOverlapsCell(polygonBoundingBox, overlappingVisibilityCells, this.index[i][j]);
+        final GridCell[][] relevantGridCells = getGridCellsToAddVisibilityCellTo(polygonMinBoundingBox);
+        for (int i = 0; i < relevantGridCells.length; i++) {
+            for (int j = 0; j < relevantGridCells[0].length; j++) {
+                addVisibilityCellsIfPolygonOverlapsCell(polygonMinBoundingBox, overlappingVisibilityCells, relevantGridCells[i][j]);
             }
         }
 
