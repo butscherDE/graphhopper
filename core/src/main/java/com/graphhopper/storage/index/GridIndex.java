@@ -98,19 +98,8 @@ public class GridIndex extends LocationIndexTree {
     public LocationIndex prepareIndex() {
         failOnInvalidResolutionSet();
 
-        final StopWatch swTree = new StopWatch("Tree preparation");
-        swTree.start();
         super.prepareIndex();
-        swTree.stop();
-
-        final StopWatch swVisi = new StopWatch("Visibility cells");
-        swVisi.start();
         addAllVisibilityCellsOfGraphToIndex();
-        swVisi.stop();
-
-        System.out.println(swTree.toString());
-        System.out.println(swVisi.toString());
-
 
         return this;
     }
@@ -124,14 +113,9 @@ public class GridIndex extends LocationIndexTree {
     private void addAllVisibilityCellsOfGraphToIndex() {
         final List<VisibilityCell> visibilityCells = new VisibilityCellsCreator().create();
 
-        final StopWatch sw2 = new StopWatch("add visi cells");
-        sw2.start();
         for (VisibilityCell visibilityCell : visibilityCells) {
             addThisToAllOverlappingGridCells(visibilityCell);
         }
-        sw2.stop();
-
-        System.out.println(sw2);
     }
 
     private void addThisToAllOverlappingGridCells(VisibilityCell visibilityCell) {
