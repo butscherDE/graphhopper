@@ -180,7 +180,7 @@ public class GridIndex extends LocationIndexTree {
         }
     }
 
-    private class VisibilityCell {
+    public class VisibilityCell {
         private final Polygon cellShape;
 
         private VisibilityCell(final List<Integer> nodeIds) {
