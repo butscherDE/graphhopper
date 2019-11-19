@@ -40,8 +40,7 @@ public class GridIndex extends LocationIndexTree {
         return overlappingVisibilityCells;
     }
 
-    private void addVisibilityCellsIfPolygonOverlapsCell(BBox polygonBoundingBox, List<VisibilityCell> overlappingVisibilityCells, GridCell index) {
-        final GridCell gridCell = index;
+    private void addVisibilityCellsIfPolygonOverlapsCell(BBox polygonBoundingBox, List<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
         if (polygonBoundingBox.isOverlapping(gridCell.boundingBox)) {
             addAllOverlappingVisiblityCellsOfGridCell(overlappingVisibilityCells, gridCell);
         }
