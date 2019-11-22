@@ -249,14 +249,10 @@ public class GridIndex extends LocationIndexTree {
 
                 if (!visibilityCellOnTheLeftFound()) {
                     addVisibilityCellToResults(allFoundCells, new CellRunnerLeft().runAroundCellAndLogNodes());
-                } else {
-                    System.out.println("lala");
                 }
 
                 if (!visibilityCellOnTheRightFound()) {
                     addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
-                } else {
-                    System.out.println("lulu");
                 }
             }
         }
