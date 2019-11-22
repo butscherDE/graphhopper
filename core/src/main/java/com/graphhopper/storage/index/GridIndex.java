@@ -6,7 +6,6 @@ import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.math.Vector2D;
-import org.locationtech.jts.util.Stopwatch;
 
 import java.util.*;
 
@@ -30,18 +29,18 @@ public class GridIndex extends LocationIndexTree {
         final BBox polygonMinBoundingBox = polygon.getMinimalBoundingBox();
         final List<VisibilityCell> overlappingVisibilityCells = new ArrayList<>();
 
-        final GridCell[][] relevantGridCells = getGridCellsToAddVisibilityCellTo(polygonMinBoundingBox);
+        final GridCell[][] relevantGridCells = getGridCellsThatOverlapPolygonBoundingBox(polygonMinBoundingBox);
         for (int i = 0; i < relevantGridCells.length; i++) {
             for (int j = 0; j < relevantGridCells[0].length; j++) {
-                addVisibilityCellsIfPolygonOverlapsCell(polygonMinBoundingBox, overlappingVisibilityCells, relevantGridCells[i][j]);
+                addVisibilityCellsIfPolygonOverlapsCell(polygon, overlappingVisibilityCells, relevantGridCells[i][j]);
             }
         }
 
         return overlappingVisibilityCells;
     }
 
-    private void addVisibilityCellsIfPolygonOverlapsCell(BBox polygonBoundingBox, List<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
-        if (polygonBoundingBox.isOverlapping(gridCell.boundingBox)) {
+    private void addVisibilityCellsIfPolygonOverlapsCell(Polygon polygon, List<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
+        if (polygon.isOverlapping(gridCell.boundingBox)) {
             addAllOverlappingVisiblityCellsOfGridCell(overlappingVisibilityCells, gridCell);
         }
     }
@@ -101,6 +100,15 @@ public class GridIndex extends LocationIndexTree {
         super.prepareIndex();
         addAllVisibilityCellsOfGraphToIndex();
 
+        int sum = 0;
+        for (int i = 0; i < this.index.length; i++) {
+            for (int j = 0; j < this.index[0].length; j++) {
+                sum += this.index[i][j].visibilityCells.size();
+            }
+        }
+
+        System.out.println("::: " + sum);
+
         return this;
     }
 
@@ -121,7 +129,7 @@ public class GridIndex extends LocationIndexTree {
     private void addThisToAllOverlappingGridCells(VisibilityCell visibilityCell) {
         final BBox visibilityCellMinBoundingBox = visibilityCell.cellShape.getMinimalBoundingBox();
 
-        final GridCell[][] relevantGridCells = getGridCellsToAddVisibilityCellTo(visibilityCellMinBoundingBox);
+        final GridCell[][] relevantGridCells = getGridCellsThatOverlapPolygonBoundingBox(visibilityCellMinBoundingBox);
 
         for (int i = 0; i < relevantGridCells.length; i++) {
             for (int j = 0; j < relevantGridCells[0].length; j++) {
@@ -130,25 +138,25 @@ public class GridIndex extends LocationIndexTree {
         }
     }
 
-    private GridCell[][] getGridCellsToAddVisibilityCellTo(final BBox visibilityCellMinBoundingBox) {
-        final int minLongitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.minLon, MAX_LONGITUDE);
-        final int maxLongitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.maxLon, MAX_LONGITUDE);
-        final int minLatitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.minLat, MAX_LATITUDE);
-        final int maxLatitudeIndex = getIndexByCoordinate(visibilityCellMinBoundingBox.maxLat, MAX_LATITUDE);
+    private GridCell[][] getGridCellsThatOverlapPolygonBoundingBox(final BBox minBoundingBox) {
+        final int minLongitudeIndex = getIndexByCoordinate(minBoundingBox.minLon, MAX_LONGITUDE);
+        final int maxLongitudeIndex = getIndexByCoordinate(minBoundingBox.maxLon, MAX_LONGITUDE);
+        final int minLatitudeIndex = getIndexByCoordinate(minBoundingBox.maxLat * (-1), MAX_LATITUDE);
+        final int maxLatitudeIndex = getIndexByCoordinate(minBoundingBox.minLat * (-1), MAX_LATITUDE);
 
         final int lengthLongitude = maxLongitudeIndex - minLongitudeIndex + 1;
         final int lengthLatitude = maxLatitudeIndex - minLatitudeIndex + 1;
-        GridCell[][] relevantGridCells = new GridCell[lengthLongitude][lengthLatitude];
+        GridCell[][] relevantGridCells = new GridCell[lengthLatitude][lengthLongitude];
 
-        for (int i = minLongitudeIndex; i <= maxLongitudeIndex; i++) {
-            copyRelevantLatitudeCellsOfThisLongitude(relevantGridCells[i - minLongitudeIndex], minLatitudeIndex, lengthLatitude, i);
+        for (int i = minLatitudeIndex; i <= maxLatitudeIndex; i++) {
+            copyRelevantLatitudeCellsOfThisLongitude(relevantGridCells[i - minLatitudeIndex], minLongitudeIndex, lengthLongitude, i);
         }
 
         return relevantGridCells;
     }
 
-    private void copyRelevantLatitudeCellsOfThisLongitude(GridCell[] dest, int minLatitudeIndex, int lengthLatitude, int i) {
-        System.arraycopy(index[i], minLatitudeIndex, dest, 0, lengthLatitude);
+    private void copyRelevantLatitudeCellsOfThisLongitude(GridCell[] dest, int minLongitudeIndex, int lengthLongitude, int i) {
+        System.arraycopy(index[i], minLongitudeIndex, dest, 0, lengthLongitude);
     }
 
     private int getIndexByCoordinate(final double latOrLong, final double maxValue) {
@@ -202,6 +210,11 @@ public class GridIndex extends LocationIndexTree {
         public boolean isOverlapping(final GridCell gridCell) {
            return this.cellShape.isOverlapping(gridCell.boundingBox);
         }
+
+        @Override
+        public String toString() {
+            return cellShape.toString();
+        }
     }
 
     /**
@@ -236,20 +249,24 @@ public class GridIndex extends LocationIndexTree {
 
                 if (!visibilityCellOnTheLeftFound()) {
                     addVisibilityCellToResults(allFoundCells, new CellRunnerLeft().runAroundCellAndLogNodes());
+                } else {
+                    System.out.println("lala");
                 }
 
                 if (!visibilityCellOnTheRightFound()) {
                     addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
+                } else {
+                    System.out.println("lulu");
                 }
             }
         }
 
         private Boolean visibilityCellOnTheLeftFound() {
-            return visitedManager.isEdgeSettledLeft(currentEdge);
+            return visitedManager.isEdgeSettledLeft(visitedManager.forceNodeIdsAscending(currentEdge));
         }
 
         private Boolean visibilityCellOnTheRightFound() {
-            return visitedManager.isEdgeSettledRight(currentEdge);
+            return visitedManager.isEdgeSettledRight(visitedManager.forceNodeIdsAscending(currentEdge));
         }
 
         private abstract class CellRunner {
@@ -384,17 +401,21 @@ public class GridIndex extends LocationIndexTree {
         }
 
         private class VisitedManager {
-            final Map<EdgeIteratorState, Boolean> visitedLeft = new HashMap<>(graph.getEdges());
-            final Map<EdgeIteratorState, Boolean> visitedRight = new HashMap<>(graph.getEdges());
+            final Map<Integer, Boolean> visitedLeft = new HashMap<>(graph.getEdges());
+            final Map<Integer, Boolean> visitedRight = new HashMap<>(graph.getEdges());
 
             public void settleEdgeLeft(EdgeIteratorState edge) {
                 edge = forceNodeIdsAscending(edge);
-                visitedLeft.put(edge, true);
+                if (visitedLeft.get(edge.getEdge()) == null) {
+                    visitedLeft.put(edge.getEdge(), true);
+                }
             }
 
             public void settleEdgeRight(EdgeIteratorState edge) {
                 edge = forceNodeIdsAscending(edge);
-                visitedRight.put(edge, true);
+                if (visitedRight.get(edge.getEdge()) == null) {
+                    visitedRight.put(edge.getEdge(), true);
+                }
             }
 
             private boolean isEdgeSettledLeft(EdgeIteratorState edge) {
@@ -405,9 +426,8 @@ public class GridIndex extends LocationIndexTree {
                 return isEdgeSettled(edge, visitedRight);
             }
 
-            private boolean isEdgeSettled(EdgeIteratorState edge, Map<EdgeIteratorState, Boolean> isVisited) {
-                edge = forceNodeIdsAscending(edge);
-                final Boolean visited = isVisited.get(edge);
+            private boolean isEdgeSettled(EdgeIteratorState edge, Map<Integer, Boolean> isVisited) {
+                final Boolean visited = isVisited.get(edge.getEdge());
                 return visited == null ? false : visited;
             }
 
