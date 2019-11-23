@@ -5,10 +5,7 @@ import com.graphhopper.storage.RAMDirectory;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
