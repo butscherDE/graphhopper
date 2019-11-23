@@ -279,7 +279,12 @@ public class Polygon implements Shape {
 
     @Override
     public String toString() {
-        return "polygon (" + lat.length + " points)";
+        String polygon = "";
+        polygon += "polygon (" + lat.length + " points)\n";
+        polygon += Arrays.toString(this.lat) + "\n";
+        polygon += Arrays.toString(this.lon);
+
+        return polygon;
     }
 
     public static Polygon parsePoints(String pointsStr, double growFactor) {

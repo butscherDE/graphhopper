@@ -5,7 +5,10 @@ import com.graphhopper.storage.RAMDirectory;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,5 +27,92 @@ public class GridIndexTest {
         final List<GridIndex.VisibilityCell> visibilityCells = locationIndex.getOverlappingVisibilityCells(polygon);
 
         assertEquals(9, visibilityCells.size());
+
+        assertPolygon0(visibilityCells);
+        assertPolygon1(visibilityCells);
+        assertPolygon2(visibilityCells);
+        assertPolygon3(visibilityCells);
+        assertPolygon4(visibilityCells);
+        assertPolygon5(visibilityCells);
+        assertPolygon6(visibilityCells);
+        assertPolygon7(visibilityCells);
+        assertPolygon8(visibilityCells);
+    }
+
+    private void assertPolygon0(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{25.0, 7.0, 1.0, 0.0, 0.0, 2.0, 2.0, 7.0, 3.0, 3.0, 10.0, 10.0, 8.0, 10.0, 12.0, 10.0, 10.0, 15.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0};
+        final double[] longitudes =
+                new double[]{0.0, 1.0, 1.0, 16.0, 21.0, 25.0, 36.0, 38.0, 41.0, 47.0, 47.0, 51.0, 51.0, 51.0, 51.0, 51.0, 47.0, 43.0, 46.0, 43.0, 34.0, 25.0, 16.0, 8.0, 0.0};
+        assertPolygonEqual(visibilityCells.get(0), latitudes, longitudes);
+    }
+
+    private void assertPolygon1(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{25.0, 15.0, 12.0, 20.0, 25.0};
+        final double[] longitudes =
+                new double[]{43.0, 43.0, 38.0, 42.0, 43.0};
+        assertPolygonEqual(visibilityCells.get(1), latitudes, longitudes);
+    }
+
+    private void assertPolygon2(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{15.0, 10.0, 3.0, 3.0, 7.0, 7.0, 5.0, 7.0, 9.0, 7.0, 7.0, 15.0};
+        final double[] longitudes =
+                new double[]{43.0, 47.0, 47.0, 41.0, 38.0, 42.0, 44.0, 42.0, 44.0, 42.0, 38.0, 43.0};
+        assertPolygonEqual(visibilityCells.get(2), latitudes, longitudes);
+    }
+
+    private void assertPolygon3(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{15.0, 7.0, 11.0, 12.0, 15.0};
+        final double[] longitudes =
+                new double[]{43.0, 38.0, 34.0, 38.0, 43.0};
+        assertPolygonEqual(visibilityCells.get(3), latitudes, longitudes);
+    }
+
+    private void assertPolygon4(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{7.0, 7.0, 5.0, 7.0, 9.0, 7.0, 7.0};
+        final double[] longitudes =
+                new double[]{38.0, 42.0, 44.0, 42.0, 44.0, 42.0, 38.0};
+        assertPolygonEqual(visibilityCells.get(4), latitudes, longitudes);
+    }
+
+    private void assertPolygon5(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{11.0, 7.0, 7.0, 11.0};
+        final double[] longitudes =
+                new double[]{34.0, 38.0, 32.0, 34.0};
+        assertPolygonEqual(visibilityCells.get(5), latitudes, longitudes);
+    }
+
+    private void assertPolygon6(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{7.0, 7.0, 3.0, 7.0};
+        final double[] longitudes =
+                new double[]{32.0, 38.0, 33.0, 32.0};
+        assertPolygonEqual(visibilityCells.get(6), latitudes, longitudes);
+    }
+
+    private void assertPolygon7(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{2.0, 6.0, 3.0, 7.0, 2.0, 2.0};
+        final double[] longitudes =
+                new double[]{25.0, 25.0, 33.0, 38.0, 36.0, 25.0};
+        assertPolygonEqual(visibilityCells.get(7), latitudes, longitudes);
+    }
+
+    private void assertPolygon8(List<GridIndex.VisibilityCell> visibilityCells) {
+        final double[] latitudes =
+                new double[]{3.0, 7.0, 2.0, 2.0, 6.0, 3.0};
+        final double[] longitudes =
+                new double[]{33.0, 38.0, 36.0, 25.0, 25.0, 33.0};
+        assertPolygonEqual(visibilityCells.get(8), latitudes, longitudes);
+    }
+
+    private void assertPolygonEqual(GridIndex.VisibilityCell visibilityCell, double[] latitudes, double[] longitudes) {
+        final Polygon polygon = new Polygon(latitudes, longitudes, 0);
+        assertEquals(polygon, visibilityCell.cellShape);
     }
 }

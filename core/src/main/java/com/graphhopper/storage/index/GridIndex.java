@@ -108,8 +108,6 @@ public class GridIndex extends LocationIndexTree {
             }
         }
 
-        System.out.println("::: " + sum);
-
         return this;
     }
 
@@ -190,7 +188,7 @@ public class GridIndex extends LocationIndexTree {
     }
 
     public class VisibilityCell {
-        private final Polygon cellShape;
+        public final Polygon cellShape;
 
         private VisibilityCell(final List<Integer> nodeIds) {
             final double[] latitudes = new double[nodeIds.size()];
