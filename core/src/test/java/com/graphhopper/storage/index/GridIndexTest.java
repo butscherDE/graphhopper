@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 public class GridIndexTest {
     final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
-    LocationIndex locationIndex = new GridIndex(graphMocker.graph, new RAMDirectory()).setResolution(300).prepareIndex();
+    GridIndex locationIndex = (GridIndex) new GridIndex(graphMocker.graph, new RAMDirectory()).setResolution(300).prepareIndex();
 
     @Test
     public void completeTestArea() {
@@ -21,8 +21,8 @@ public class GridIndexTest {
         final double[] longitudes = new double[]{40, 37, 42, 44, 52, 52, 48};
         final Polygon polygon = new Polygon(latitudes, longitudes, 0);
 
-        final List<GridIndex.VisibilityCell> visibilityCells = ((GridIndex) locationIndex).getOverlappingVisibilityCells(polygon);
+        final List<GridIndex.VisibilityCell> visibilityCells = locationIndex.getOverlappingVisibilityCells(polygon);
 
-        assertEquals(6, visibilityCells.size());
+        assertEquals(9, visibilityCells.size());
     }
 }

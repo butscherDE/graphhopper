@@ -8,6 +8,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.math.Vector2D;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class GridIndex extends LocationIndexTree {
     private final static double MAX_LATITUDE = 90;
@@ -27,7 +28,7 @@ public class GridIndex extends LocationIndexTree {
 
     public List<VisibilityCell> getOverlappingVisibilityCells(final Polygon polygon) {
         final BBox polygonMinBoundingBox = polygon.getMinimalBoundingBox();
-        final List<VisibilityCell> overlappingVisibilityCells = new ArrayList<>();
+        final Set<VisibilityCell> overlappingVisibilityCells = new CopyOnWriteArraySet<>();
 
         final GridCell[][] relevantGridCells = getGridCellsThatOverlapPolygonBoundingBox(polygonMinBoundingBox);
         for (int i = 0; i < relevantGridCells.length; i++) {
@@ -36,16 +37,16 @@ public class GridIndex extends LocationIndexTree {
             }
         }
 
-        return overlappingVisibilityCells;
+        return new ArrayList<>(overlappingVisibilityCells);
     }
 
-    private void addVisibilityCellsIfPolygonOverlapsCell(Polygon polygon, List<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
+    private void addVisibilityCellsIfPolygonOverlapsCell(Polygon polygon, Collection<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
         if (polygon.isOverlapping(gridCell.boundingBox)) {
             addAllOverlappingVisiblityCellsOfGridCell(overlappingVisibilityCells, gridCell);
         }
     }
 
-    private void addAllOverlappingVisiblityCellsOfGridCell(List<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
+    private void addAllOverlappingVisiblityCellsOfGridCell(Collection<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
         for (VisibilityCell visibilityCell : gridCell.visibilityCells) {
             if (visibilityCell.isOverlapping(gridCell)) {
                 addVisibilityCellToResults(overlappingVisibilityCells, visibilityCell);
@@ -53,7 +54,7 @@ public class GridIndex extends LocationIndexTree {
         }
     }
 
-    private void addVisibilityCellToResults(List<VisibilityCell> overlappingVisibilityCells, VisibilityCell visibilityCell) {
+    private void addVisibilityCellToResults(Collection<VisibilityCell> overlappingVisibilityCells, VisibilityCell visibilityCell) {
         overlappingVisibilityCells.add(visibilityCell);
     }
 
@@ -214,6 +215,30 @@ public class GridIndex extends LocationIndexTree {
         @Override
         public String toString() {
             return cellShape.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof VisibilityCell) {
+                return returnEqualsExtractingTheOtherPolygon((VisibilityCell) o);
+            } else if (o instanceof Polygon) {
+                return returnEqualsIfOtherIsAlreadyPolygon(o);
+            } else {
+                return returnEqualsOnForeignObject(o);
+            }
+        }
+
+        private boolean returnEqualsExtractingTheOtherPolygon(VisibilityCell o) {
+            final VisibilityCell oAsVisibilityCell = o;
+            return this.cellShape.equals(oAsVisibilityCell.cellShape);
+        }
+
+        private boolean returnEqualsIfOtherIsAlreadyPolygon(Object o) {
+            return this.cellShape.equals(o);
+        }
+
+        private boolean returnEqualsOnForeignObject(Object o) {
+            return super.equals(o);
         }
     }
 
