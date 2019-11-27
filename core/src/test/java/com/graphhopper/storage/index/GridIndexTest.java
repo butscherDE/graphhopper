@@ -6,6 +6,8 @@ import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
@@ -23,6 +25,17 @@ public class GridIndexTest {
         final Polygon polygon = new Polygon(latitudes, longitudes, 0);
 
         final List<GridIndex.VisibilityCell> visibilityCells = locationIndex.getOverlappingVisibilityCells(polygon);
+
+        Set<GridIndex.VisibilityCell> testSet = new CopyOnWriteArraySet<>();
+//        visibilityCells.forEach(new Consumer<GridIndex.VisibilityCell>() {
+//            @Override
+//            public void accept(GridIndex.VisibilityCell visibilityCell) {
+//                if (!testSet.add(visibilityCell)) {
+//                    System.out.print("Duplicate: ");
+//                }
+//                System.out.println(visibilityCell);
+//            }
+//        });
 
         assertEquals(9, visibilityCells.size());
 
