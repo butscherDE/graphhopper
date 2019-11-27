@@ -306,6 +306,20 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(104, 106, 1, true);
         this.graph.edge(106, 107, 1, true);
         this.graph.edge(107, 108, 1, true);
+
+        // Coordinate border cases
+        this.graph.edge(200, 201, 1, true);
+        this.graph.edge(201, 202, 1, true);
+        this.graph.edge(202, 203, 1, true);
+        this.graph.edge(203, 210, 1, true);
+        this.graph.edge(210, 211, 1, true);
+        this.graph.edge(211, 212, 1, true);
+        this.graph.edge(212, 213, 1, true);
+        this.graph.edge(213, 210, 1, true);
+        this.graph.edge(220, 221, 1, true);
+        this.graph.edge(221, 222, 1, true);
+        this.graph.edge(222, 223, 1, true);
+        this.graph.edge(223, 220, 1, true);
     }
 
     private Polygon createPolygon() {

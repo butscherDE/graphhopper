@@ -6,6 +6,7 @@ import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -111,5 +112,23 @@ public class GridIndexTest {
     private void assertPolygonEqual(GridIndex.VisibilityCell visibilityCell, double[] latitudes, double[] longitudes) {
         final Polygon polygon = new Polygon(latitudes, longitudes, 0);
         assertEquals(polygon, visibilityCell.cellShape);
+    }
+
+    @Test
+    public void borderCoordinatesLongitude() {
+        final double[] latitudes = new double[] {2, 2, -2, -2};
+        final double[] longitudes = new double[] {178, -178, -178, 178};
+        final Polygon polygon = new Polygon(latitudes, longitudes, 0);
+
+        final List<GridIndex.VisibilityCell> visibilityCells = locationIndex.getOverlappingVisibilityCells(polygon);
+
+        visibilityCells.forEach(new Consumer<GridIndex.VisibilityCell>() {
+            @Override
+            public void accept(GridIndex.VisibilityCell visibilityCell) {
+                System.out.println(visibilityCell);
+            }
+        });
+
+        assertEquals(2, visibilityCells.size());
     }
 }
