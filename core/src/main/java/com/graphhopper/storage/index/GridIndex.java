@@ -191,8 +191,8 @@ public class GridIndex extends LocationIndexTree {
         public final Polygon cellShape;
 
         private VisibilityCell(final List<Integer> nodeIds) {
-            final double[] latitudes = new double[nodeIds.size()];
-            final double[] longitudes = new double[nodeIds.size()];
+            final double[] latitudes = new double[nodeIds.size() - 1];
+            final double[] longitudes = new double[nodeIds.size() - 1];
 
             fillLatLonArraysForPolygonCreation(nodeIds, latitudes, longitudes);
 
@@ -200,9 +200,9 @@ public class GridIndex extends LocationIndexTree {
         }
 
         private void fillLatLonArraysForPolygonCreation(List<Integer> nodeIds, double[] latitudes, double[] longitudes) {
-            for (int i = 0; i < nodeIds.size(); i++) {
-                latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i));
-                longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i));
+            for (int i = 0; i < nodeIds.size() - 1; i++) {
+                latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i + 1));
+                longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i + 1));
             }
         }
 
