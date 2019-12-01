@@ -6,9 +6,14 @@ import org.locationtech.jts.geom.LineSegment;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CrossProductRedBlueSegmentIntersection implements SegmentIntersectionAlgorithm {
-     final List<LineSegment> redSegments = new ArrayList<>();
-     final List<LineSegment> blueSegments = new ArrayList<>();
+public class CrossProductRedBlueSegmentIntersection implements SegmentIntersectionAlgorithm {
+     final List<LineSegment> redSegments;
+     final List<LineSegment> blueSegments;
+
+    public CrossProductRedBlueSegmentIntersection(final List<LineSegment> redSegments, final List<LineSegment> blueSegments) {
+        this.redSegments = redSegments;
+        this.blueSegments = blueSegments;
+    }
 
     @Override
     public boolean isIntersectionPresent() {
