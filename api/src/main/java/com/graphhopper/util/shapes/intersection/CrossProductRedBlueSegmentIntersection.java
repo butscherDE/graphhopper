@@ -76,6 +76,6 @@ public abstract class CrossProductRedBlueSegmentIntersection implements SegmentI
     }
 
     private boolean intersectionExists(Coordinate intersection) {
-        return intersection == null;
+        return intersection != null;
     }
 }
