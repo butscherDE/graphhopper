@@ -20,6 +20,10 @@ package com.graphhopper.util.shapes;
 import com.graphhopper.util.DistanceCalc;
 import com.graphhopper.util.DistanceCalcEarth;
 import org.junit.Test;
+import org.locationtech.jts.geom.LineSegment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -322,5 +326,19 @@ public class BBoxTest {
         final BBox sameBbox = new BBox(1,2,1,2);
 
         assertTrue(mainOverlappingTestBox.isOverlapping(sameBbox));
+    }
+
+    @Test
+    public void lineSegmentRepresentation() {
+        final Shape testBox = new BBox(-1, 1, -1, 1);
+        final List<LineSegment> testBoxLineSegments = testBox.getLineSegmentRepresentation();
+
+        final List<LineSegment> groundTruth = new ArrayList<>(4);
+        groundTruth.add(new LineSegment(-1, -1, 1, -1));
+        groundTruth.add(new LineSegment(1, -1, 1, 1));
+        groundTruth.add(new LineSegment(1, 1, -1, 1));
+        groundTruth.add(new LineSegment(-1, 1, -1, -1));
+
+        assertEquals(groundTruth, testBoxLineSegments);
     }
 }

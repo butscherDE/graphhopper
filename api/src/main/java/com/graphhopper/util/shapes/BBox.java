@@ -20,6 +20,7 @@ package com.graphhopper.util.shapes;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.NumHelper;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.LineSegment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -326,6 +327,18 @@ public class BBox implements Shape, Cloneable {
         return Helper.DIST_PLANE.calcDist(meanLat, minLon, meanLat, maxLon)
                 // left side should be equal to right side no mean value necessary
                 * Helper.DIST_PLANE.calcDist(minLat, minLon, maxLat, minLon);
+    }
+
+    @Override
+    public List<LineSegment> getLineSegmentRepresentation() {
+        final List<LineSegment> segments = new ArrayList<>(4);
+
+        segments.add(new LineSegment(minLon, minLat, maxLon, minLat));
+        segments.add(new LineSegment(maxLon, minLat, maxLon, maxLat));
+        segments.add(new LineSegment(maxLon, maxLat, minLon, maxLat));
+        segments.add(new LineSegment(minLon, maxLat, minLon, minLat));
+
+        return segments;
     }
 
     /**

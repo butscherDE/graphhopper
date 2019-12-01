@@ -360,7 +360,7 @@ public class Polygon implements Shape {
         }
     }
 
-    public List<LineSegment> getAsLineSegments() {
+    public List<LineSegment> getLineSegmentRepresentation() {
         final List<LineSegment> segments = new ArrayList<>(this.lat.length);
 
         for (int i = 0; i < this.lat.length - 1; i++) {

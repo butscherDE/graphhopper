@@ -2,6 +2,7 @@ package com.graphhopper.util.shapes;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.jts.geom.LineSegment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -163,5 +164,19 @@ public class PolygonTest {
         Polygon squareHole;
         squareHole = new Polygon(new double[]{1, 1, 2, 1.1, 2}, new double[]{1, 2, 2, 1.5, 1});
         return squareHole;
+    }
+
+    @Test
+    public void lineSegmentRepresentation() {
+        final Shape testBox = new Polygon(new double[] {-1, -1, 1, 1}, new double[] {-1, 1, 1, -1}, 0);
+        final List<LineSegment> testBoxLineSegments = testBox.getLineSegmentRepresentation();
+
+        final List<LineSegment> groundTruth = new ArrayList<>(4);
+        groundTruth.add(new LineSegment(-1, -1, 1, -1));
+        groundTruth.add(new LineSegment(1, -1, 1, 1));
+        groundTruth.add(new LineSegment(1, 1, -1, 1));
+        groundTruth.add(new LineSegment(-1, 1, -1, -1));
+
+        assertEquals(groundTruth, testBoxLineSegments);
     }
 }

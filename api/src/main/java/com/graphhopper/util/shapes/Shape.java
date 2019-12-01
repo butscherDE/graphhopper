@@ -17,6 +17,10 @@
  */
 package com.graphhopper.util.shapes;
 
+import org.locationtech.jts.geom.LineSegment;
+
+import java.util.List;
+
 /**
  * A shape interface to implement circles or rectangles.
  * <p>
@@ -54,4 +58,10 @@ public interface Shape {
      * @return an estimated area in m^2
      */
     double calculateArea();
+
+    /**
+     * Translates a shape into a sequence of connected LineSegment Objects.
+     * @return
+     */
+    List<LineSegment> getLineSegmentRepresentation();
 }

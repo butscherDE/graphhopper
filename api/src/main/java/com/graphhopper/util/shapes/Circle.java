@@ -20,6 +20,9 @@ package com.graphhopper.util.shapes;
 import com.graphhopper.util.DistanceCalc;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.NumHelper;
+import org.locationtech.jts.geom.LineSegment;
+
+import java.util.List;
 
 /**
  * @author Peter Karich
@@ -157,6 +160,11 @@ public class Circle implements Shape {
     @Override
     public double calculateArea() {
         return Math.PI * radiusInMeter * radiusInMeter;
+    }
+
+    @Override
+    public List<LineSegment> getLineSegmentRepresentation() {
+        throw new UnsupportedOperationException("Circles are not built by line segments.");
     }
 
     @Override
