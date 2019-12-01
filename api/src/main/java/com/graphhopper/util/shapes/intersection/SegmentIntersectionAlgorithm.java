@@ -1,5 +1,7 @@
 package com.graphhopper.util.shapes.intersection;
 
+import org.locationtech.jts.geom.Coordinate;
+
 import java.util.List;
 
 public interface SegmentIntersectionAlgorithm {
@@ -7,5 +9,5 @@ public interface SegmentIntersectionAlgorithm {
 
     int getIntersectionCount();
 
-    List<LineSegment> getIntersections();
+    List<Coordinate> getIntersections();
 }
