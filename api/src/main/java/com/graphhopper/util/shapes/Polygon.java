@@ -17,6 +17,8 @@
  */
 package com.graphhopper.util.shapes;
 
+import org.locationtech.jts.geom.LineSegment;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -356,5 +358,16 @@ public class Polygon implements Shape {
         } else {
             return super.equals(o);
         }
+    }
+
+    public List<LineSegment> getAsLineSegments() {
+        final List<LineSegment> segments = new ArrayList<>(this.lat.length);
+
+        for (int i = 0; i < this.lat.length - 1; i++) {
+            segments.add(new LineSegment(this.lon[i], this.lat[i], this.lon[i + 1], this.lat[i + 1]));
+        }
+        segments.add(new LineSegment(this.lon[this.lon.length - 1], this.lat[this.lat.length - 1], this.lon[0], this.lat[0]));
+
+        return segments;
     }
 }

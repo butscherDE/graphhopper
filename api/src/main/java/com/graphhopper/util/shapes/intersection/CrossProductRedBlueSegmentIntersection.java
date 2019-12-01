@@ -7,13 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class CrossProductRedBlueSegmentIntersection implements SegmentIntersectionAlgorithm {
-     final List<LineSegment> redSegments;
-     final List<LineSegment> blueSegments;
-
-    public CrossProductRedBlueSegmentIntersection(List<LineSegment> redSegments, List<LineSegment> blueSegments) {
-        this.redSegments = redSegments;
-        this.blueSegments = blueSegments;
-    }
+     final List<LineSegment> redSegments = new ArrayList<>();
+     final List<LineSegment> blueSegments = new ArrayList<>();
 
     @Override
     public boolean isIntersectionPresent() {
