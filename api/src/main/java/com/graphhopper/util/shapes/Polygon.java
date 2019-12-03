@@ -17,6 +17,8 @@
  */
 package com.graphhopper.util.shapes;
 
+import com.graphhopper.util.shapes.intersection.CrossProductRedBlueSegmentIntersection;
+import com.graphhopper.util.shapes.intersection.SegmentIntersectionAlgorithm;
 import org.locationtech.jts.geom.LineSegment;
 
 import java.util.ArrayList;
@@ -120,7 +122,50 @@ public class Polygon implements Shape {
 
     @Override
     public boolean intersects(Shape o) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (o instanceof Circle) {
+            return intersects((Circle) o);
+        } else if (o instanceof BBox) {
+            return intersects((BBox) o);
+        } else if (o instanceof Polygon) {
+            return intersects((Polygon) o);
+        } else {
+            throw new IllegalArgumentException("This shape Implementation is unknown.");
+        }
+    }
+
+    private boolean intersects(Circle o) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private boolean intersects(BBox o) {
+        return checkAllPolygonPointsIfOneLiesInBoundingBox(o);
+    }
+
+    private boolean checkAllPolygonPointsIfOneLiesInBoundingBox(BBox o) {
+        for (int i = 0; i < this.lat.length; i++) {
+            if (checkIfCurrentPolygonPointIsInBoundingBox(o, i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkIfCurrentPolygonPointIsInBoundingBox(BBox o, int i) {
+        final double polygonPointLatitude = this.lat[i];
+        final double polygonPointLongitude = this.lon[i];
+
+        if (o.contains(polygonPointLatitude, polygonPointLongitude)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean intersects(Polygon o) {
+        final List<LineSegment> thisLineSegments = this.getLineSegmentRepresentation();
+        final List<LineSegment> oLineSegments = o.getLineSegmentRepresentation();
+
+        final SegmentIntersectionAlgorithm segmentIntersection = new CrossProductRedBlueSegmentIntersection(thisLineSegments, oLineSegments);
+        return segmentIntersection.isIntersectionPresent();
     }
 
     /**
