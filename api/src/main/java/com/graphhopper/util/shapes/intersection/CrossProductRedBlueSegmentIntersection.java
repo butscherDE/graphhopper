@@ -39,11 +39,11 @@ public class CrossProductRedBlueSegmentIntersection implements SegmentIntersecti
         for (int i = 0; i < this.redSegments.size(); i++) {
             final LineSegment redLineSegment = redSegments.get(i);
 
-            for (int j = i + 1; j < this.blueSegments.size(); j++) {
+            for (int j = 0; j < this.blueSegments.size(); j++) {
                 final LineSegment blueLineSegment = blueSegments.get(j);
 
                 if (intersectionExists(redLineSegment, blueLineSegment)) {
-                    i++;
+                    count++;
                 }
             }
         }
@@ -58,7 +58,7 @@ public class CrossProductRedBlueSegmentIntersection implements SegmentIntersecti
         for (int i = 0; i < this.redSegments.size(); i++) {
             final LineSegment redLineSegment = redSegments.get(i);
 
-            for (int j = i + 1; j < this.blueSegments.size(); j++) {
+            for (int j = 0; j < this.blueSegments.size(); j++) {
                 final LineSegment blueLineSegment = blueSegments.get(j);
 
                 final Coordinate intersection = redLineSegment.intersection(blueLineSegment);
