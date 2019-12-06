@@ -24,12 +24,19 @@ public class GridIndexTest {
         final double[] longitudes = new double[]{40, 37, 42, 44, 52, 52, 48};
         final Polygon polygon = new Polygon(latitudes, longitudes, 0);
 
-        completeTestAreaCells = locationIndex.getOverlappingVisibilityCells(polygon);
+        completeTestAreaCells = locationIndex.getIntersectingVisibilityCells(polygon);
+
+        this.completeTestAreaCells.forEach(new Consumer<GridIndex.VisibilityCell>() {
+            @Override
+            public void accept(GridIndex.VisibilityCell visibilityCell) {
+                System.out.println(visibilityCell);
+            }
+        });
     }
 
     @Test
     public void assertCompleteTestAreaSize() {
-        assertEquals(9, completeTestAreaCells.size());
+        assertEquals(7, completeTestAreaCells.size());
     }
 
     @Test
@@ -51,30 +58,12 @@ public class GridIndexTest {
     }
 
     @Test
-    public void assertCompleteTestAreaPolygon2() {
-        final double[] latitudes =
-                new double[]{10.0, 3.0, 3.0, 7.0, 7.0, 5.0, 7.0, 9.0, 7.0, 7.0, 15.0};
-        final double[] longitudes =
-                new double[]{47.0, 47.0, 41.0, 38.0, 42.0, 44.0, 42.0, 44.0, 42.0, 38.0, 43.0};
-        assertPolygonEqual(completeTestAreaCells.get(2), latitudes, longitudes);
-    }
-
-    @Test
     public void assertCompleteTestAreaPolygon3() {
         final double[] latitudes =
                 new double[]{7.0, 11.0, 12.0, 15.0};
         final double[] longitudes =
                 new double[]{38.0, 34.0, 38.0, 43.0};
-        assertPolygonEqual(completeTestAreaCells.get(3), latitudes, longitudes);
-    }
-
-    @Test
-    public void assertCompleteTestAreaPolygon4() {
-        final double[] latitudes =
-                new double[]{7.0, 5.0, 7.0, 9.0, 7.0, 7.0};
-        final double[] longitudes =
-                new double[]{42.0, 44.0, 42.0, 44.0, 42.0, 38.0};
-        assertPolygonEqual(completeTestAreaCells.get(4), latitudes, longitudes);
+        assertPolygonEqual(completeTestAreaCells.get(2), latitudes, longitudes);
     }
 
     @Test
@@ -83,7 +72,7 @@ public class GridIndexTest {
                 new double[]{7.0, 7.0, 11.0};
         final double[] longitudes =
                 new double[]{38.0, 32.0, 34.0};
-        assertPolygonEqual(completeTestAreaCells.get(5), latitudes, longitudes);
+        assertPolygonEqual(completeTestAreaCells.get(3), latitudes, longitudes);
     }
 
     @Test
@@ -92,7 +81,7 @@ public class GridIndexTest {
                 new double[]{7.0, 3.0, 7.0};
         final double[] longitudes =
                 new double[]{38.0, 33.0, 32.0};
-        assertPolygonEqual(completeTestAreaCells.get(6), latitudes, longitudes);
+        assertPolygonEqual(completeTestAreaCells.get(4), latitudes, longitudes);
     }
 
     @Test
@@ -101,7 +90,7 @@ public class GridIndexTest {
                 new double[]{6.0, 3.0, 7.0, 2.0, 2.0};
         final double[] longitudes =
                 new double[]{25.0, 33.0, 38.0, 36.0, 25.0};
-        assertPolygonEqual(completeTestAreaCells.get(7), latitudes, longitudes);
+        assertPolygonEqual(completeTestAreaCells.get(5), latitudes, longitudes);
     }
 
     @Test
@@ -110,29 +99,11 @@ public class GridIndexTest {
                 new double[]{7.0, 2.0, 2.0, 6.0, 3.0};
         final double[] longitudes =
                 new double[]{38.0, 36.0, 25.0, 25.0, 33.0};
-        assertPolygonEqual(completeTestAreaCells.get(8), latitudes, longitudes);
+        assertPolygonEqual(completeTestAreaCells.get(6), latitudes, longitudes);
     }
 
     public void assertPolygonEqual(GridIndex.VisibilityCell visibilityCell, double[] latitudes, double[] longitudes) {
         final Polygon polygon = new Polygon(latitudes, longitudes, 0);
         assertEquals(polygon, visibilityCell.cellShape);
     }
-
-//    @Test
-//    public void borderCoordinatesLongitude() {
-//        final double[] latitudes = new double[] {2, 2, -2, -2};
-//        final double[] longitudes = new double[] {178, -178, -178, 178};
-//        final Polygon polygon = new Polygon(latitudes, longitudes, 0);
-//
-//        final List<GridIndex.VisibilityCell> visibilityCells = locationIndex.getOverlappingVisibilityCells(polygon);
-//
-//        visibilityCells.forEach(new Consumer<GridIndex.VisibilityCell>() {
-//            @Override
-//            public void accept(GridIndex.VisibilityCell visibilityCell) {
-//                System.out.println(visibilityCell);
-//            }
-//        });
-//
-//        assertEquals(2, visibilityCells.size());
-//    }
 }

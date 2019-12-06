@@ -26,29 +26,28 @@ public class GridIndex extends LocationIndexTree {
         this.nodeAccess = graph.getNodeAccess();
     }
 
-    public List<VisibilityCell> getOverlappingVisibilityCells(final Polygon polygon) {
-        final BBox polygonMinBoundingBox = polygon.getMinimalBoundingBox();
-        final Set<VisibilityCell> overlappingVisibilityCells = new CopyOnWriteArraySet<>();
+    public List<VisibilityCell> getIntersectingVisibilityCells(final Polygon polygon) {
+        final Set<VisibilityCell> intersectingVisibilityCells = new CopyOnWriteArraySet<>();
+        final GridCell[][] relevantGridCells = getGridCellsOverlapping(polygon);
 
-        final GridCell[][] relevantGridCells = getGridCellsThatOverlapPolygonBoundingBox(polygonMinBoundingBox);
         for (int i = 0; i < relevantGridCells.length; i++) {
             for (int j = 0; j < relevantGridCells[0].length; j++) {
-                addVisibilityCellsIfPolygonOverlapsCell(polygon, overlappingVisibilityCells, relevantGridCells[i][j]);
+                addAllIntersectingVisiblityCellsOfGridCell(intersectingVisibilityCells, relevantGridCells[i][j], polygon);
             }
         }
 
-        return new ArrayList<>(overlappingVisibilityCells);
+        return new ArrayList<>(intersectingVisibilityCells);
     }
 
-    private void addVisibilityCellsIfPolygonOverlapsCell(Polygon polygon, Collection<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
-        if (polygon.isOverlapping(gridCell.boundingBox)) {
-            addAllOverlappingVisiblityCellsOfGridCell(overlappingVisibilityCells, gridCell);
-        }
+    private GridCell[][] getGridCellsOverlapping(Polygon polygon) {
+        final BBox polygonMinBoundingBox = polygon.getMinimalBoundingBox();
+
+        return getGridCellsThatOverlapPolygonBoundingBox(polygonMinBoundingBox);
     }
 
-    private void addAllOverlappingVisiblityCellsOfGridCell(Collection<VisibilityCell> overlappingVisibilityCells, GridCell gridCell) {
+    private void addAllIntersectingVisiblityCellsOfGridCell(Collection<VisibilityCell> overlappingVisibilityCells, GridCell gridCell, final Polygon polygon) {
         for (VisibilityCell visibilityCell : gridCell.visibilityCells) {
-            if (visibilityCell.isOverlapping(gridCell)) {
+            if (visibilityCell.intersects(polygon)) {
                 addVisibilityCellToResults(overlappingVisibilityCells, visibilityCell);
             }
         }
@@ -101,13 +100,6 @@ public class GridIndex extends LocationIndexTree {
         super.prepareIndex();
         addAllVisibilityCellsOfGraphToIndex();
 
-        int sum = 0;
-        for (int i = 0; i < this.index.length; i++) {
-            for (int j = 0; j < this.index[0].length; j++) {
-                sum += this.index[i][j].visibilityCells.size();
-            }
-        }
-
         return this;
     }
 
@@ -126,9 +118,7 @@ public class GridIndex extends LocationIndexTree {
     }
 
     private void addThisToAllOverlappingGridCells(VisibilityCell visibilityCell) {
-        final BBox visibilityCellMinBoundingBox = visibilityCell.cellShape.getMinimalBoundingBox();
-
-        final GridCell[][] relevantGridCells = getGridCellsThatOverlapPolygonBoundingBox(visibilityCellMinBoundingBox);
+        final GridCell[][] relevantGridCells = getGridCellsOverlapping(visibilityCell.cellShape);
 
         for (int i = 0; i < relevantGridCells.length; i++) {
             for (int j = 0; j < relevantGridCells[0].length; j++) {
@@ -209,6 +199,8 @@ public class GridIndex extends LocationIndexTree {
         public boolean isOverlapping(final GridCell gridCell) {
            return this.cellShape.isOverlapping(gridCell.boundingBox);
         }
+
+        public boolean intersects(final Polygon polygon) {return this.cellShape.intersects(polygon); }
 
         @Override
         public String toString() {
