@@ -25,13 +25,6 @@ public class GridIndexTest {
         final Polygon polygon = new Polygon(latitudes, longitudes, 0);
 
         completeTestAreaCells = locationIndex.getIntersectingVisibilityCells(polygon);
-
-        this.completeTestAreaCells.forEach(new Consumer<GridIndex.VisibilityCell>() {
-            @Override
-            public void accept(GridIndex.VisibilityCell visibilityCell) {
-                System.out.println(visibilityCell);
-            }
-        });
     }
 
     @Test
