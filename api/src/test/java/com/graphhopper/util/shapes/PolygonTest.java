@@ -32,6 +32,47 @@ public class PolygonTest {
         this.smallSquareHole = createSmallSquareHolePolygon();
     }
 
+    /*
+     * |----|
+     * |    |
+     * |----|
+     */
+    private static Polygon createSquarePolygon() {
+        return new Polygon(new double[]{0, 0, 20, 20}, new double[]{0, 20, 20, 0});
+    }
+
+    /*
+     * \-----|
+     *   --| |
+     *   --| |
+     *  /----|
+     */
+    private static Polygon createSquareHolePolygon() {
+        return new Polygon(new double[]{0, 0, 20, 20, 15, 15, 5, 5}, new double[]{0, 20, 20, 0, 5, 15, 15, 5});
+    }
+
+    /*
+     * |----|
+     * |    |
+     * |----|
+     */
+    private static Polygon createSmallSquarePolygon() {
+        Polygon square;
+        square = new Polygon(new double[]{1, 1, 2, 2}, new double[]{1, 2, 2, 1});
+        return square;
+    }
+
+    /*
+     * |----|
+     * | /\ |
+     * |/  \|
+     */
+    private static Polygon createSmallSquareHolePolygon() {
+        Polygon squareHole;
+        squareHole = new Polygon(new double[]{1, 1, 2, 1.1, 2}, new double[]{1, 2, 2, 1.5, 1});
+        return squareHole;
+    }
+
     @Test
     public void testContainsInSquare() {
         assertTrue(this.square.contains(10, 10));
@@ -40,7 +81,7 @@ public class PolygonTest {
         assertTrue(this.square.contains(10, 0));
         assertFalse(this.square.contains(10, 20));
         assertTrue(this.square.contains(10, 16));
-        assertFalse(this.square.contains(20, 20));
+        assertTrue(this.square.contains(20, 20));
     }
 
     @Test
@@ -51,7 +92,7 @@ public class PolygonTest {
         assertFalse(this.squareHole.contains(10, 0));
         assertFalse(this.squareHole.contains(10, 20));
         assertTrue(this.squareHole.contains(10, 16));
-        assertFalse(this.squareHole.contains(20, 20));
+        assertTrue(this.squareHole.contains(20, 20));
     }
 
     @Test
@@ -129,47 +170,6 @@ public class PolygonTest {
         points.add(new GHPoint(20, 20));
         points.add(new GHPoint(20, 0));
         return points;
-    }
-
-    /*
-     * |----|
-     * |    |
-     * |----|
-     */
-    private static Polygon createSquarePolygon() {
-        return new Polygon(new double[]{0, 0, 20, 20}, new double[]{0, 20, 20, 0});
-    }
-
-    /*
-     * \-----|
-     *   --| |
-     *   --| |
-     *  /----|
-     */
-    private static Polygon createSquareHolePolygon() {
-        return new Polygon(new double[]{0, 0, 20, 20, 15, 15, 5, 5}, new double[]{0, 20, 20, 0, 5, 15, 15, 5});
-    }
-
-    /*
-     * |----|
-     * |    |
-     * |----|
-     */
-    private static Polygon createSmallSquarePolygon() {
-        Polygon square;
-        square = new Polygon(new double[]{1, 1, 2, 2}, new double[]{1, 2, 2, 1});
-        return square;
-    }
-
-    /*
-     * |----|
-     * | /\ |
-     * |/  \|
-     */
-    private static Polygon createSmallSquareHolePolygon() {
-        Polygon squareHole;
-        squareHole = new Polygon(new double[]{1, 1, 2, 1.1, 2}, new double[]{1, 2, 2, 1.5, 1});
-        return squareHole;
     }
 
     @Test
