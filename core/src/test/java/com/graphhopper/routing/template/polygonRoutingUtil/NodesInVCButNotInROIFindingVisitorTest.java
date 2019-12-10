@@ -27,14 +27,6 @@ public class NodesInVCButNotInROIFindingVisitorTest {
         assertEquals(groundTruth, nodesInVCButNotInROI);
     }
 
-    private List<Integer> executeQuery(GridIndex.VisibilityCell visibilityCell, Polygon regionOfInterest) {
-        final NodesInVCButNotInROIFindingVisitor visitor = new NodesInVCButNotInROIFindingVisitor(visibilityCell, regionOfInterest, graphMocker.nodeAccess);
-        graphMocker.locationIndex.query(visibilityCell.getMinimalBoundingBox(), visitor);
-        final List<Integer> nodesInVCButNotInROI = visitor.getNodesInVCButNotInROI();
-        Collections.sort(nodesInVCButNotInROI);
-        return nodesInVCButNotInROI;
-    }
-
     private GridIndex.VisibilityCell createPolygonVisibilityShape() {
         final Polygon visibilityCellShape = new Polygon(new double[] {23, 23, 14, 10, 4, 4, 8, 18}, new double[] {13, 22, 31, 31, 25, 14, 8, 8});
         return new GridIndex.VisibilityCell(visibilityCellShape);
@@ -42,6 +34,14 @@ public class NodesInVCButNotInROIFindingVisitorTest {
 
     private Polygon createRegionOfInterest() {
         return new Polygon(new double[]{16, 16, 12, 12}, new double[]{17, 21, 21, 17});
+    }
+
+    private List<Integer> executeQuery(GridIndex.VisibilityCell visibilityCell, Polygon regionOfInterest) {
+        final NodesInVCButNotInROIFindingVisitor visitor = new NodesInVCButNotInROIFindingVisitor(visibilityCell, regionOfInterest, graphMocker.nodeAccess);
+        graphMocker.locationIndex.query(visibilityCell.getMinimalBoundingBox(), visitor);
+        final List<Integer> nodesInVCButNotInROI = visitor.getNodesInVCButNotInROI();
+        Collections.sort(nodesInVCButNotInROI);
+        return nodesInVCButNotInROI;
     }
 
     private List<Integer> createGroundTruth() {
