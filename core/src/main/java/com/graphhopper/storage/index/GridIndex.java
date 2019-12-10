@@ -177,19 +177,29 @@ public class GridIndex extends LocationIndexTree {
         }
     }
 
-    public class VisibilityCell {
+    public static class VisibilityCell {
         public final Polygon cellShape;
 
-        private VisibilityCell(final List<Integer> nodeIds) {
+        public VisibilityCell(final Polygon polygon) {
+            this.cellShape = polygon;
+        }
+
+        public static VisibilityCell createVisibilityCellFromNodeIDs(final List<Integer> nodeIds, final NodeAccess nodeAccess) {
+            final Polygon cellShape = createCellShape(nodeIds, nodeAccess);
+
+            return new VisibilityCell(cellShape);
+        }
+
+        private static Polygon createCellShape(List<Integer> nodeIds, final NodeAccess nodeAccess) {
             final double[] latitudes = new double[nodeIds.size() - 1];
             final double[] longitudes = new double[nodeIds.size() - 1];
 
-            fillLatLonArraysForPolygonCreation(nodeIds, latitudes, longitudes);
+            fillLatLonArrayWithCoordinatesOfNodes(nodeIds, nodeAccess, latitudes, longitudes);
 
-            this.cellShape = new Polygon(latitudes, longitudes, 0);
+            return new Polygon(latitudes, longitudes, 0);
         }
 
-        private void fillLatLonArraysForPolygonCreation(List<Integer> nodeIds, double[] latitudes, double[] longitudes) {
+        private static void fillLatLonArrayWithCoordinatesOfNodes(List<Integer> nodeIds, NodeAccess nodeAccess, double[] latitudes, double[] longitudes) {
             for (int i = 0; i < nodeIds.size() - 1; i++) {
                 latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i + 1));
                 longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i + 1));
@@ -197,10 +207,12 @@ public class GridIndex extends LocationIndexTree {
         }
 
         public boolean isOverlapping(final GridCell gridCell) {
-           return this.cellShape.isOverlapping(gridCell.boundingBox);
+            return this.cellShape.isOverlapping(gridCell.boundingBox);
         }
 
-        public boolean intersects(final Polygon polygon) {return this.cellShape.intersects(polygon); }
+        public boolean intersects(final Polygon polygon) {
+            return this.cellShape.intersects(polygon);
+        }
 
         @Override
         public String toString() {
@@ -229,6 +241,14 @@ public class GridIndex extends LocationIndexTree {
 
         private boolean returnEqualsOnForeignObject(Object o) {
             return super.equals(o);
+        }
+
+        public BBox getMinimalBoundingBox() {
+            return this.cellShape.getMinimalBoundingBox();
+        }
+
+        public boolean contains(final double lat, final double lon) {
+            return this.cellShape.contains(lat, lon);
         }
     }
 
@@ -289,7 +309,8 @@ public class GridIndex extends LocationIndexTree {
                 initializeNeighborIterator();
                 do {
                     processNextNeighborOnCell();
-                } while (lastCellNotReached());
+                }
+                while (lastCellNotReached());
 
                 return createVisibilityCell();
             }
@@ -352,7 +373,7 @@ public class GridIndex extends LocationIndexTree {
                 final Vector2D lastEdgeVector = createLastEdgeVector(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode);
                 final Vector2D candidateEdgeVector = createCandidateEdgeVector(candidateEdge);
 
-                final double angleTo =  lastEdgeVector.angleTo(candidateEdgeVector);
+                final double angleTo = lastEdgeVector.angleTo(candidateEdgeVector);
                 final double angleToContinuousInterval = transformAngleToContinuousInterval(angleTo);
 
                 return angleToContinuousInterval;
@@ -386,7 +407,7 @@ public class GridIndex extends LocationIndexTree {
             @Override
             VisibilityCell createVisibilityCell() {
                 Collections.reverse(nodesOnCell);
-                return new VisibilityCell(nodesOnCell);
+                return VisibilityCell.createVisibilityCellFromNodeIDs(nodesOnCell, nodeAccess);
             }
 
             void settleEdge(final EdgeIteratorState edge) {
@@ -403,7 +424,7 @@ public class GridIndex extends LocationIndexTree {
 
             @Override
             VisibilityCell createVisibilityCell() {
-                return new VisibilityCell(nodesOnCell);
+                return VisibilityCell.createVisibilityCellFromNodeIDs(nodesOnCell, nodeAccess);
             }
 
             void settleEdge(final EdgeIteratorState edge) {

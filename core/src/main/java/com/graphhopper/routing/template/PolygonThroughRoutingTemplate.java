@@ -194,29 +194,4 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return visitor.getNodesInPolygon();
     }
 
-    private static class NodesInPolygonFindingVisitor extends LocationIndex.Visitor {
-        private final List<Integer> nodesInPolygon = new ArrayList<>();
-        private final Polygon polygon;
-        private final NodeAccess nodeAccess;
-
-        NodesInPolygonFindingVisitor(final Polygon polygon, final NodeAccess nodeAccess) {
-            this.polygon = polygon;
-            this.nodeAccess = nodeAccess;
-        }
-
-        @Override
-        public void onNode(int nodeId) {
-            final double lat = nodeAccess.getLat(nodeId);
-            final double lon = nodeAccess.getLon(nodeId);
-
-            if (polygon.contains(lat, lon)) {
-                this.nodesInPolygon.add(nodeId);
-            }
-        }
-
-        List<Integer> getNodesInPolygon() {
-            return this.nodesInPolygon;
-        }
-    }
-
 }
