@@ -12,7 +12,6 @@ import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.StopWatch;
-import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 
@@ -22,7 +21,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     private ManyToManyRouting pathSkeletonRouter;
     private final FlagEncoder flagEncoder;
     private LOTNodeExtractor lotNodes;
-    private List<Integer> nodesInPolygon;
+    private PathSkeletonGraph pathSkeletonEdgeFilter;
     private List<Integer> polygonEntryExitPoints;
 
     public PolygonThroughRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex,
@@ -41,7 +40,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         final StopWatch swPathSkeleton = findPathSkeletonAndMeasureTime(queryResults);
 
         System.out.println("Candidate Routes found\n" +
-                           "Nodes in polygon : " + nodesInPolygon.size() + " in " + swFindNodesInPolygon.getSeconds() + "\n" +
+                           "Nodes in polygon : " + pathSkeletonEdgeFilter.size() + " in " + swFindNodesInPolygon.getSeconds() + "\n" +
                            "Entry/Exit points: " + polygonEntryExitPoints.size() + " in " + swFindEntryExitPoints.getSeconds() + "\n" +
                            "LOT Nodes        : " + lotNodes.size() + " in " + swLOTNodes.getSeconds() + "\n" +
                            "Path Skeleton    : " + "in " + swPathSkeleton.getSeconds());
@@ -57,7 +56,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         final StopWatch swPathSkeleton = new StopWatch("Generate path skeleton");
         swPathSkeleton.start();
 
-        this.pathSkeletonRouter = new ManyToManyRouting(nodesInPolygon, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
+        this.pathSkeletonRouter = new ManyToManyRouting(pathSkeletonEdgeFilter, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
         this.pathSkeletonRouter.findPathBetweenAllNodePairs();
 
         swPathSkeleton.stop();
@@ -85,7 +84,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         StopWatch swFindEntryExitPoints = new StopWatch("finding entry exit points");
         swFindEntryExitPoints.start();
 
-        this.polygonEntryExitPoints = findPolygonEntryExitPoints(nodesInPolygon);
+        this.polygonEntryExitPoints = findPolygonEntryExitPoints(pathSkeletonEdgeFilter);
 
         swFindEntryExitPoints.stop();
         return swFindEntryExitPoints;
@@ -95,7 +94,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         StopWatch swFindNodesInPolygon = new StopWatch("finding nodes in polygon");
         swFindNodesInPolygon.start();
 
-        this.nodesInPolygon = getNodesInPolygon();
+        this.pathSkeletonEdgeFilter = getPathSkeletonEdgeFilter();
         failOnNotEnoughNodesInPolygon();
 
         swFindNodesInPolygon.stop();
@@ -103,7 +102,7 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
     }
 
     private void failOnNotEnoughNodesInPolygon() {
-        if (this.nodesInPolygon.size() < 1) {
+        if (this.pathSkeletonEdgeFilter.size() < 1) {
             throw new IllegalStateException("Not enough nodes in polygon. Most likely the polygon doesn't contain intersections.");
         }
     }
@@ -159,39 +158,36 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
         return routeCandidate;
     }
 
-    private List<Integer> findPolygonEntryExitPoints(final List<Integer> nodesInPolygon) {
+    private List<Integer> findPolygonEntryExitPoints(final PathSkeletonGraph pathSkeletonEdgeFilter) {
         final List<Integer> entryExitPoints = new ArrayList<>();
         final EdgeExplorer edgeExplorer = this.graph.createEdgeExplorer();
 
-        addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(nodesInPolygon, entryExitPoints, edgeExplorer);
+        addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(pathSkeletonEdgeFilter, entryExitPoints, edgeExplorer);
 
         return entryExitPoints;
     }
 
-    private void addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(List<Integer> nodesInPolygon, List<Integer> entryExitPoints, EdgeExplorer edgeExplorer) {
-        for (int node : nodesInPolygon) {
+    private void addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(PathSkeletonGraph pathSkeletonEdgeFilter, List<Integer> entryExitPoints, EdgeExplorer edgeExplorer) {
+        for (int node : pathSkeletonEdgeFilter) {
             final EdgeIterator edgeIterator = edgeExplorer.setBaseNode(node);
 
             while (edgeIterator.next()) {
-                addToEntryExitIfNotExistentAndNotInPolygon(nodesInPolygon, entryExitPoints, edgeIterator);
+                addToEntryExitIfNotExistentAndNotInPolygon(pathSkeletonEdgeFilter, entryExitPoints, edgeIterator);
             }
         }
     }
 
-    private void addToEntryExitIfNotExistentAndNotInPolygon(List<Integer> nodesInPolygon, List<Integer> entryExitPoints, EdgeIterator edgeIterator) {
+    private void addToEntryExitIfNotExistentAndNotInPolygon(PathSkeletonGraph pathSkeletonEdgeFilter, List<Integer> entryExitPoints, EdgeIterator edgeIterator) {
         final int adjacentNode = edgeIterator.getAdjNode();
-        if (!nodesInPolygon.contains(adjacentNode) && !entryExitPoints.contains(adjacentNode)) {
+        if (!pathSkeletonEdgeFilter.contains(adjacentNode)) {
             entryExitPoints.add(adjacentNode);
         }
     }
 
-    private List<Integer> getNodesInPolygon() {
-        final Polygon polygon = this.getGhRequest().getPolygon();
+    private RegionOfInterestRoutingGraph getPathSkeletonEdgeFilter() {
+        final Polygon regionOfInterest = this.getGhRequest().getPolygon();
 
-        BBox minimumPolygonBoundingBox = BBox.createMinimalBoundingBoxFromPolygon(polygon);
-        final NodesInPolygonFindingVisitor visitor = new NodesInPolygonFindingVisitor(polygon, nodeAccess);
-        this.locationIndex.query(minimumPolygonBoundingBox, visitor);
-        return visitor.getNodesInPolygon();
+        return new RegionOfInterestRoutingGraph(regionOfInterest, locationIndex, nodeAccess);
     }
 
 }

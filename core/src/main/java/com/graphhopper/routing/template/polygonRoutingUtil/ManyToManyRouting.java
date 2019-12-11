@@ -9,7 +9,7 @@ import com.graphhopper.storage.index.QueryResult;
 import java.util.List;
 
 public class ManyToManyRouting extends MultiRouting {
-    private final List<Integer> nodesToConsiderForRouting;
+    private final PathSkeletonGraph pathSkeletonGraph;
     private final List<Integer> nodesToBuildRoutesWith;
     private final Graph graph;
     private final QueryGraph queryGraph;
@@ -17,9 +17,9 @@ public class ManyToManyRouting extends MultiRouting {
     private final AlgorithmOptions algorithmOptions;
 
     // TODO from / to ?! lot nodes for start and end point.
-    public ManyToManyRouting(final List<Integer> nodesToConsiderForRouting, final List<Integer> nodesToBuildRoutesWith, final Graph graph, final List<QueryResult> queryResults,
+    public ManyToManyRouting(final PathSkeletonGraph pathSkeletonGraph, final List<Integer> nodesToBuildRoutesWith, final Graph graph, final List<QueryResult> queryResults,
                              final RoutingAlgorithmFactory routingAlgorithmFactory, final AlgorithmOptions algorithmOptions) {
-        this.nodesToConsiderForRouting = nodesToConsiderForRouting;
+        this.pathSkeletonGraph = pathSkeletonGraph;
         this.nodesToBuildRoutesWith = nodesToBuildRoutesWith;
         this.graph = graph;
         this.queryGraph = prepareQueryGraph(queryResults);
@@ -36,7 +36,7 @@ public class ManyToManyRouting extends MultiRouting {
     void calculatePaths() {
         for (int fromNode : nodesToBuildRoutesWith) {
             final OneToManyRouting oneToManyRouting =
-                    new OneToManyRouting(fromNode, this.nodesToBuildRoutesWith, nodesToConsiderForRouting, this.queryGraph, this.routingAlgorithmFactory, this.algorithmOptions);
+                    new OneToManyRouting(fromNode, this.nodesToBuildRoutesWith, pathSkeletonGraph, this.queryGraph, this.routingAlgorithmFactory, this.algorithmOptions);
             oneToManyRouting.findPathBetweenAllNodePairs();
             this.allFoundPaths.putAll(oneToManyRouting.getAllFoundPathsMap());
         }

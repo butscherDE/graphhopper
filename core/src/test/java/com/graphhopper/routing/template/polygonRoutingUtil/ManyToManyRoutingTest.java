@@ -21,7 +21,7 @@ public class ManyToManyRoutingTest {
     @Before
     public void setUp() {
         final List<Integer> sourceDestinations = prepareSourceDestination();
-        final List<Integer> nodesToConsiderForRouting = OneToManyRoutingTest.prepareInteriorGraph();
+        final RegionOfInterestRoutingGraph nodesToConsiderForRouting = new OneToManyRoutingTest().prepareInteriorGraph();
         final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
         final AlgorithmOptions algorithmOptions = this.graphMocker.algorithmOptions;
         final List<QueryResult> queryResults = this.createQueryResults(this.graphMocker.graph, sourceDestinations);

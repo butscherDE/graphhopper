@@ -21,7 +21,8 @@ public class VisibilityCellRoutingGraphTest {
         final Polygon regionOfInterest = createRegionOfInterest();
 
         final VisibilityCellRoutingGraph acceptor =
-                new VisibilityCellRoutingGraph(visibilityCells, regionOfInterest, graphMocker.locationIndex, graphMocker.nodeAccess, 42, 32);
+                new VisibilityCellRoutingGraph(visibilityCells, regionOfInterest, graphMocker.locationIndex, graphMocker.nodeAccess);
+        acceptor.prepareForEntryExitNodes(42,32);
 
         final List<Integer> acceptedEdges = getAcceptedEdges(acceptor);
         final List<Integer> acceptableEdges = getGroundTruth();

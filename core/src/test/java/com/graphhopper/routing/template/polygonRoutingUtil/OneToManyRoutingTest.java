@@ -3,6 +3,7 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.template.util.QueryGraphCreator;
+import com.graphhopper.util.shapes.Polygon;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class OneToManyRoutingTest {
     public void setupOneToManyRouting() {
         this.fromNode = 28;
         this.toNodes = prepareToNodes();
-        final List<Integer> nodesToConsiderForRouting = prepareInteriorGraph();
+        final RegionOfInterestRoutingGraph nodesToConsiderForRouting = prepareInteriorGraph();
         final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
         final AlgorithmOptions algorithmOptions = this.graphMocker.algorithmOptions;
 
@@ -39,9 +40,10 @@ public class OneToManyRoutingTest {
         return new ArrayList<>(Arrays.asList(toNodesArray));
     }
 
-    static List<Integer> prepareInteriorGraph() {
-        final Integer[] nodesToConsiderForRoutingArray = new Integer[] {46 ,47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
-        return new ArrayList<>(Arrays.asList(nodesToConsiderForRoutingArray));
+    RegionOfInterestRoutingGraph prepareInteriorGraph() {
+        final Polygon regionOfInterest = new Polygon(new double[] {19, 19, 8, 8}, new double[] {14, 24, 24, 14});
+
+        return new RegionOfInterestRoutingGraph(regionOfInterest, graphMocker.locationIndex, graphMocker.nodeAccess);
     }
 
     private void prepareQueryGraph(final int fromNode, final List<Integer> toNodes) {
