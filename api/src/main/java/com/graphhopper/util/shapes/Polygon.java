@@ -18,8 +18,9 @@
 package com.graphhopper.util.shapes;
 
 import com.graphhopper.util.shapes.intersection.CrossProductRedBlueSegmentIntersection;
+import com.graphhopper.util.shapes.intersection.CrossProductRedBlueSegmentIntersectionWithoutCollinear;
 import com.graphhopper.util.shapes.intersection.SegmentIntersectionAlgorithm;
-import org.locationtech.jts.awt.PointShapeFactory;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
 
 import java.util.ArrayList;
@@ -182,18 +183,33 @@ public class Polygon implements Shape {
             return false;
         }
 
-        double rayStartLat = maxLat - (minLat / 2);
-        double rayStartLon = minLon - epsilon;
+        final Coordinate pointToCheck = new Coordinate(lon, lat);
+        final List<LineSegment> polygonLineSegments = this.getLineSegmentRepresentation();
+        final boolean rayCastInside = isRayCastInside(pointToCheck, polygonLineSegments);
+        final boolean latLonOnPolygonBorder = isPointOnPolygonBorder(pointToCheck, polygonLineSegments);
 
-        boolean inside = false;
-        int len = this.lat.length;
-        for (int i = 0; i < len; i++) {
-            if (edgesAreIntersecting(rayStartLon, rayStartLat, lon, lat, this.lon[i], this.lat[i], this.lon[(i + 1) % len], this.lat[(i + 1) % len])) {
-                inside = !inside;
-            }
+        return rayCastInside || latLonOnPolygonBorder;
+    }
+
+    private boolean isRayCastInside(Coordinate pointToCheck, List<LineSegment> polygonLineSegments) {
+        final List<LineSegment> rayLineSegments = getRayAsLineSegmentList(pointToCheck);
+        final CrossProductRedBlueSegmentIntersection intersections = new CrossProductRedBlueSegmentIntersectionWithoutCollinear(rayLineSegments, polygonLineSegments);
+
+        return intersections.getIntersectionCount() % 2 == 1;
+    }
+
+    private List<LineSegment> getRayAsLineSegmentList(Coordinate pointToCheck) {
+        final Coordinate rayStart = new Coordinate(minLon - epsilon, maxLat - (minLat / 2));
+        final LineSegment ray = new LineSegment(rayStart, pointToCheck);
+        return Arrays.asList(new LineSegment[]{ray});
+    }
+
+    private boolean isPointOnPolygonBorder(Coordinate pointToCheck, List<LineSegment> polygonLineSegments) {
+        boolean latLonOnPolygonBorder = false;
+        for (LineSegment polygonLineSegment : polygonLineSegments) {
+            latLonOnPolygonBorder |= polygonLineSegment.distance(pointToCheck) == 0.0;
         }
-        return inside;
-
+        return latLonOnPolygonBorder;
     }
 
     public boolean isOverlapping(final BBox boundingBox) {
