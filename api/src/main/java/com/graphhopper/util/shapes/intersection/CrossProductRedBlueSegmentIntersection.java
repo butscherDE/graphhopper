@@ -62,7 +62,7 @@ public class CrossProductRedBlueSegmentIntersection implements SegmentIntersecti
                 final LineSegment blueLineSegment = blueSegments.get(j);
 
                 final Coordinate intersection = redLineSegment.intersection(blueLineSegment);
-                if (intersectionExists(intersection)) {
+                if (intersectionExists(redLineSegment, blueLineSegment)) {
                     intersections.add(intersection);
                 }
             }
@@ -71,11 +71,7 @@ public class CrossProductRedBlueSegmentIntersection implements SegmentIntersecti
         return intersections;
     }
 
-    private boolean intersectionExists(LineSegment redLineSegment, LineSegment blueLineSegment) {
+    boolean intersectionExists(LineSegment redLineSegment, LineSegment blueLineSegment) {
         return redLineSegment.intersection(blueLineSegment) != null;
-    }
-
-    private boolean intersectionExists(Coordinate intersection) {
-        return intersection != null;
     }
 }

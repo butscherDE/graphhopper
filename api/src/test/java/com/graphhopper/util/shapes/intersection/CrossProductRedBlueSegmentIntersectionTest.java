@@ -1,6 +1,5 @@
 package com.graphhopper.util.shapes.intersection;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
@@ -12,15 +11,22 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 public class CrossProductRedBlueSegmentIntersectionTest {
-    private final List<LineSegment> redLineSegments = new ArrayList<>(11);
-    private final List<LineSegment> blueLineSegments = new ArrayList<>(12);
+    public final List<LineSegment> redLineSegments = new ArrayList<>(11);
+    public final List<LineSegment> blueLineSegments = new ArrayList<>(12);
     private CrossProductRedBlueSegmentIntersection intersections;
 
-    @Before
-    public void buildIntersections() {
+    public CrossProductRedBlueSegmentIntersectionTest() {
+        buildIntersections();
+        intersections = new CrossProductRedBlueSegmentIntersection(this.redLineSegments, this.blueLineSegments);
+    }
+
+    public void setIntersectionAlgorithm(final CrossProductRedBlueSegmentIntersection intersections) {
+        this.intersections = intersections;
+    }
+
+    private void buildIntersections() {
         this.setupRedLineSegments();
         this.setupBlueLineSegments();
-        this.intersections = new CrossProductRedBlueSegmentIntersection(this.redLineSegments, this.blueLineSegments);
     }
 
     private void setupRedLineSegments() {

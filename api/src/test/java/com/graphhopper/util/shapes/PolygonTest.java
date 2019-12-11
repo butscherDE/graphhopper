@@ -17,6 +17,7 @@ public class PolygonTest {
     private Polygon squareHole;
     private Polygon smallSquare;
     private Polygon smallSquareHole;
+    private Polygon u;
 
     @Before
     public void startUp() {
@@ -24,6 +25,7 @@ public class PolygonTest {
         this.squareHole = createSquareHolePolygon();
         this.smallSquare = createSmallSquarePolygon();
         this.smallSquareHole = createSmallSquareHolePolygon();
+        this.u = createUShappedPolygon();
     }
 
     @Test
@@ -32,9 +34,9 @@ public class PolygonTest {
         assertTrue(this.square.contains(16, 10));
         assertFalse(this.square.contains(10, -20));
         assertTrue(this.square.contains(10, 0));
-        assertFalse(this.square.contains(10, 20));
+        assertTrue(this.square.contains(10, 20));
         assertTrue(this.square.contains(10, 16));
-        assertFalse(this.square.contains(20, 20));
+        assertTrue(this.square.contains(20, 20));
     }
 
     @Test
@@ -43,9 +45,9 @@ public class PolygonTest {
         assertTrue(this.squareHole.contains(16, 10));
         assertFalse(this.squareHole.contains(10, -20));
         assertFalse(this.squareHole.contains(10, 0));
-        assertFalse(this.squareHole.contains(10, 20));
+        assertTrue(this.squareHole.contains(10, 20));
         assertTrue(this.squareHole.contains(10, 16));
-        assertFalse(this.squareHole.contains(20, 20));
+        assertTrue(this.squareHole.contains(20, 20));
     }
 
     @Test
@@ -59,6 +61,56 @@ public class PolygonTest {
         assertTrue(this.smallSquareHole.contains(1.1,1.1));
         assertFalse(this.smallSquareHole.contains(1.5,1.5));
         assertFalse(this.smallSquareHole.contains(0.5,1.5));
+    }
+
+    @Test
+    public void testContainsInU() {
+        testUCorners();
+        testUEdges();
+        testUInner();
+        testUOuter();
+    }
+
+    private void testUCorners() {
+        assertTrue(this.u.contains(20,0));
+        assertTrue(this.u.contains(20,20));
+        assertTrue(this.u.contains(10,20));
+        assertTrue(this.u.contains(10,40));
+        assertTrue(this.u.contains(20,40));
+        assertTrue(this.u.contains(20,60));
+        assertTrue(this.u.contains(0,60));
+        assertTrue(this.u.contains(0,40));
+        assertTrue(this.u.contains(0,20));
+        assertTrue(this.u.contains(0,0));
+    }
+
+    private void testUEdges() {
+        assertTrue(this.u.contains(20,10));
+        assertTrue(this.u.contains(15,20));
+        assertTrue(this.u.contains(10, 30));
+        assertTrue(this.u.contains(15, 40));
+        assertTrue(this.u.contains(20, 50));
+    }
+
+    private void testUInner() {
+        assertTrue(this.u.contains(10,10));
+        assertTrue(this.u.contains(5, 30));
+        assertTrue(this.u.contains(10, 50));
+    }
+
+    private void testUOuter() {
+        assertFalse(this.u.contains(-10, -10));
+        assertFalse(this.u.contains(0, -10));
+        assertFalse(this.u.contains(10, -10));
+        assertFalse(this.u.contains(20, -10));
+        assertFalse(this.u.contains(30, -10));
+        assertFalse(this.u.contains(30, 0));
+        assertFalse(this.u.contains(30, 10));
+        assertFalse(this.u.contains(30, 20));
+        assertFalse(this.u.contains(30, 30));
+        assertFalse(this.u.contains(20, 30));
+        assertFalse(this.u.contains(11, 30));
+        assertFalse(this.u.contains(30, 40));
     }
 
     @Test
@@ -164,6 +216,16 @@ public class PolygonTest {
         Polygon squareHole;
         squareHole = new Polygon(new double[]{1, 1, 2, 1.1, 2}, new double[]{1, 2, 2, 1.5, 1});
         return squareHole;
+    }
+
+    /*
+     * |----|    |----|
+     * |    |----|    |
+     * |--------------|
+     */
+    private static Polygon createUShappedPolygon() {
+        Polygon u = new Polygon(new double[] {20, 20, 10, 10, 20, 20, 0, 0, 0, 0}, new double[] {0, 20, 20, 40, 40, 60, 60, 40, 20, 0});
+        return u;
     }
 
     @Test
