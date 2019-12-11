@@ -6,7 +6,9 @@ import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.FastestWeighting;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.*;
+import com.graphhopper.storage.index.GridIndex;
 import com.graphhopper.storage.index.LocationIndex;
+import com.graphhopper.storage.index.LocationIndexTree;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.DistanceCalc2D;
 import com.graphhopper.util.EdgeExplorer;
@@ -56,7 +58,6 @@ public class PolygonRoutingTestGraph {
         // Exterior this.graph including to Entry / Exit nodes
         buildEdges();
         buildNodes();
-
 
         return graph;
     }
@@ -306,20 +307,6 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(104, 106, 1, true);
         this.graph.edge(106, 107, 1, true);
         this.graph.edge(107, 108, 1, true);
-
-        // Coordinate border cases
-//        this.graph.edge(200, 201, 1, true);
-//        this.graph.edge(201, 202, 1, true);
-//        this.graph.edge(202, 203, 1, true);
-//        this.graph.edge(203, 210, 1, true);
-//        this.graph.edge(210, 211, 1, true);
-//        this.graph.edge(211, 212, 1, true);
-//        this.graph.edge(212, 213, 1, true);
-//        this.graph.edge(213, 210, 1, true);
-//        this.graph.edge(220, 221, 1, true);
-//        this.graph.edge(221, 222, 1, true);
-//        this.graph.edge(222, 223, 1, true);
-//        this.graph.edge(223, 220, 1, true);
     }
 
     private Polygon createPolygon() {
@@ -327,94 +314,8 @@ public class PolygonRoutingTestGraph {
     }
 
     private LocationIndex getCorrespondingIndex() {
-        return new LocationIndex() {
-            @Override
-            public LocationIndex setResolution(int resolution) {
-                throw new NotImplementedException();
-            }
+        return new PolygonRoutingTestIndex(graph, new RAMDirectory()).setResolution(300).prepareIndex();
 
-            @Override
-            public LocationIndex prepareIndex() {
-                throw new NotImplementedException();
-            }
-
-            @Override
-            public QueryResult findClosest(double lat, double lon, EdgeFilter edgeFilter) {
-                MinDistanceNodeFinder minDistanceNodeFinder = new MinDistanceNodeFinder(lat, lon).invoke();
-
-                double minDistance = minDistanceNodeFinder.getMinDistance();
-                Node minNode = minDistanceNodeFinder.getMinNode();
-                EdgeIteratorState firstEdgeAdjacentToMinNode = findClosestEdge(minNode);
-
-                return createQueryResult(minDistance, minNode, firstEdgeAdjacentToMinNode);
-            }
-
-            private EdgeIteratorState findClosestEdge(Node minNode) {
-                EdgeExplorer edgeExplorer = graph.createEdgeExplorer();
-                EdgeIterator edgeIterator = edgeExplorer.setBaseNode(minNode.id);
-                edgeIterator.next();
-                return edgeIterator;
-            }
-
-            private QueryResult createQueryResult(double minDistance, Node minNode, EdgeIteratorState firstEdgeAdjacentToMinNode) {
-                QueryResult result = new QueryResult(minNode.latitude, minNode.longitude);
-                result.setClosestNode(minNode.id);
-                result.setQueryDistance(minDistance);
-                result.setClosestEdge(firstEdgeAdjacentToMinNode);
-                result.setWayIndex(0);
-                result.calcSnappedPoint(new DistanceCalc2D());
-                return result;
-            }
-
-            @Override
-            public LocationIndex setApproximation(boolean approxDist) {
-                throw new NotImplementedException();
-            }
-
-            @Override
-            public void setSegmentSize(int bytes) {
-                throw new NotImplementedException();
-            }
-
-            @Override
-            public void query(BBox queryBBox, Visitor function) {
-                for (final Node node : nodes) {
-                    if (queryBBox.contains(node.latitude, node.longitude)) {
-                        function.onNode(node.id);
-                    }
-                }
-            }
-
-            @Override
-            public boolean loadExisting() {
-                throw new NotImplementedException();
-            }
-
-            @Override
-            public LocationIndex create(long byteCount) {
-                throw new NotImplementedException();
-            }
-
-            @Override
-            public void flush() {
-                throw new NotImplementedException();
-            }
-
-            @Override
-            public void close() {
-                throw new NotImplementedException();
-            }
-
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-            @Override
-            public long getCapacity() {
-                return 0;
-            }
-        };
     }
 
     private class Node {
@@ -523,5 +424,98 @@ public class PolygonRoutingTestGraph {
                 maxVisitedNodes(maxVisitedNodes).
                 hints(algorithmHints).
                 build();
+    }
+
+    public class PolygonRoutingTestIndex extends GridIndex {
+        public PolygonRoutingTestIndex(Graph graph, Directory dir) {
+            super(graph, dir);
+        }
+
+        @Override
+        public LocationIndex setResolution(int resolution) {
+            return super.setResolution(resolution);
+        }
+
+        @Override
+        public LocationIndex prepareIndex() {
+            return super.prepareIndex();
+        }
+
+        @Override
+        public QueryResult findClosest(double lat, double lon, EdgeFilter edgeFilter) {
+            MinDistanceNodeFinder minDistanceNodeFinder = new MinDistanceNodeFinder(lat, lon).invoke();
+
+            double minDistance = minDistanceNodeFinder.getMinDistance();
+            Node minNode = minDistanceNodeFinder.getMinNode();
+            EdgeIteratorState firstEdgeAdjacentToMinNode = findClosestEdge(minNode);
+
+            return createQueryResult(minDistance, minNode, firstEdgeAdjacentToMinNode);
+        }
+
+        private EdgeIteratorState findClosestEdge(Node minNode) {
+            EdgeExplorer edgeExplorer = graph.createEdgeExplorer();
+            EdgeIterator edgeIterator = edgeExplorer.setBaseNode(minNode.id);
+            edgeIterator.next();
+            return edgeIterator;
+        }
+
+        private QueryResult createQueryResult(double minDistance, Node minNode, EdgeIteratorState firstEdgeAdjacentToMinNode) {
+            QueryResult result = new QueryResult(minNode.latitude, minNode.longitude);
+            result.setClosestNode(minNode.id);
+            result.setQueryDistance(minDistance);
+            result.setClosestEdge(firstEdgeAdjacentToMinNode);
+            result.setWayIndex(0);
+            result.calcSnappedPoint(new DistanceCalc2D());
+            return result;
+        }
+
+        @Override
+        public LocationIndex setApproximation(boolean approxDist) {
+            throw new NotImplementedException();
+        }
+
+        @Override
+        public void setSegmentSize(int bytes) {
+            throw new NotImplementedException();
+        }
+
+        @Override
+        public void query(BBox queryBBox, Visitor function) {
+            for (final Node node : nodes) {
+                if (queryBBox.contains(node.latitude, node.longitude)) {
+                    function.onNode(node.id);
+                }
+            }
+        }
+
+        @Override
+        public boolean loadExisting() {
+            throw new NotImplementedException();
+        }
+
+        @Override
+        public LocationIndexTree create(long byteCount) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void flush() {
+            super.flush();
+        }
+
+        @Override
+        public void close() {
+            throw new NotImplementedException();
+        }
+
+        @Override
+        public boolean isClosed() {
+            return false;
+        }
+
+        @Override
+        public long getCapacity() {
+            return 0;
+        }
     }
 }

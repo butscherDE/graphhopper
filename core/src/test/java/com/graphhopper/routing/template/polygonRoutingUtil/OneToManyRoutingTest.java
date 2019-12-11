@@ -127,6 +127,13 @@ public class OneToManyRoutingTest {
             correctPathFound |= foundPath.equals(candidate);
         }
 
+        if (!correctPathFound) {
+            System.out.println(foundPath);
+            for (List<Integer> possibleShortestPath : possibleShortestPaths) {
+                System.out.println(possibleShortestPath);
+            }
+        }
+
         assertTrue(correctPathFound);
     }
 }
