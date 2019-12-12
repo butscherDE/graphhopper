@@ -1100,8 +1100,12 @@ public class GraphHopper implements GraphHopperAPI {
             routingTemplate = new RoundTripRoutingTemplate(request, ghRsp, locationIndex, encodingManager, maxRoundTripRetries);
         else if (ALT_ROUTE.equalsIgnoreCase(algoStr))
             routingTemplate = new AlternativeRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
-        else if (validPolygonInRequest(request))
-            routingTemplate = new PolygonThroughRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+        else if (validPolygonInRequest(request)) {
+            if (request.isPolygonThrough())
+                routingTemplate = new PolygonThroughRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+            else
+                routingTemplate = new PolygonAroundRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
+        }
         else
             routingTemplate = new ViaRoutingTemplate(request, ghRsp, locationIndex, encodingManager);
         return routingTemplate;

@@ -20,6 +20,8 @@ public class GridIndex extends LocationIndexTree {
     private int resolution = -1;
     private GridCell[][] index;
 
+    private boolean existingSuperIndexLoaded = false;
+
     public GridIndex(final Graph graph, Directory dir) {
         super(graph, dir);
         this.graph = graph;
@@ -97,7 +99,9 @@ public class GridIndex extends LocationIndexTree {
     public LocationIndex prepareIndex() {
         failOnInvalidResolutionSet();
 
-        super.prepareIndex();
+        if (!existingSuperIndexLoaded) {
+            super.prepareIndex();
+        }
         addAllVisibilityCellsOfGraphToIndex();
 
         return this;
@@ -166,6 +170,12 @@ public class GridIndex extends LocationIndexTree {
         prepareIndex();
 
         return super.create(byteCount);
+    }
+
+    @Override
+    public boolean loadExisting() {
+        existingSuperIndexLoaded = super.loadExisting();
+        return false;
     }
 
     private class GridCell {
@@ -276,7 +286,9 @@ public class GridIndex extends LocationIndexTree {
         }
 
         private void startRunsOnEachEdgeInTheGraph() {
+            int i = 0;
             while (allEdges.next()) {
+                StopWatch sw1 = new StopWatch("run on one edge: " + i++ + "/" + graph.getEdges()).start();
                 currentEdge = allEdges.detach(false);
                 currentEdge = visitedManager.forceNodeIdsAscending(currentEdge);
                 currentRunStartNode = currentEdge.getAdjNode();
@@ -289,7 +301,10 @@ public class GridIndex extends LocationIndexTree {
                 if (!visibilityCellOnTheRightFound()) {
                     addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
                 }
+
+                System.out.println(sw1.stop());
             }
+            System.out.println("finished");
         }
 
         private Boolean visibilityCellOnTheLeftFound() {
@@ -309,10 +324,25 @@ public class GridIndex extends LocationIndexTree {
                 initializeNeighborIterator();
                 do {
                     processNextNeighborOnCell();
+//                    cryOnCycle();
                 }
                 while (lastCellNotReached());
 
                 return createVisibilityCell();
+            }
+
+            private void cryOnCycle() {
+                final Map<Integer,Integer> cycleDetector = new HashMap<>();
+
+                for (Integer node : nodesOnCell) {
+                    if (cycleDetector.get(node) != null) {
+                        cycleDetector.put(node, cycleDetector.get(node) + 1);
+                    } else {
+                        cycleDetector.put(node, 1);
+                    }
+                }
+
+                System.out.println(cycleDetector.toString());
             }
 
             private void addStartAndEndNodeOfCell() {
