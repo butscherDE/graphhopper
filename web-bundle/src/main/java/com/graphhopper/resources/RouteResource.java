@@ -76,6 +76,7 @@ public class RouteResource {
             @QueryParam(WAY_POINT_MAX_DISTANCE) @DefaultValue("1") double minPathPrecision,
             @QueryParam("point") List<GHPoint> requestPoints,
             @QueryParam("polygon") List<GHPoint> polygonPoints,
+            @QueryParam("polygonThrough") @DefaultValue("true") boolean polygonThrough,
             @QueryParam("type") @DefaultValue("json") String type,
             @QueryParam(INSTRUCTIONS) @DefaultValue("true") boolean instructions,
             @QueryParam(CALC_POINTS) @DefaultValue("true") boolean calcPoints,
@@ -106,7 +107,8 @@ public class RouteResource {
 
         GHRequest request = buildRequest(requestPoints, favoredHeadings);
         initHints(request.getHints(), uriInfo.getQueryParameters());
-        setRequestParams(minPathPrecision, polygon, instructions, calcPoints, vehicleStr, weighting, algoStr, localeStr, pointHints, snapPreventions, pathDetails, request);
+        setRequestParams(minPathPrecision, polygon, polygonThrough, instructions, calcPoints, vehicleStr, weighting, algoStr, localeStr, pointHints, snapPreventions, pathDetails,
+                         request);
 
         GHResponse ghResponse = graphHopper.route(request);
 
@@ -174,11 +176,17 @@ public class RouteResource {
         return httpReq.getRemoteAddr() + " " + httpReq.getLocale() + " " + httpReq.getHeader("User-Agent");
     }
 
-    private void setRequestParams(@DefaultValue("1") @QueryParam(WAY_POINT_MAX_DISTANCE) double minPathPrecision, @QueryParam("polygon") Polygon polygon,
-                                  @DefaultValue("true") @QueryParam(INSTRUCTIONS) boolean instructions, @DefaultValue("true") @QueryParam(CALC_POINTS) boolean calcPoints,
-                                  @DefaultValue("car") @QueryParam("vehicle") String vehicleStr, @DefaultValue("fastest") @QueryParam("weighting") String weighting,
-                                  @DefaultValue("") @QueryParam("algorithm") String algoStr, @DefaultValue("en") @QueryParam("locale") String localeStr,
-                                  @QueryParam(POINT_HINT) List<String> pointHints, @QueryParam(SNAP_PREVENTION) List<String> snapPreventions,
+    private void setRequestParams(@DefaultValue("1") @QueryParam(WAY_POINT_MAX_DISTANCE) double minPathPrecision,
+                                  @QueryParam("polygon") Polygon polygon,
+                                  @DefaultValue("true") @QueryParam("polygonThrough") boolean polygonThrough,
+                                  @DefaultValue("true") @QueryParam(INSTRUCTIONS) boolean instructions,
+                                  @DefaultValue("true") @QueryParam(CALC_POINTS) boolean calcPoints,
+                                  @DefaultValue("car") @QueryParam("vehicle") String vehicleStr,
+                                  @DefaultValue("fastest") @QueryParam("weighting") String weighting,
+                                  @DefaultValue("") @QueryParam("algorithm") String algoStr,
+                                  @DefaultValue("en") @QueryParam("locale") String localeStr,
+                                  @QueryParam(POINT_HINT) List<String> pointHints,
+                                  @QueryParam(SNAP_PREVENTION) List<String> snapPreventions,
                                   @QueryParam(PATH_DETAILS) List<String> pathDetails, GHRequest request) {
         request.setVehicle(vehicleStr).
                 setWeighting(weighting).
@@ -188,6 +196,7 @@ public class RouteResource {
                 setSnapPreventions(snapPreventions).
                 setPathDetails(pathDetails).
                 setPolygon(polygon).
+                setPolygonThrough(polygonThrough).
                 getHints().
                 put(CALC_POINTS, calcPoints).
                 put(INSTRUCTIONS, instructions).
