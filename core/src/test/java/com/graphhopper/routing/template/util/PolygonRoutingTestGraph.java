@@ -134,19 +134,7 @@ public class PolygonRoutingTestGraph {
                                 new Node(105, 8, 51),
                                 new Node(106, 10, 47),
                                 new Node(107, 3, 47),
-                                new Node(108, 3, 41),
-                                /*new Node(200, 1, 179),
-                                new Node(201, 1, -179),
-                                new Node(202, -1, -179),
-                                new Node(203, -1, 179),
-                                new Node(210, 89, -1),
-                                new Node(211, 89, 1),
-                                new Node(212, -89, 1),
-                                new Node(213, -89, -1),
-                                new Node(220, 89, 179),
-                                new Node(221, 89, -179),
-                                new Node(222, -89, -179),
-                                new Node(223, -89, 179)*/};
+                                new Node(108, 3, 41)};
     }
 
     private void setDistanceToEuclidean() {

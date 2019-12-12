@@ -28,7 +28,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private ManyToManyRouting pathSkeletonRouter;
     private final FlagEncoder flagEncoder;
     private LOTNodeExtractor lotNodes;
-    private PathSkeletonGraph pathSkeletonEdgeFilter;
+    PathSkeletonGraph pathSkeletonEdgeFilter;
     private List<Integer> polygonEntryExitPoints;
 
     PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, EncodingManager encodingManager) {
