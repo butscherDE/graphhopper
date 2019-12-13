@@ -6,6 +6,7 @@ import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.storage.index.QueryResult;
+import com.graphhopper.util.graphvisualizer.DumpGraph;
 import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
@@ -56,6 +57,17 @@ public class PolygonThroughRoutingTemplateTest {
             System.out.println(aei.toString());
         }
     }
+
+//    @Test
+//    public void dumpGraph() {
+//        DumpGraph g = new DumpGraph(graphMocker.graph);
+//        g.dumpGraphRecursiveFromEdge(graphMocker.graph.createEdgeExplorer().setBaseNode(54), 10);
+//        g.visualize();
+//
+//        try {
+//            Thread.sleep(100000);
+//        } catch(Exception e) {}
+//    }
 
     @Test(expected = IllegalStateException.class)
     public void failOnEmptyPolygon() {

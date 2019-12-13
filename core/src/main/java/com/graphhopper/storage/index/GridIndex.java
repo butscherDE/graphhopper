@@ -2,6 +2,7 @@ package com.graphhopper.storage.index;
 
 import com.graphhopper.storage.*;
 import com.graphhopper.util.*;
+import com.graphhopper.util.graphvisualizer.DumpGraph;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import org.locationtech.jts.geom.Coordinate;
@@ -288,19 +289,26 @@ public class GridIndex extends LocationIndexTree {
         private void startRunsOnEachEdgeInTheGraph() {
             int i = 0;
             while (allEdges.next()) {
-                StopWatch sw1 = new StopWatch("run on one edge: " + i++ + "/" + graph.getEdges()).start();
+                System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
+                StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i++ + "/" + graph.getEdges()).start();
                 currentEdge = allEdges.detach(false);
                 currentEdge = visitedManager.forceNodeIdsAscending(currentEdge);
                 currentRunStartNode = currentEdge.getAdjNode();
                 currentRunEndNode = currentEdge.getBaseNode();
 
+                if (allEdges.getEdge() == 1067) {
+                    DumpGraph lala = new DumpGraph(graph);
+                    lala.dumpGraphRecursiveFromEdge(allEdges, 10);
+                    lala.visualize();
+                }
+
                 if (!visibilityCellOnTheLeftFound()) {
                     addVisibilityCellToResults(allFoundCells, new CellRunnerLeft().runAroundCellAndLogNodes());
                 }
 
-                if (!visibilityCellOnTheRightFound()) {
-                    addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
-                }
+//                if (!visibilityCellOnTheRightFound()) {
+//                    addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
+//                }
 
                 System.out.println(sw1.stop());
             }
@@ -324,25 +332,11 @@ public class GridIndex extends LocationIndexTree {
                 initializeNeighborIterator();
                 do {
                     processNextNeighborOnCell();
-//                    cryOnCycle();
+                    System.out.println(nodesOnCell);
                 }
                 while (lastCellNotReached());
 
                 return createVisibilityCell();
-            }
-
-            private void cryOnCycle() {
-                final Map<Integer,Integer> cycleDetector = new HashMap<>();
-
-                for (Integer node : nodesOnCell) {
-                    if (cycleDetector.get(node) != null) {
-                        cycleDetector.put(node, cycleDetector.get(node) + 1);
-                    } else {
-                        cycleDetector.put(node, 1);
-                    }
-                }
-
-                System.out.println(cycleDetector.toString());
             }
 
             private void addStartAndEndNodeOfCell() {
