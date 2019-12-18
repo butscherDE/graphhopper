@@ -58,17 +58,6 @@ public class PolygonThroughRoutingTemplateTest {
         }
     }
 
-//    @Test
-//    public void dumpGraph() {
-//        DumpGraph g = new DumpGraph(graphMocker.graph);
-//        g.dumpGraphRecursiveFromEdge(graphMocker.graph.createEdgeExplorer().setBaseNode(54), 10);
-//        g.visualize();
-//
-//        try {
-//            Thread.sleep(100000);
-//        } catch(Exception e) {}
-//    }
-
     @Test(expected = IllegalStateException.class)
     public void failOnEmptyPolygon() {
         final Polygon emptyPolygon = new Polygon(new double[]{24, 24, 23, 23}, new double[]{2, 3, 3, 2});

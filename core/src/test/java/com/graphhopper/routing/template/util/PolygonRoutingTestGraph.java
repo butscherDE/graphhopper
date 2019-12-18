@@ -134,7 +134,14 @@ public class PolygonRoutingTestGraph {
                                 new Node(105, 8, 51),
                                 new Node(106, 10, 47),
                                 new Node(107, 3, 47),
-                                new Node(108, 3, 41)};
+                                new Node(108, 3, 41),
+                                new Node(109, 11, 43),
+                                new Node(110, 11, 43),
+
+                                // Multi node test part
+                                new Node(200, 19, 28),
+                                new Node(201, 19, 28),
+                                new Node(202, 19, 31)};
     }
 
     private void setDistanceToEuclidean() {
@@ -295,6 +302,14 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(104, 106, 1, true);
         this.graph.edge(106, 107, 1, true);
         this.graph.edge(107, 108, 1, true);
+        this.graph.edge(14, 109, 1, true);
+        this.graph.edge(109, 110, 1, true);
+        this.graph.edge(110, 106, 1, true);
+
+        //Multi node test part
+        this.graph.edge(31, 200, 1, true);
+        this.graph.edge(200, 201, 1, true);
+        this.graph.edge(201, 202, 1, true);
     }
 
     private Polygon createPolygon() {

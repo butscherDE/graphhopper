@@ -2,7 +2,6 @@ package com.graphhopper.storage.index;
 
 import com.graphhopper.storage.*;
 import com.graphhopper.util.*;
-import com.graphhopper.util.graphvisualizer.DumpGraph;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import org.locationtech.jts.geom.Coordinate;
@@ -14,6 +13,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class GridIndex extends LocationIndexTree {
     private final static double MAX_LATITUDE = 90;
     private final static double MAX_LONGITUDE = 180;
+    private final static double ANGLE_WHEN_COORDINATES_ARE_EQUAL = -Double.MAX_VALUE;
 
     private final Graph graph;
     private final NodeAccess nodeAccess;
@@ -279,6 +279,7 @@ public class GridIndex extends LocationIndexTree {
         EdgeIterator neighbors;
 
         final List<VisibilityCell> allFoundCells = new ArrayList<>(graph.getNodes());
+        private boolean visualize;
 
         public List<VisibilityCell> create() {
             startRunsOnEachEdgeInTheGraph();
@@ -289,6 +290,7 @@ public class GridIndex extends LocationIndexTree {
         private void startRunsOnEachEdgeInTheGraph() {
             int i = 0;
             while (allEdges.next()) {
+                System.out.println("###################################################################");
                 System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
                 StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i++ + "/" + graph.getEdges()).start();
                 currentEdge = allEdges.detach(false);
@@ -296,19 +298,19 @@ public class GridIndex extends LocationIndexTree {
                 currentRunStartNode = currentEdge.getAdjNode();
                 currentRunEndNode = currentEdge.getBaseNode();
 
-                if (allEdges.getEdge() == 1067) {
-                    DumpGraph lala = new DumpGraph(graph);
-                    lala.dumpGraphRecursiveFromEdge(allEdges, 10);
-                    lala.visualize();
-                }
 
                 if (!visibilityCellOnTheLeftFound()) {
                     addVisibilityCellToResults(allFoundCells, new CellRunnerLeft().runAroundCellAndLogNodes());
                 }
+                System.out.println("--------------------------------------------------------------------");
 
-//                if (!visibilityCellOnTheRightFound()) {
-//                    addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
-//                }
+                if (allEdges.getEdge() == 69) {
+                    visualize = true;
+                }
+                if (!visibilityCellOnTheRightFound()) {
+                    addVisibilityCellToResults(allFoundCells, new CellRunnerRight().runAroundCellAndLogNodes());
+                }
+                visualize = false;
 
                 System.out.println(sw1.stop());
             }
@@ -325,6 +327,7 @@ public class GridIndex extends LocationIndexTree {
 
         private abstract class CellRunner {
             final List<Integer> nodesOnCell = new ArrayList<>();
+            private Stack<EdgeIteratorState> lastEdges = new Stack<>();
 
             public VisibilityCell runAroundCellAndLogNodes() {
                 addStartAndEndNodeOfCell();
@@ -350,9 +353,13 @@ public class GridIndex extends LocationIndexTree {
             }
 
             private void processNextNeighborOnCell() {
-                final EdgeIteratorState leftOrRightmostNeighbor = getMostLeftOrRightOrientedEdge(neighbors);
-                settleNextNeighbor(leftOrRightmostNeighbor);
-                getNextNeighborIterator(leftOrRightmostNeighbor);
+                final SubNeighborVisitor leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new SubNeighborVisitor());
+
+                for (EdgeIteratorState edge : leftOrRightmostNeighborChain) {
+                    settleNextNeighbor(edge);
+                }
+
+                getNextNeighborIterator(leftOrRightmostNeighborChain.getLast());
             }
 
             private void settleNextNeighbor(EdgeIteratorState leftOrRightmostNeighbor) {
@@ -369,22 +376,73 @@ public class GridIndex extends LocationIndexTree {
                 return nodesOnCell.get(nodesOnCell.size() - 1) != currentRunEndNode;
             }
 
-            private EdgeIteratorState getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors) {
+            private SubNeighborVisitor getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
                 final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
                 final int lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
+                SubNeighborVisitor leftOrRightMostNeighborVisitedChain = null;
+                double leftOrRightMostAngle = -Double.MIN_VALUE;
+                do {
+                    SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
 
-                EdgeIteratorState leftOrRightMostNeighbor = neighbors.detach(false);
-                double leftOrRightMostAngle = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, neighbors);
-                while (neighbors.next()) {
-                    final double angleToLastNode = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, neighbors);
+                    final double angleToLastNode = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
 
-                    if (angleToLastNode > leftOrRightMostAngle) {
+                    if (angleToLastNode >= leftOrRightMostAngle) {
                         leftOrRightMostAngle = angleToLastNode;
-                        leftOrRightMostNeighbor = neighbors.detach(false);
+                        leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
                     }
                 }
+                while (neighbors.next());
 
-                return leftOrRightMostNeighbor;
+//                leftOrRightMostNeighborVisitedChain.onEdge(leftOrRightMostNeighbor);
+
+                return leftOrRightMostNeighborVisitedChain;
+            }
+
+            private SubNeighborVisitor setEdgeToCalcAngleTo(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor) {
+                SubNeighborVisitor candidateVisitor;
+
+                try {
+                    Thread.sleep(1);
+                } catch (Exception e) {}
+
+
+                final EdgeIteratorState detachedNeighbor = neighbors.detach(false);
+                subNeighborVisitor.onEdge(detachedNeighbor);
+                if (hasNeighborSameCoordinates(neighbors) && !isLastNode(detachedNeighbor)) {
+                    System.out.println("\u001B[31m" + neighbors + "\u001B[30m");
+                    lastEdges.push(detachedNeighbor);
+                    candidateVisitor = findMostOrientedNeighborOfNeighbor(neighbors, subNeighborVisitor);
+                    lastEdges.pop();
+                } else {
+                    candidateVisitor = subNeighborVisitor;
+                }
+                return candidateVisitor;
+            }
+
+            private boolean hasNeighborSameCoordinates(EdgeIterator neighbors) {
+                return nodeAccess.getLongitude(neighbors.getBaseNode()) == nodeAccess.getLongitude(neighbors.getAdjNode()) &&
+                       nodeAccess.getLatitude(neighbors.getBaseNode()) == nodeAccess.getLatitude(neighbors.getAdjNode());
+            }
+
+            private boolean isLastNode(final EdgeIteratorState edge) {
+                boolean lastEdgeEqualsParameterEdge = false;
+
+                try {
+                    final EdgeIteratorState lastEdge = lastEdges.peek();
+                    lastEdgeEqualsParameterEdge |= lastEdge.getBaseNode() == edge.getAdjNode();
+                    lastEdgeEqualsParameterEdge &= lastEdge.getAdjNode() == edge.getBaseNode();
+                } catch (EmptyStackException e) {
+                    lastEdgeEqualsParameterEdge = false;
+                }
+
+                return lastEdgeEqualsParameterEdge;
+            }
+
+            private SubNeighborVisitor findMostOrientedNeighborOfNeighbor(EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
+                final EdgeIterator subNeighborIterator = neighborExplorer.setBaseNode(neighbors.getAdjNode());
+                subNeighborIterator.next();
+                final SubNeighborVisitor bestSubNeighbor = getMostLeftOrRightOrientedEdge(subNeighborIterator, subNeighborVisitor);
+                return bestSubNeighbor;
             }
 
             abstract double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge);
@@ -394,13 +452,23 @@ public class GridIndex extends LocationIndexTree {
             abstract void settleEdge(EdgeIteratorState edge);
 
             double getAngle(final int lastEdgeReversedBaseNode, final int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge) {
+                try {
+                    return getAngleAfterErrorHandling(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
+                } catch (IllegalArgumentException e) {
+                    return ANGLE_WHEN_COORDINATES_ARE_EQUAL;
+                }
+            }
+
+            private double getAngleAfterErrorHandling(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
                 final Vector2D lastEdgeVector = createLastEdgeVector(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode);
                 final Vector2D candidateEdgeVector = createCandidateEdgeVector(candidateEdge);
 
                 final double angleTo = lastEdgeVector.angleTo(candidateEdgeVector);
                 final double angleToContinuousInterval = transformAngleToContinuousInterval(angleTo);
+                final double differenceToTwoPi = Math.abs(2 * Math.PI - angleToContinuousInterval);
+                final double angleToZeroIfVeryCloseTo2Pi = differenceToTwoPi < 0.000001 ? 0 : angleToContinuousInterval;
 
-                return angleToContinuousInterval;
+                return angleToZeroIfVeryCloseTo2Pi;
             }
 
             private Vector2D createLastEdgeVector(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode) {
@@ -414,11 +482,47 @@ public class GridIndex extends LocationIndexTree {
                                                                                   nodeAccess.getLatitude(candidateEdge.getBaseNode()));
                 final Coordinate candidateEdgeAdjNodeCoordinate = new Coordinate(nodeAccess.getLongitude(candidateEdge.getAdjNode()),
                                                                                  nodeAccess.getLatitude(candidateEdge.getAdjNode()));
+                if (candidateEdgeAdjNodeCoordinate.equals2D(candidateEdgeBaseNodeCoordinate)) {
+                    throw new IllegalArgumentException("Coordinates of both edge end points shall not be equal");
+                }
                 return new Vector2D(candidateEdgeBaseNodeCoordinate, candidateEdgeAdjNodeCoordinate);
             }
 
             private double transformAngleToContinuousInterval(final double angleTo) {
-                return angleTo >= 0 ? angleTo : angleTo + 2 * Math.PI;
+                return angleTo > 0 ? angleTo : angleTo + 2 * Math.PI;
+            }
+        }
+
+        private class SubNeighborVisitor implements Iterable<EdgeIteratorState>, Cloneable {
+            private final LinkedList<EdgeIteratorState> visitedEdges = new LinkedList<>();
+
+            public SubNeighborVisitor() {
+
+            }
+
+            public SubNeighborVisitor(List<EdgeIteratorState> visitedEdges) {
+                this.visitedEdges.addAll(visitedEdges);
+            }
+
+            public void onEdge(final EdgeIteratorState edge) {
+                this.visitedEdges.add(edge);
+            }
+
+            @Override
+            public Iterator<EdgeIteratorState> iterator() {
+                return visitedEdges.iterator();
+            }
+
+            @Override
+            public SubNeighborVisitor clone() {
+                final List<EdgeIteratorState> newVisitedList = new LinkedList<>(visitedEdges);
+
+                final SubNeighborVisitor newVisitor = new SubNeighborVisitor(newVisitedList);
+                return newVisitor;
+            }
+
+            public EdgeIteratorState getLast() {
+                return visitedEdges.getLast();
             }
         }
 
@@ -443,7 +547,7 @@ public class GridIndex extends LocationIndexTree {
             @Override
             double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
                 final double angle = getAngle(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
-                return angle == 0 ? angle : angle * (-1) + 2 * Math.PI;
+                return angle == 0 || angle == ANGLE_WHEN_COORDINATES_ARE_EQUAL ? angle : angle * (-1) + 2 * Math.PI;
             }
 
             @Override

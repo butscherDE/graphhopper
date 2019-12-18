@@ -51,7 +51,7 @@ public class GridIndexTest {
     }
 
     @Test
-    public void assertCompleteTestAreaPolygon3() {
+    public void assertCompleteTestAreaPolygon2() {
         final double[] latitudes =
                 new double[]{7.0, 11.0, 12.0, 15.0};
         final double[] longitudes =
@@ -60,7 +60,7 @@ public class GridIndexTest {
     }
 
     @Test
-    public void assertCompleteTestAreaPolygon5() {
+    public void assertCompleteTestAreaPolygon3() {
         final double[] latitudes =
                 new double[]{7.0, 7.0, 11.0};
         final double[] longitudes =
@@ -69,7 +69,7 @@ public class GridIndexTest {
     }
 
     @Test
-    public void assertCompleteTestAreaPolygon6() {
+    public void assertCompleteTestAreaPolygon4() {
         final double[] latitudes =
                 new double[]{7.0, 3.0, 7.0};
         final double[] longitudes =
@@ -78,7 +78,7 @@ public class GridIndexTest {
     }
 
     @Test
-    public void assertCompleteTestAreaPolygon7() {
+    public void assertCompleteTestAreaPolygon5() {
         final double[] latitudes =
                 new double[]{6.0, 3.0, 7.0, 2.0, 2.0};
         final double[] longitudes =
@@ -87,7 +87,7 @@ public class GridIndexTest {
     }
 
     @Test
-    public void assertCompleteTestAreaPolygon8() {
+    public void assertCompleteTestAreaPolygon6() {
         final double[] latitudes =
                 new double[]{7.0, 2.0, 2.0, 6.0, 3.0};
         final double[] longitudes =

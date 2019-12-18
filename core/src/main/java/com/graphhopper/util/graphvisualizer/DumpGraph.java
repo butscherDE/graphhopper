@@ -6,8 +6,7 @@ import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DumpGraph {
     final Graph graph;
@@ -17,6 +16,7 @@ public class DumpGraph {
     public final List<Edge> edges = new ArrayList<>();
 
     private EdgeIteratorState edge;
+    private SwingGraphGUI gui;
 
     public DumpGraph(Graph graph) {
         this.graph = graph;
@@ -41,12 +41,20 @@ public class DumpGraph {
         final EdgeExplorer edgeExplorer = graph.createEdgeExplorer();
         final EdgeIterator neighborIterator = edgeExplorer.setBaseNode(nodeId);
 
+        final List<Integer> neighbors = new LinkedList<>();
+
         while (neighborIterator.next()) {
             addNodeIfNotExistent(neighborIterator);
             addEdgeIfNotExistent(neighborIterator);
 
+            neighbors.add(neighborIterator.getAdjNode());
+
             dumpGraphRecursiveFromNode(neighborIterator.getAdjNode(), maxDepth - 1);
         }
+
+        System.out.println("Neighbors of " + nodeId + ": " + neighbors.toString());
+
+        gui = new SwingGraphGUI(nodes, edges);
     }
 
     private void addNodeIfNotExistent(EdgeIterator neighborIterator) {
@@ -86,9 +94,31 @@ public class DumpGraph {
         return sb.toString();
     }
 
+    public void newHighlightEdge(final EdgeIterator edgeState) {
+        final Edge edge = new Edge(edgeState.getEdge(), edgeState.getBaseNode(), edgeState.getAdjNode());
+        this.gui.addEdgeToHighlight(edge);
+    }
+
     public void visualize() {
         if (nodes.size() > 0) {
-            SwingGraphGUI.visualizeGraph(nodes, edges, edge.getEdge());
+            gui.visualizeGraph();
         }
     }
+
+    public void removeAllNodesAndCorrespondingEdges(final List<Integer> nodes) {
+        for (Integer node : nodes) {
+            removeNodeAndCorrespondingEdges(node);
+        }
+    }
+
+    public void removeNodeAndCorrespondingEdges(final int node) {
+        this.nodes.remove(new Node(node, -1, -1));
+        for (int i = this.edges.size() - 1; i >= 0; i--) {
+            final Edge edge = this.edges.get(i);
+            if (edge.baseNode == node || edge.adjNode == node) {
+                this.edges.remove(i);
+            }
+        }
+    }
+
 }
