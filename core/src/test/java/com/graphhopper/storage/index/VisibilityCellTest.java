@@ -1,4 +1,4 @@
-package com.graphhopper.storage;
+package com.graphhopper.storage.index;
 
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.storage.index.GridCell;

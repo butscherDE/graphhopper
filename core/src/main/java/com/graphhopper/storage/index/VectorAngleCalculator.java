@@ -28,12 +28,20 @@ public abstract class VectorAngleCalculator {
         final Vector2D lastEdgeVector = createLastEdgeVector(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode);
         final Vector2D candidateEdgeVector = createCandidateEdgeVector(candidateEdge);
 
+        return getAngle(lastEdgeVector, candidateEdgeVector);
+    }
+
+    private double getAngle(Vector2D lastEdgeVector, Vector2D candidateEdgeVector) {
         final double angleTo = lastEdgeVector.angleTo(candidateEdgeVector);
         final double angleToContinuousInterval = transformAngleToContinuousInterval(angleTo);
-        final double differenceToTwoPi = Math.abs(2 * Math.PI - angleToContinuousInterval);
-        final double angleToZeroIfVeryCloseTo2Pi = differenceToTwoPi < 0.000001 ? 0 : angleToContinuousInterval;
+        final double angleToZeroIfVeryCloseTo2Pi = getAngleAsZeroIfCloseToTwoPi(angleToContinuousInterval);
 
         return angleToZeroIfVeryCloseTo2Pi;
+    }
+
+    private double getAngleAsZeroIfCloseToTwoPi(double angleToContinuousInterval) {
+        final double differenceToTwoPi = Math.abs(2 * Math.PI - angleToContinuousInterval);
+        return differenceToTwoPi < 0.000001 ? 0 : angleToContinuousInterval;
     }
 
     private Vector2D createLastEdgeVector(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode) {
