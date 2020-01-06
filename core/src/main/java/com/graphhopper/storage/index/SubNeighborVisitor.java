@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-class SubNeighborVisitor implements Iterable<EdgeIteratorState>, Cloneable {
+public class SubNeighborVisitor implements Iterable<EdgeIteratorState>, Cloneable {
     private final LinkedList<EdgeIteratorState> visitedEdges = new LinkedList<>();
 
     public SubNeighborVisitor() {
