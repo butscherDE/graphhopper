@@ -18,6 +18,9 @@ import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.graphhopper.util.Parameters.Routing.MAX_VISITED_NODES;
 
 public class PolygonRoutingTestGraph {
@@ -427,6 +430,17 @@ public class PolygonRoutingTestGraph {
                 maxVisitedNodes(maxVisitedNodes).
                 hints(algorithmHints).
                 build();
+    }
+
+    public List<EdgeIteratorState> getAllEdges() {
+        final List<EdgeIteratorState> allEdges = new ArrayList<>(graph.getEdges());
+        final EdgeIterator allEdgesIterator = graph.getAllEdges();
+
+        while (allEdgesIterator.next()) {
+            allEdges.add(allEdgesIterator.detach(false));
+        }
+
+        return allEdges;
     }
 
     public class PolygonRoutingTestIndex extends GridIndex {

@@ -6,7 +6,7 @@ import com.graphhopper.storage.Graph;
 import java.util.HashMap;
 import java.util.Map;
 
-class VisitedManager {
+public class VisitedManager {
     final Map<Integer, Boolean> visitedLeft;
     final Map<Integer, Boolean> visitedRight;
 
@@ -29,11 +29,11 @@ class VisitedManager {
         }
     }
 
-    boolean isEdgeSettledLeft(EdgeIteratorState edge) {
+    public boolean isEdgeSettledLeft(EdgeIteratorState edge) {
         return isEdgeSettled(edge, visitedLeft);
     }
 
-    boolean isEdgeSettledRight(EdgeIteratorState edge) {
+    public boolean isEdgeSettledRight(EdgeIteratorState edge) {
         return isEdgeSettled(edge, visitedRight);
     }
 
@@ -42,7 +42,7 @@ class VisitedManager {
         return visited == null ? false : visited;
     }
 
-    public EdgeIteratorState forceNodeIdsAscending(final EdgeIteratorState edge) {
+    public static EdgeIteratorState forceNodeIdsAscending(final EdgeIteratorState edge) {
         return edge.getBaseNode() < edge.getAdjNode() ? edge : edge.detach(true);
     }
 }
