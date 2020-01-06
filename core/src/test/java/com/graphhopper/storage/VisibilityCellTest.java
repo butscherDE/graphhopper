@@ -182,4 +182,12 @@ public class VisibilityCellTest {
 
         assertTrue(visibilityCell.contains(7, 32));
     }
+
+    @Test
+    public void getMinimalBoundingBox() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+        final BBox boundingBox = new BBox(32, 38, 7, 11);
+
+        assertEquals(boundingBox, visibilityCell.getMinimalBoundingBox());
+    }
 }
