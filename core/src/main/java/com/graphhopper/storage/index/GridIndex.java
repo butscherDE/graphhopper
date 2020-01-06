@@ -179,90 +179,6 @@ public class GridIndex extends LocationIndexTree {
         return false;
     }
 
-    private class GridCell {
-        public final List<VisibilityCell> visibilityCells = new ArrayList<>();
-        public final BBox boundingBox;
-
-        public GridCell(final BBox boundingBox) {
-            this.boundingBox = boundingBox;
-        }
-    }
-
-    public static class VisibilityCell {
-        public final Polygon cellShape;
-
-        public VisibilityCell(final Polygon polygon) {
-            this.cellShape = polygon;
-        }
-
-        public static VisibilityCell createVisibilityCellFromNodeIDs(final List<Integer> nodeIds, final NodeAccess nodeAccess) {
-            final Polygon cellShape = createCellShape(nodeIds, nodeAccess);
-
-            return new VisibilityCell(cellShape);
-        }
-
-        private static Polygon createCellShape(List<Integer> nodeIds, final NodeAccess nodeAccess) {
-            final double[] latitudes = new double[nodeIds.size() - 1];
-            final double[] longitudes = new double[nodeIds.size() - 1];
-
-            fillLatLonArrayWithCoordinatesOfNodes(nodeIds, nodeAccess, latitudes, longitudes);
-
-            return new Polygon(latitudes, longitudes, 0);
-        }
-
-        private static void fillLatLonArrayWithCoordinatesOfNodes(List<Integer> nodeIds, NodeAccess nodeAccess, double[] latitudes, double[] longitudes) {
-            for (int i = 0; i < nodeIds.size() - 1; i++) {
-                latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i + 1));
-                longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i + 1));
-            }
-        }
-
-        public boolean isOverlapping(final GridCell gridCell) {
-            return this.cellShape.isOverlapping(gridCell.boundingBox);
-        }
-
-        public boolean intersects(final Polygon polygon) {
-            return this.cellShape.intersects(polygon);
-        }
-
-        @Override
-        public String toString() {
-            return cellShape.toString();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof VisibilityCell) {
-                return returnEqualsExtractingTheOtherPolygon((VisibilityCell) o);
-            } else if (o instanceof Polygon) {
-                return returnEqualsIfOtherIsAlreadyPolygon(o);
-            } else {
-                return returnEqualsOnForeignObject(o);
-            }
-        }
-
-        private boolean returnEqualsExtractingTheOtherPolygon(VisibilityCell o) {
-            final VisibilityCell oAsVisibilityCell = o;
-            return this.cellShape.equals(oAsVisibilityCell.cellShape);
-        }
-
-        private boolean returnEqualsIfOtherIsAlreadyPolygon(Object o) {
-            return this.cellShape.equals(o);
-        }
-
-        private boolean returnEqualsOnForeignObject(Object o) {
-            return super.equals(o);
-        }
-
-        public BBox getMinimalBoundingBox() {
-            return this.cellShape.getMinimalBoundingBox();
-        }
-
-        public boolean contains(final double lat, final double lon) {
-            return this.cellShape.contains(lat, lon);
-        }
-    }
-
     /**
      * "Left" and "Right" are always imagined as walking from baseNode to adjacent node and then turn left or right.
      * <p>
@@ -328,6 +244,7 @@ public class GridIndex extends LocationIndexTree {
         private abstract class CellRunner {
             final List<Integer> nodesOnCell = new ArrayList<>();
             private Stack<EdgeIteratorState> lastEdges = new Stack<>();
+            int lala = 0;
 
             public VisibilityCell runAroundCellAndLogNodes() {
                 addStartAndEndNodeOfCell();
@@ -335,7 +252,7 @@ public class GridIndex extends LocationIndexTree {
                 initializeNeighborIterator();
                 do {
                     processNextNeighborOnCell();
-                    System.out.println(nodesOnCell);
+//                    System.out.println(nodesOnCell);
                 }
                 while (lastCellNotReached());
 
@@ -379,9 +296,11 @@ public class GridIndex extends LocationIndexTree {
             private SubNeighborVisitor getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
                 final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
                 final int lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
-                SubNeighborVisitor leftOrRightMostNeighborVisitedChain = null;
-                double leftOrRightMostAngle = -Double.MIN_VALUE;
-                do {
+                SubNeighborVisitor leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());// null;
+                double leftOrRightMostAngle = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, leftOrRightMostNeighborVisitedChain.getLast());
+                //-Double.MAX_VALUE;
+                while (neighbors.next()) {
+//                do {
                     SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
 
                     final double angleToLastNode = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
@@ -391,9 +310,11 @@ public class GridIndex extends LocationIndexTree {
                         leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
                     }
                 }
-                while (neighbors.next());
+//                while (neighbors.next());
 
-//                leftOrRightMostNeighborVisitedChain.onEdge(leftOrRightMostNeighbor);
+                if (leftOrRightMostNeighborVisitedChain == null) {
+                    System.out.println();
+                }
 
                 return leftOrRightMostNeighborVisitedChain;
             }
@@ -401,15 +322,27 @@ public class GridIndex extends LocationIndexTree {
             private SubNeighborVisitor setEdgeToCalcAngleTo(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor) {
                 SubNeighborVisitor candidateVisitor;
 
-                try {
-                    Thread.sleep(1);
-                } catch (Exception e) {}
-
-
                 final EdgeIteratorState detachedNeighbor = neighbors.detach(false);
                 subNeighborVisitor.onEdge(detachedNeighbor);
                 if (hasNeighborSameCoordinates(neighbors) && !isLastNode(detachedNeighbor)) {
-                    System.out.println("\u001B[31m" + neighbors + "\u001B[30m");
+//                    if (neighbors.getBaseNode() == 7254909 && neighbors.getAdjNode() == 93620) {
+//                        System.out.println("");
+//                        if (++lala == 10) {
+//                            System.out.println(nodesOnCell.toString());
+//                            final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(new Integer[] {7254909, 93620, 48452, 5348789, 3560230, 5880975,
+//                                                                                                                          9085088, 5880975, 48464, 47591, 47260, 47261}));
+//                            nnd.dump();
+//                            SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
+//                            gui.visualizeGraph();
+//                            try {
+//                                Thread.sleep(100000);
+//                            } catch (Exception e) {
+//
+//                            }
+//                            System.exit(-1);
+//                        }
+//                    }
+//                    System.out.println("\u001B[31m" + neighbors + "\u001B[30m");
                     lastEdges.push(detachedNeighbor);
                     candidateVisitor = findMostOrientedNeighborOfNeighbor(neighbors, subNeighborVisitor);
                     lastEdges.pop();

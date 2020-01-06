@@ -8,7 +8,7 @@ import com.graphhopper.util.EdgeIteratorState;
 
 import java.util.*;
 
-public class DumpGraph {
+public class RecursiveGraphDump {
     final Graph graph;
     final NodeAccess nodeAccess;
 
@@ -18,7 +18,7 @@ public class DumpGraph {
     private EdgeIteratorState edge;
     private SwingGraphGUI gui;
 
-    public DumpGraph(Graph graph) {
+    public RecursiveGraphDump(Graph graph) {
         this.graph = graph;
         this.nodeAccess = this.graph.getNodeAccess();
     }

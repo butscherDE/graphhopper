@@ -6,7 +6,6 @@ import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.storage.index.QueryResult;
-import com.graphhopper.util.graphvisualizer.DumpGraph;
 import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;

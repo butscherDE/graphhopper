@@ -7,6 +7,7 @@ import com.graphhopper.routing.template.polygonRoutingUtil.VisibilityCellRouting
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.storage.index.GridIndex;
 import com.graphhopper.storage.index.LocationIndex;
+import com.graphhopper.storage.index.VisibilityCell;
 import com.graphhopper.util.shapes.Polygon;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class PolygonAroundRoutingTemplate extends PolygonRoutingTemplate{
         final Polygon regionOfInterest = this.getGhRequest().getPolygon();
 
         final GridIndex locationIndexAsGrid = (GridIndex) locationIndex;
-        final List<GridIndex.VisibilityCell> visibilityCells = locationIndexAsGrid.getIntersectingVisibilityCells(regionOfInterest);
+        final List<VisibilityCell> visibilityCells = locationIndexAsGrid.getIntersectingVisibilityCells(regionOfInterest);
 
         return new VisibilityCellRoutingGraph(visibilityCells, regionOfInterest, locationIndex, nodeAccess);
     }

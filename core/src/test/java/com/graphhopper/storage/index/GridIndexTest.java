@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 public class GridIndexTest {
     final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
     GridIndex locationIndex = (GridIndex) new GridIndex(graphMocker.graph, new RAMDirectory()).setResolution(300).prepareIndex();
-    List<GridIndex.VisibilityCell> completeTestAreaCells;
+    List<VisibilityCell> completeTestAreaCells;
 
     @Before
     public void completeTestArea() {
@@ -95,7 +94,7 @@ public class GridIndexTest {
         assertPolygonEqual(completeTestAreaCells.get(6), latitudes, longitudes);
     }
 
-    public void assertPolygonEqual(GridIndex.VisibilityCell visibilityCell, double[] latitudes, double[] longitudes) {
+    public void assertPolygonEqual(VisibilityCell visibilityCell, double[] latitudes, double[] longitudes) {
         final Polygon polygon = new Polygon(latitudes, longitudes, 0);
         assertEquals(polygon, visibilityCell.cellShape);
     }

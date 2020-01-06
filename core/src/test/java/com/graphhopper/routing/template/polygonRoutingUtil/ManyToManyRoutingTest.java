@@ -8,6 +8,7 @@ import com.graphhopper.routing.template.util.QueryGraphCreator;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.index.QueryResult;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class ManyToManyRoutingTest {
     private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
     private ManyToManyRouting manyToManyRouting;
 
-    @Before
+    @BeforeClass
     public void setUp() {
         final List<Integer> sourceDestinations = prepareSourceDestination();
         final RegionOfInterestRoutingGraph nodesToConsiderForRouting = new OneToManyRoutingTest().prepareInteriorGraph();
