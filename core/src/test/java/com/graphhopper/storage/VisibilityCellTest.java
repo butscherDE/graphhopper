@@ -5,18 +5,23 @@ import com.graphhopper.storage.index.GridCell;
 import com.graphhopper.storage.index.VisibilityCell;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 // TODO Visibility Cell now created by ingoring the first node, change it to have the first nodeId to be the first element of the polygon (cell shape).
 public class VisibilityCellTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    private static PolygonRoutingTestGraph graphMocker;
+
+    @BeforeClass
+    public static void createGraphMocker() {
+        graphMocker = new PolygonRoutingTestGraph();
+    }
 
     private VisibilityCell createDefaultVisibilityCell() {
         final List<Integer> visibilityCellNodeIds = Arrays.asList(new Integer[]{17, 15, 18, 17});
@@ -32,9 +37,9 @@ public class VisibilityCellTest {
     }
 
     private Polygon createDefaultVisibilityCellsExpectedCellShape() {
-        final double[] expectedCellShapeLatitudes = new double[] {11, 7, 7};
+        final double[] createExpectedCellShapeLatitudes = new double[] {11, 7, 7};
         final double[] expectedCellShapeLongitudes = new double[] {34, 38, 32};
-        return new Polygon(expectedCellShapeLatitudes, expectedCellShapeLongitudes);
+        return new Polygon(createExpectedCellShapeLatitudes, expectedCellShapeLongitudes);
     }
 
     @Test
@@ -89,5 +94,92 @@ public class VisibilityCellTest {
     private GridCell createInternalGridCell() {
         final BBox boundingBox = new BBox(34, 35, 8, 9);
         return new GridCell(boundingBox);
+    }
+
+    @Test
+    public void equalsOtherVisiblityCell() {
+        final VisibilityCell visibilityCell1 = createDefaultVisibilityCell();
+        final VisibilityCell visibilityCell2 = createDefaultVisibilityCell();
+
+        assertEquals(visibilityCell1, visibilityCell2);
+    }
+
+    @Test
+    public void unEqualOtherVisibilityCell() {
+        final VisibilityCell visibilityCell1 = createDefaultVisibilityCell();
+        final VisibilityCell visibilityCell2 = createVisibilityCellOtherThanDefaultVisibilityCell();
+
+        assertNotEquals(visibilityCell1, visibilityCell2);
+    }
+
+    private VisibilityCell createVisibilityCellOtherThanDefaultVisibilityCell() {
+        final List<Integer> visibilityCell2NodeIDs = Arrays.asList(new Integer[] {34, 15, 17});
+        return VisibilityCell.createVisibilityCellFromNodeIDs(visibilityCell2NodeIDs, graphMocker.nodeAccess);
+    }
+
+    @Test
+    public void equalWithCellShape() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+        final Polygon cellShape = createDefaultVisibilityCellsExpectedCellShape();
+
+        assertEquals(visibilityCell, cellShape);
+    }
+
+    @Test
+    public void unequalWithCellShape() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+        final Polygon otherCellShape = createVisibilityCellOtherThanDefaultVisibilityCell().cellShape;
+
+        assertNotEquals(visibilityCell, otherCellShape);
+    }
+
+    @Test
+    public void containsInner() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+        final double internalLatitude = 8;
+        final double internalLongitude = 35;
+
+        assertTrue(visibilityCell.contains(internalLatitude, internalLongitude));
+    }
+
+    @Test
+    public void containsMinimallyInner() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+        final double internalLatitude = 7 + Double.MIN_VALUE;
+        final double internalLongitude = 35;
+
+        assertTrue(visibilityCell.contains(internalLatitude, internalLongitude));
+    }
+
+    @Test
+    public void notContainsOutside() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+        final double outerLatitude = 6;
+        final double innerLongitude = 35;
+
+        assertFalse(visibilityCell.contains(outerLatitude, innerLongitude));
+    }
+
+    @Test
+    public void notContainsMinimallyOutside() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+        final double outerLatitude = 6.999999999;
+        final double innerLongitude = 35;
+
+        assertFalse(visibilityCell.contains(outerLatitude, innerLongitude));
+    }
+
+    @Test
+    public void containsLine() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+
+        assertTrue(visibilityCell.contains(7, 35));
+    }
+
+    @Test
+    public void containsCorner() {
+        final VisibilityCell visibilityCell = createDefaultVisibilityCell();
+
+        assertTrue(visibilityCell.contains(7, 32));
     }
 }
