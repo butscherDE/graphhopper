@@ -4,8 +4,6 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.math.Vector2D;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
@@ -13,7 +11,6 @@ import java.util.List;
 import java.util.Stack;
 
 abstract class CellRunner {
-    final static double ANGLE_WHEN_COORDINATES_ARE_EQUAL = -Double.MAX_VALUE;
 
     private VisibilityCellsCreator visibilityCellsCreator;
     final List<Integer> nodesOnCell = new ArrayList<>();
@@ -21,13 +18,16 @@ abstract class CellRunner {
     private final EdgeExplorer neighborExplorer;
     final NodeAccess nodeAccess;
     final VisitedManager visitedManager;
+    private final VectorAngleCalculator vectorAngleCalculator;
     int lala = 0;
 
-    public CellRunner(final VisibilityCellsCreator visibilityCellsCreator, final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess, final VisitedManager visitedManager) {
+    public CellRunner(final VisibilityCellsCreator visibilityCellsCreator, final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess, final VisitedManager visitedManager,
+     final VectorAngleCalculator vectorAngleCalculator) {
         this.visibilityCellsCreator = visibilityCellsCreator;
         this.neighborExplorer = neighborExplorer;
         this.nodeAccess = nodeAccess;
         this.visitedManager = visitedManager;
+        this.vectorAngleCalculator = vectorAngleCalculator;
     }
 
     public VisibilityCell runAroundCellAndLogNodes() {
@@ -82,13 +82,14 @@ abstract class CellRunner {
         final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
         final int lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
         SubNeighborVisitor leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());// null;
-        double leftOrRightMostAngle = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, leftOrRightMostNeighborVisitedChain.getLast());
+        double leftOrRightMostAngle = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode,
+                                                                                      leftOrRightMostNeighborVisitedChain.getLast());
         //-Double.MAX_VALUE;
         while (neighbors.next()) {
 //                do {
             SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
 
-            final double angleToLastNode = getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
+            final double angleToLastNode = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
 
             if (angleToLastNode >= leftOrRightMostAngle) {
                 leftOrRightMostAngle = angleToLastNode;
@@ -163,50 +164,7 @@ abstract class CellRunner {
         return bestSubNeighbor;
     }
 
-    abstract double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge);
-
     abstract VisibilityCell createVisibilityCell();
 
     abstract void settleEdge(EdgeIteratorState edge);
-
-    double getAngle(final int lastEdgeReversedBaseNode, final int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge) {
-        try {
-            return getAngleAfterErrorHandling(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
-        } catch (IllegalArgumentException e) {
-            return ANGLE_WHEN_COORDINATES_ARE_EQUAL;
-        }
-    }
-
-    private double getAngleAfterErrorHandling(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
-        final Vector2D lastEdgeVector = createLastEdgeVector(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode);
-        final Vector2D candidateEdgeVector = createCandidateEdgeVector(candidateEdge);
-
-        final double angleTo = lastEdgeVector.angleTo(candidateEdgeVector);
-        final double angleToContinuousInterval = transformAngleToContinuousInterval(angleTo);
-        final double differenceToTwoPi = Math.abs(2 * Math.PI - angleToContinuousInterval);
-        final double angleToZeroIfVeryCloseTo2Pi = differenceToTwoPi < 0.000001 ? 0 : angleToContinuousInterval;
-
-        return angleToZeroIfVeryCloseTo2Pi;
-    }
-
-    private Vector2D createLastEdgeVector(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode) {
-        final Coordinate lastEdgeBaseNodeCoordinate = new Coordinate(nodeAccess.getLongitude(lastEdgeReversedBaseNode), nodeAccess.getLatitude(lastEdgeReversedBaseNode));
-        final Coordinate lastEdgeAdjNodeCoordinate = new Coordinate(nodeAccess.getLongitude(lastEdgeReversedAdjNode), nodeAccess.getLatitude(lastEdgeReversedAdjNode));
-        return new Vector2D(lastEdgeBaseNodeCoordinate, lastEdgeAdjNodeCoordinate);
-    }
-
-    private Vector2D createCandidateEdgeVector(EdgeIteratorState candidateEdge) {
-        final Coordinate candidateEdgeBaseNodeCoordinate = new Coordinate(nodeAccess.getLongitude(candidateEdge.getBaseNode()),
-                                                                          nodeAccess.getLatitude(candidateEdge.getBaseNode()));
-        final Coordinate candidateEdgeAdjNodeCoordinate = new Coordinate(nodeAccess.getLongitude(candidateEdge.getAdjNode()),
-                                                                         nodeAccess.getLatitude(candidateEdge.getAdjNode()));
-        if (candidateEdgeAdjNodeCoordinate.equals2D(candidateEdgeBaseNodeCoordinate)) {
-            throw new IllegalArgumentException("Coordinates of both edge end points shall not be equal");
-        }
-        return new Vector2D(candidateEdgeBaseNodeCoordinate, candidateEdgeAdjNodeCoordinate);
-    }
-
-    private double transformAngleToContinuousInterval(final double angleTo) {
-        return angleTo > 0 ? angleTo : angleTo + 2 * Math.PI;
-    }
 }

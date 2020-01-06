@@ -8,13 +8,7 @@ class CellRunnerRight extends CellRunner {
 
     public CellRunnerRight(final VisibilityCellsCreator visibilityCellsCreator, final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess,
                           final VisitedManager visitedManager) {
-        super(visibilityCellsCreator, neighborExplorer, nodeAccess, visitedManager);
-    }
-
-    @Override
-    double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
-        final double angle = getAngle(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
-        return angle == 0 || angle == ANGLE_WHEN_COORDINATES_ARE_EQUAL ? angle : angle * (-1) + 2 * Math.PI;
+        super(visibilityCellsCreator, neighborExplorer, nodeAccess, visitedManager, new VectorAngleCalculatorRight(nodeAccess));
     }
 
     @Override

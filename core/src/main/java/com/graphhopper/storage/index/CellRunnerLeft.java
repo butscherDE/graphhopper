@@ -10,12 +10,7 @@ class CellRunnerLeft extends CellRunner {
 
     public CellRunnerLeft(final VisibilityCellsCreator visibilityCellsCreator, final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess,
                           final VisitedManager visitedManager) {
-        super(visibilityCellsCreator, neighborExplorer, nodeAccess, visitedManager);
-    }
-
-    @Override
-    double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
-        return getAngle(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
+        super(visibilityCellsCreator, neighborExplorer, nodeAccess, visitedManager, new VectorAngleCalculatorLeft(nodeAccess));
     }
 
     @Override
