@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class VisitedManagerTest {
@@ -90,5 +91,17 @@ public class VisitedManagerTest {
         visitedManager.settleEdgeRight(ALL_EDGES.get(0));
 
         assertFalse(visitedManager.isEdgeSettledLeft(ALL_EDGES.get(0).detach(true)));
+    }
+
+    @Test
+    public void forceNodeAscendingNotTurned() {
+        final EdgeIteratorState forcedEdge = VisitedManager.forceNodeIdsAscending(ALL_EDGES.get(0));
+        assertTrue(forcedEdge.getBaseNode() < forcedEdge.getAdjNode());
+    }
+
+    @Test
+    public void forceNodeAscendingTurned() {
+        final EdgeIteratorState forcedEdge = VisitedManager.forceNodeIdsAscending(ALL_EDGES.get(0).detach(true));
+        assertTrue(forcedEdge.getBaseNode() < forcedEdge.getAdjNode());
     }
 }
