@@ -29,6 +29,19 @@ public class CellRunnerTest {
         visibilityManagerAsserts17to26Left(cti);
     }
 
+    @Test
+    public void simpleCell17to26LeftInverseEdge() {
+        final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 7}, new double[]{38, 33, 32});
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 26, 17);
+        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+        assertEquals(expectedCellShape, vc.cellShape);
+
+        visibilityManagerAsserts17to26Left(cti);
+    }
+
     private void visibilityManagerAsserts17to26Left(CellRunnerTestInputs cti) {
         assertWalkedEdgesMarkedAsVisited17to26Left(cti);
         assertExploredButNotWalkedEdgesNotVisited17to26Left(cti);
@@ -67,6 +80,19 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 6}, new double[]{32, 33, 25});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 17, 26);
+        final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+        assertEquals(expectedCellShape, vc.cellShape);
+
+        visibilityManagerAsserts17to26Right(cti);
+    }
+
+    @Test
+    public void simpleCell17to26RightInverseEdge() {
+        final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 6}, new double[]{32, 33, 25});
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 26, 17);
         final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();

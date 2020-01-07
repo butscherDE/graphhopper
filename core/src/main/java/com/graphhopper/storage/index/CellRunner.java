@@ -35,9 +35,6 @@ abstract class CellRunner {
         this.lastEdge = this.startEdge;
         this.startNode = this.startEdge.getAdjNode();
         this.endNode = this.startEdge.getBaseNode();
-
-        System.out.println(this.startEdge);
-        System.out.println(startNode > endNode);
     }
 
     public VisibilityCell runAroundCellAndLogNodes() {
@@ -77,7 +74,7 @@ abstract class CellRunner {
                 settleNextNeighbor(edge);
             } else {
                 nodesOnCell.removeLast();
-                System.out.println(nodesOnCell);
+//                System.out.println(nodesOnCell);
                 return false;
             }
         }
@@ -97,8 +94,7 @@ abstract class CellRunner {
     }
 
     private boolean lastEdgeNotReached(final EdgeIteratorState lastEdge) {
-//        final EdgeIteratorState lastEdgeAscendingNodes = VisitedManager.forceNodeIdsAscending(lastEdge);
-        final boolean edgeIdEqual = lastEdge.getEdge() == startEdge.getEdge();
+        final boolean edgeIdEqual = true; //lastEdge.getEdge() == startEdge.getEdge();
         final boolean baseNodeEqual = lastEdge.getBaseNode() == startEdge.getBaseNode();
         final boolean adjNodeEqual = lastEdge.getAdjNode() == startEdge.getAdjNode();
         final boolean sameDirection = baseNodeEqual && adjNodeEqual;
