@@ -32,8 +32,7 @@ abstract class CellRunner {
         this.visitedManager = visitedManager;
         this.vectorAngleCalculator = vectorAngleCalculator;
 
-        currentEdge = startEdge;
-        currentEdge = this.visitedManager.forceNodeIdsAscending(currentEdge);
+        currentEdge = this.visitedManager.forceNodeIdsAscending(startEdge);
         this.startNode = currentEdge.getAdjNode();
         this.endNode = currentEdge.getBaseNode();
     }
