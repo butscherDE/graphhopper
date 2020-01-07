@@ -6,6 +6,8 @@ import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.StopWatch;
+import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
+import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
 
 import java.util.*;
 
@@ -41,6 +43,11 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(new Integer[] {2719, 2717, 2718}));
+//        nnd.dump();
+//        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
+//        gui.visualizeGraph();
+
         int i = 0;
         while (allEdges.next()) {
             System.out.println("###################################################################");
