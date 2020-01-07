@@ -84,9 +84,8 @@ abstract class CellRunner {
         SubNeighborVisitor leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());// null;
         double leftOrRightMostAngle = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode,
                                                                                       leftOrRightMostNeighborVisitedChain.getLast());
-        //-Double.MAX_VALUE;
+
         while (neighbors.next()) {
-//                do {
             SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
 
             final double angleToLastNode = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
@@ -96,7 +95,6 @@ abstract class CellRunner {
                 leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
             }
         }
-//                while (neighbors.next());
 
         if (leftOrRightMostNeighborVisitedChain == null) {
             System.out.println();

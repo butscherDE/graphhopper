@@ -47,6 +47,9 @@ public abstract class VectorAngleCalculator {
     private Vector2D createLastEdgeVector(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode) {
         final Coordinate lastEdgeBaseNodeCoordinate = new Coordinate(nodeAccess.getLongitude(lastEdgeReversedBaseNode), nodeAccess.getLatitude(lastEdgeReversedBaseNode));
         final Coordinate lastEdgeAdjNodeCoordinate = new Coordinate(nodeAccess.getLongitude(lastEdgeReversedAdjNode), nodeAccess.getLatitude(lastEdgeReversedAdjNode));
+        if (lastEdgeBaseNodeCoordinate.equals2D(lastEdgeAdjNodeCoordinate)) {
+            throw new IllegalArgumentException("Coordinates of both edge end points shall not be equal");
+        }
         return new Vector2D(lastEdgeBaseNodeCoordinate, lastEdgeAdjNodeCoordinate);
     }
 
