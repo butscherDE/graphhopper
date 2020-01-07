@@ -19,7 +19,7 @@ abstract class CellRunner {
     final VisitedManager visitedManager;
     private final VectorAngleCalculator vectorAngleCalculator;
     private final int startNode;
-    private final int currentRunEndNode;
+    private final int endNode;
 
     EdgeIteratorState currentEdge;
     EdgeIterator neighbors;
@@ -35,7 +35,7 @@ abstract class CellRunner {
         currentEdge = startEdge;
         currentEdge = this.visitedManager.forceNodeIdsAscending(currentEdge);
         this.startNode = currentEdge.getAdjNode();
-        this.currentRunEndNode = currentEdge.getBaseNode();
+        this.endNode = currentEdge.getBaseNode();
     }
 
     public VisibilityCell runAroundCellAndLogNodes() {
@@ -52,8 +52,9 @@ abstract class CellRunner {
     }
 
     private void addStartAndEndNodeOfCell() {
-        nodesOnCell.add(currentRunEndNode);
+        nodesOnCell.add(endNode);
         nodesOnCell.add(startNode);
+        settleEdge(currentEdge);
     }
 
     private void initializeNeighborIterator() {
@@ -83,7 +84,7 @@ abstract class CellRunner {
     }
 
     private boolean lastCellNotReached() {
-        return nodesOnCell.get(nodesOnCell.size() - 1) != currentRunEndNode;
+        return nodesOnCell.get(nodesOnCell.size() - 1) != endNode;
     }
 
     private SubNeighborVisitor getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
