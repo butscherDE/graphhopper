@@ -49,11 +49,11 @@ class VisibilityCellsCreator {
 
             final EdgeIteratorState currentEdge = allEdges.detach(false);
             if (!visibilityCellOnTheLeftFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerLeft(this, neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
+                addVisibilityCellToResults(new CellRunnerLeft(neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
             }
 
             if (!visibilityCellOnTheRightFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerRight(this, neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
+                addVisibilityCellToResults(new CellRunnerRight(neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
             }
 
             System.out.println(sw1.stop());
