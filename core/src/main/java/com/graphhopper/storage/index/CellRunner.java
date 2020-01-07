@@ -89,7 +89,7 @@ abstract class CellRunner {
     private SubNeighborVisitor getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
         final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
         final int lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
-        SubNeighborVisitor leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());// null;
+        SubNeighborVisitor leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
         double leftOrRightMostAngle = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode,
                                                                                       leftOrRightMostNeighborVisitedChain.getLast());
 
