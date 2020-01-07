@@ -6,9 +6,8 @@ import com.graphhopper.util.EdgeIteratorState;
 
 class CellRunnerRight extends CellRunner {
 
-    public CellRunnerRight(final VisibilityCellsCreator visibilityCellsCreator, final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess,
-                          final VisitedManager visitedManager) {
-        super(visibilityCellsCreator, neighborExplorer, nodeAccess, visitedManager, new VectorAngleCalculatorRight(nodeAccess));
+    public CellRunnerRight(final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess, final VisitedManager visitedManager, final EdgeIteratorState startEdge) {
+        super(neighborExplorer, nodeAccess, visitedManager, new VectorAngleCalculatorRight(nodeAccess), startEdge);
     }
 
     @Override

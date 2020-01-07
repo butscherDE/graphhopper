@@ -8,9 +8,8 @@ import java.util.Collections;
 
 class CellRunnerLeft extends CellRunner {
 
-    public CellRunnerLeft(final VisibilityCellsCreator visibilityCellsCreator, final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess,
-                          final VisitedManager visitedManager) {
-        super(visibilityCellsCreator, neighborExplorer, nodeAccess, visitedManager, new VectorAngleCalculatorLeft(nodeAccess));
+    public CellRunnerLeft(final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess, final VisitedManager visitedManager, final EdgeIteratorState startEdge) {
+        super(neighborExplorer, nodeAccess, visitedManager, new VectorAngleCalculatorLeft(nodeAccess), startEdge);
     }
 
     @Override

@@ -22,13 +22,7 @@ class VisibilityCellsCreator {
     private final EdgeExplorer neighborExplorer;
     private final VisitedManager visitedManager;
 
-    EdgeIteratorState currentEdge;
-    int currentRunStartNode;
-    int currentRunEndNode;
-    EdgeIterator neighbors;
-
     final List<VisibilityCell> allFoundCells;
-    private boolean visualize;
 
     public VisibilityCellsCreator(final GridIndex gridIndex, final Graph graph, final NodeAccess nodeAccess) {
         this.gridIndex = gridIndex;
@@ -52,39 +46,30 @@ class VisibilityCellsCreator {
             System.out.println("###################################################################");
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
             StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i++ + "/" + graph.getEdges()).start();
-            currentEdge = allEdges.detach(false);
-            currentEdge = visitedManager.forceNodeIdsAscending(currentEdge);
-            currentRunStartNode = currentEdge.getAdjNode();
-            currentRunEndNode = currentEdge.getBaseNode();
 
+            final EdgeIteratorState currentEdge = allEdges.detach(false);
+            if (!visibilityCellOnTheLeftFound(currentEdge)) {
+                addVisibilityCellToResults(new CellRunnerLeft(this, neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
+            }
 
-            if (!visibilityCellOnTheLeftFound()) {
-                addVisibilityCellToResults(allFoundCells, new CellRunnerLeft(this, neighborExplorer, nodeAccess, visitedManager).runAroundCellAndLogNodes());
+            if (!visibilityCellOnTheRightFound(currentEdge)) {
+                addVisibilityCellToResults(new CellRunnerRight(this, neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
             }
-            System.out.println("--------------------------------------------------------------------");
-
-            if (allEdges.getEdge() == 69) {
-                visualize = true;
-            }
-            if (!visibilityCellOnTheRightFound()) {
-                addVisibilityCellToResults(allFoundCells, new CellRunnerRight(this, neighborExplorer, nodeAccess, visitedManager).runAroundCellAndLogNodes());
-            }
-            visualize = false;
 
             System.out.println(sw1.stop());
         }
         System.out.println("finished");
     }
 
-    private void addVisibilityCellToResults(Collection<VisibilityCell> overlappingVisibilityCells, VisibilityCell visibilityCell) {
-        overlappingVisibilityCells.add(visibilityCell);
+    private void addVisibilityCellToResults(VisibilityCell visibilityCell) {
+        allFoundCells.add(visibilityCell);
     }
 
-    private Boolean visibilityCellOnTheLeftFound() {
+    private Boolean visibilityCellOnTheLeftFound(final EdgeIteratorState currentEdge) {
         return visitedManager.isEdgeSettledLeft(visitedManager.forceNodeIdsAscending(currentEdge));
     }
 
-    private Boolean visibilityCellOnTheRightFound() {
+    private Boolean visibilityCellOnTheRightFound(final EdgeIteratorState currentEdge) {
         return visitedManager.isEdgeSettledRight(visitedManager.forceNodeIdsAscending(currentEdge));
     }
 

@@ -12,22 +12,30 @@ import java.util.Stack;
 
 abstract class CellRunner {
 
-    private VisibilityCellsCreator visibilityCellsCreator;
     final List<Integer> nodesOnCell = new ArrayList<>();
     private Stack<EdgeIteratorState> lastEdges = new Stack<>();
     private final EdgeExplorer neighborExplorer;
     final NodeAccess nodeAccess;
     final VisitedManager visitedManager;
     private final VectorAngleCalculator vectorAngleCalculator;
+    private final int startNode;
+    private final int currentRunEndNode;
+
+    EdgeIteratorState currentEdge;
+    EdgeIterator neighbors;
     int lala = 0;
 
-    public CellRunner(final VisibilityCellsCreator visibilityCellsCreator, final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess, final VisitedManager visitedManager,
-     final VectorAngleCalculator vectorAngleCalculator) {
-        this.visibilityCellsCreator = visibilityCellsCreator;
+    public CellRunner(final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess, final VisitedManager visitedManager, final VectorAngleCalculator vectorAngleCalculator,
+                      final EdgeIteratorState startEdge) {
         this.neighborExplorer = neighborExplorer;
         this.nodeAccess = nodeAccess;
         this.visitedManager = visitedManager;
         this.vectorAngleCalculator = vectorAngleCalculator;
+
+        currentEdge = startEdge;
+        currentEdge = this.visitedManager.forceNodeIdsAscending(currentEdge);
+        this.startNode = currentEdge.getAdjNode();
+        this.currentRunEndNode = currentEdge.getBaseNode();
     }
 
     public VisibilityCell runAroundCellAndLogNodes() {
@@ -44,18 +52,18 @@ abstract class CellRunner {
     }
 
     private void addStartAndEndNodeOfCell() {
-        nodesOnCell.add(visibilityCellsCreator.currentRunEndNode);
-        nodesOnCell.add(visibilityCellsCreator.currentRunStartNode);
+        nodesOnCell.add(currentRunEndNode);
+        nodesOnCell.add(startNode);
     }
 
     private void initializeNeighborIterator() {
-        visibilityCellsCreator.neighbors = neighborExplorer.setBaseNode(visibilityCellsCreator.currentRunStartNode);
-        visibilityCellsCreator.neighbors.next();
+        neighbors = neighborExplorer.setBaseNode(startNode);
+        neighbors.next();
     }
 
     private void processNextNeighborOnCell() {
         final SubNeighborVisitor
-                leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(visibilityCellsCreator.neighbors, new SubNeighborVisitor());
+                leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new SubNeighborVisitor());
 
         for (EdgeIteratorState edge : leftOrRightmostNeighborChain) {
             settleNextNeighbor(edge);
@@ -70,12 +78,12 @@ abstract class CellRunner {
     }
 
     private void getNextNeighborIterator(EdgeIteratorState leftOrRightmostNeighbor) {
-        visibilityCellsCreator.neighbors = neighborExplorer.setBaseNode(leftOrRightmostNeighbor.getAdjNode());
-        visibilityCellsCreator.neighbors.next();
+        neighbors = neighborExplorer.setBaseNode(leftOrRightmostNeighbor.getAdjNode());
+        neighbors.next();
     }
 
     private boolean lastCellNotReached() {
-        return nodesOnCell.get(nodesOnCell.size() - 1) != visibilityCellsCreator.currentRunEndNode;
+        return nodesOnCell.get(nodesOnCell.size() - 1) != currentRunEndNode;
     }
 
     private SubNeighborVisitor getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
@@ -88,7 +96,8 @@ abstract class CellRunner {
         while (neighbors.next()) {
             SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
 
-            final double angleToLastNode = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
+            final double angleToLastNode =
+                    vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
 
             if (angleToLastNode >= leftOrRightMostAngle) {
                 leftOrRightMostAngle = angleToLastNode;
@@ -126,7 +135,7 @@ abstract class CellRunner {
 //                            System.exit(-1);
 //                        }
 //                    }
-                System.out.println("\u001B[31m" + neighbors + "\u001B[30m");
+            System.out.println("\u001B[31m" + neighbors + "\u001B[30m");
             lastEdges.push(detachedNeighbor);
             candidateVisitor = findMostOrientedNeighborOfNeighbor(neighbors, subNeighborVisitor);
             lastEdges.pop();
