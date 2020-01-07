@@ -1,8 +1,6 @@
 package com.graphhopper.storage.index;
 
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
-import com.graphhopper.storage.index.GridCell;
-import com.graphhopper.storage.index.VisibilityCell;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.BeforeClass;
@@ -24,7 +22,7 @@ public class VisibilityCellTest {
     }
 
     private VisibilityCell createDefaultVisibilityCell() {
-        final List<Integer> visibilityCellNodeIds = Arrays.asList(new Integer[]{17, 15, 18, 17});
+        final List<Integer> visibilityCellNodeIds = Arrays.asList(new Integer[]{17, 15, 18});
         return VisibilityCell.createVisibilityCellFromNodeIDs(visibilityCellNodeIds, graphMocker.nodeAccess);
     }
 
@@ -37,8 +35,8 @@ public class VisibilityCellTest {
     }
 
     private Polygon createDefaultVisibilityCellsExpectedCellShape() {
-        final double[] createExpectedCellShapeLatitudes = new double[] {11, 7, 7};
-        final double[] expectedCellShapeLongitudes = new double[] {34, 38, 32};
+        final double[] createExpectedCellShapeLatitudes = new double[] {7, 11, 7};
+        final double[] expectedCellShapeLongitudes = new double[] {32, 34, 38};
         return new Polygon(createExpectedCellShapeLatitudes, expectedCellShapeLongitudes);
     }
 

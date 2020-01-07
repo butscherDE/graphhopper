@@ -5,14 +5,11 @@ import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
-import java.util.ArrayList;
-import java.util.EmptyStackException;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 abstract class CellRunner {
 
-    final List<Integer> nodesOnCell = new ArrayList<>();
+    final LinkedList<Integer> nodesOnCell = new LinkedList<>();
     private Stack<EdgeIteratorState> lastEdges = new Stack<>();
     private final EdgeExplorer neighborExplorer;
     final NodeAccess nodeAccess;
@@ -21,7 +18,8 @@ abstract class CellRunner {
     private final int startNode;
     private final int endNode;
 
-    EdgeIteratorState currentEdge;
+    private final EdgeIteratorState startEdge;
+    EdgeIteratorState lastEdge;
     EdgeIterator neighbors;
     int lala = 0;
 
@@ -32,20 +30,22 @@ abstract class CellRunner {
         this.visitedManager = visitedManager;
         this.vectorAngleCalculator = vectorAngleCalculator;
 
-        currentEdge = this.visitedManager.forceNodeIdsAscending(startEdge);
-        this.startNode = currentEdge.getAdjNode();
-        this.endNode = currentEdge.getBaseNode();
+        this.startEdge = this.visitedManager.forceNodeIdsAscending(startEdge);
+        this.lastEdge = startEdge;
+        this.startNode = startEdge.getAdjNode();
+        this.endNode = startEdge.getBaseNode();
     }
 
     public VisibilityCell runAroundCellAndLogNodes() {
         addStartAndEndNodeOfCell();
 
         initializeNeighborIterator();
+        boolean endNotReached = true;
         do {
-            processNextNeighborOnCell();
+            endNotReached = processNextNeighborOnCell();
 //                    System.out.println(nodesOnCell);
         }
-        while (lastCellNotReached());
+        while (endNotReached);
 
         return createVisibilityCell();
     }
@@ -53,7 +53,7 @@ abstract class CellRunner {
     private void addStartAndEndNodeOfCell() {
         nodesOnCell.add(endNode);
         nodesOnCell.add(startNode);
-        settleEdge(currentEdge);
+        settleEdge(startEdge);
     }
 
     private void initializeNeighborIterator() {
@@ -61,15 +61,20 @@ abstract class CellRunner {
         neighbors.next();
     }
 
-    private void processNextNeighborOnCell() {
-        final SubNeighborVisitor
-                leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new SubNeighborVisitor());
+    private boolean processNextNeighborOnCell() {
+        final SubNeighborVisitor leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new SubNeighborVisitor());
 
         for (EdgeIteratorState edge : leftOrRightmostNeighborChain) {
-            settleNextNeighbor(edge);
+            if (lastEdgeNotReached(edge)) {
+                settleNextNeighbor(edge);
+            } else {
+                nodesOnCell.removeLast();
+                return false;
+            }
         }
 
         getNextNeighborIterator(leftOrRightmostNeighborChain.getLast());
+        return true;
     }
 
     private void settleNextNeighbor(EdgeIteratorState leftOrRightmostNeighbor) {
@@ -82,8 +87,15 @@ abstract class CellRunner {
         neighbors.next();
     }
 
-    private boolean lastCellNotReached() {
-        return nodesOnCell.get(nodesOnCell.size() - 1) != endNode;
+    private boolean lastEdgeNotReached(final EdgeIteratorState lastEdge) {
+        System.out.println(lastEdge + " ### " + startEdge);
+        final boolean edgeIdEqual = lastEdge.getEdge() == startEdge.getEdge();
+        final boolean baseNodeEqual = lastEdge.getBaseNode() == startEdge.getBaseNode();
+        final boolean adjNodeEqual = lastEdge.getAdjNode() == startEdge.getAdjNode();
+        final boolean sameDirection = baseNodeEqual && adjNodeEqual;
+        final boolean edgeEqual = edgeIdEqual && sameDirection;
+        return !edgeEqual;
+//        return nodesOnCell.get(nodesOnCell.size() - 1) != endNode;
     }
 
     private SubNeighborVisitor getMostLeftOrRightOrientedEdge(final EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {

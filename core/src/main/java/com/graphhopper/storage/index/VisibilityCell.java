@@ -20,8 +20,8 @@ public class VisibilityCell {
     }
 
     private static Polygon createCellShape(List<Integer> nodeIds, final NodeAccess nodeAccess) {
-        final double[] latitudes = new double[nodeIds.size() - 1];
-        final double[] longitudes = new double[nodeIds.size() - 1];
+        final double[] latitudes = new double[nodeIds.size()];
+        final double[] longitudes = new double[nodeIds.size()];
 
         fillLatLonArrayWithCoordinatesOfNodes(nodeIds, nodeAccess, latitudes, longitudes);
 
@@ -29,9 +29,9 @@ public class VisibilityCell {
     }
 
     private static void fillLatLonArrayWithCoordinatesOfNodes(List<Integer> nodeIds, NodeAccess nodeAccess, double[] latitudes, double[] longitudes) {
-        for (int i = 0; i < nodeIds.size() - 1; i++) {
-            latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i + 1));
-            longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i + 1));
+        for (int i = 0; i < nodeIds.size(); i++) {
+            latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i));
+            longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i));
         }
     }
 

@@ -64,7 +64,7 @@ public class CellRunnerTest {
 
     @Test
     public void simpleCell17to26Right() {
-        final Polygon expectedCellShape = new Polygon(new double[]{3, 6, 7}, new double[]{33, 25, 32});
+        final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 6}, new double[]{32, 33, 25});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 17, 26);
         final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
@@ -114,7 +114,7 @@ public class CellRunnerTest {
 
     @Test
     public void duplicateCoordinatesTriangleStartedOnNonDuplicatedCoordinates() {
-        final Polygon expectedCellShape = new Polygon(new double[]{10, 11, 11, 15}, new double[]{47, 43, 43, 43});
+        final Polygon expectedCellShape = new Polygon(new double[]{15, 10, 11, 11}, new double[]{43, 47, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 14, 106);
         final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
@@ -125,7 +125,7 @@ public class CellRunnerTest {
 
     @Test
     public void duplicateCoordinatesTriangleStartedOnAdjNodeHasDuplicate() {
-        final Polygon expectedCellShape = new Polygon(new double[] {11, 11, 15, 10}, new double[]{43, 43, 43, 47});
+        final Polygon expectedCellShape = new Polygon(new double[] {10, 11, 11, 15}, new double[]{47, 43, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 106, 110);
         final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
