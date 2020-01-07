@@ -99,6 +99,7 @@ abstract class CellRunner {
         final boolean adjNodeEqual = lastEdge.getAdjNode() == startEdge.getAdjNode();
         final boolean sameDirection = baseNodeEqual && adjNodeEqual;
         final boolean edgeEqual = edgeIdEqual && sameDirection;
+        System.out.println(lastEdge + " # " + startEdge);
         return !edgeEqual;
     }
 

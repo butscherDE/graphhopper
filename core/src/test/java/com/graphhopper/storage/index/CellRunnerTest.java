@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class CellRunnerTest {
-    private final static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph();
+    private static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph();
 
     @Test
     public void simpleCell17to26Left() {
@@ -169,6 +169,21 @@ public class CellRunnerTest {
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    @Test
+    public void duplicateStartEdge() {
+        GRAPH_MOCKER.graph.edge(17, 26, 1, true);
+
+        final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 7}, new double[]{38, 33, 32});
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 17, 26);
+        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+        assertEquals(expectedCellShape, vc.cellShape);
+
+        GRAPH_MOCKER = new PolygonRoutingTestGraph();
     }
 
     public static class CellRunnerTestInputs {
