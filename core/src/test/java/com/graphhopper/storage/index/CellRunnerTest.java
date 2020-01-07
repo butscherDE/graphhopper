@@ -136,7 +136,7 @@ public class CellRunnerTest {
 
     @Test
     public void duplicateCoordinatesTriangleStartedOnBothNodesHasDuplicate() {
-        final Polygon expectedCellShape = new Polygon(new double[] {11, 11, 15, 10}, new double[]{43, 43, 43, 47});
+        final Polygon expectedCellShape = new Polygon(new double[] {15, 10, 11, 11}, new double[]{43, 47, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
         final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);

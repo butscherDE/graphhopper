@@ -54,6 +54,10 @@ abstract class CellRunner {
         nodesOnCell.add(endNode);
         nodesOnCell.add(startNode);
         settleEdge(startEdge);
+
+        if (hasNeighborSameCoordinates(startEdge)) {
+            lastEdges.push(startEdge);
+        }
     }
 
     private void initializeNeighborIterator() {
@@ -111,7 +115,7 @@ abstract class CellRunner {
             final double angleToLastNode =
                     vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
 
-            if (angleToLastNode >= leftOrRightMostAngle) {
+            if (angleToLastNode > leftOrRightMostAngle) {
                 leftOrRightMostAngle = angleToLastNode;
                 leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
             }
@@ -129,7 +133,7 @@ abstract class CellRunner {
 
         final EdgeIteratorState detachedNeighbor = neighbors.detach(false);
         subNeighborVisitor.onEdge(detachedNeighbor);
-        if (hasNeighborSameCoordinates(neighbors) && !isLastNode(detachedNeighbor)) {
+        if (hasNeighborSameCoordinates(neighbors) && !isLastNode(detachedNeighbor)) { // TODO check if hasNeighborSameCoordinates can be called on detachedNeighbor
 //                    if (neighbors.getBaseNode() == 7254909 && neighbors.getAdjNode() == 93620) {
 //                        System.out.println("");
 //                        if (++lala == 10) {
@@ -157,7 +161,7 @@ abstract class CellRunner {
         return candidateVisitor;
     }
 
-    private boolean hasNeighborSameCoordinates(EdgeIterator neighbors) {
+    private boolean hasNeighborSameCoordinates(EdgeIteratorState neighbors) {
         return nodeAccess.getLongitude(neighbors.getBaseNode()) == nodeAccess.getLongitude(neighbors.getAdjNode()) &&
                nodeAccess.getLatitude(neighbors.getBaseNode()) == nodeAccess.getLatitude(neighbors.getAdjNode());
     }
