@@ -40,10 +40,23 @@ abstract class CellRunner {
     public VisibilityCell runAroundCellAndLogNodes() {
         addStartAndEndNodeOfCell();
 
+        if (startEdge.getBaseNode() == 61442 && startEdge.getAdjNode() == 2276168) {
+            int i = 0;
+        }
+
         initializeNeighborIterator();
         boolean endNotReached;
+        int i = 0;
         do {
             endNotReached = processNextNeighborOnCell();
+            if (i == 100_000) {
+//                System.out.println(i);
+                if (RepititionFinder.isRepitition(nodesOnCell, 10)) {
+                    System.out.println(nodesOnCell);
+                    System.exit(-1);
+                }
+            }
+            i++;
         }
         while (endNotReached);
         System.out.println(nodesOnCell);

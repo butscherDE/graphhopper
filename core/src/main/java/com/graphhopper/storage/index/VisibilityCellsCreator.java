@@ -43,10 +43,21 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(new Integer[] {2719, 2717, 2718}));
+//        System.out.println(nodeAccess.getLongitude(61442) + ", " + nodeAccess.getLat(61442));
+//        System.out.println(nodeAccess.getLongitude(2276168) + ", " + nodeAccess.getLat(2276168));
+//        System.out.println(nodeAccess.getLongitude(8020459) + ", " + nodeAccess.getLat(8020459));
+//        System.out.println(nodeAccess.getLongitude(3883532) + ", " + nodeAccess.getLat(3883532));
+//        System.out.println(nodeAccess.getLongitude(6336509) + ", " + nodeAccess.getLat(6336509));
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(
+//                new Integer[]{61442, 2276168, 8020459, 2276168, 3883532, 6336509, 6336510, 6336511, 131372, 148769, 2276153, 478557, 4226909, 4226911}));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
+//        try {
+//            Thread.sleep(100000);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         int i = 0;
         while (allEdges.next()) {

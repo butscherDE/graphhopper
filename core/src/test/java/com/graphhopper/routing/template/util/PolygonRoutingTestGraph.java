@@ -140,6 +140,7 @@ public class PolygonRoutingTestGraph {
                                 new Node(108, 3, 41),
                                 new Node(109, 11, 43),
                                 new Node(110, 11, 43),
+                                new Node(111, 9, 41),
 
                                 // Multi node test part
                                 new Node(200, 19, 28),
@@ -308,6 +309,7 @@ public class PolygonRoutingTestGraph {
         this.graph.edge(14, 109, 1, true);
         this.graph.edge(109, 110, 1, true);
         this.graph.edge(110, 106, 1, true);
+        this.graph.edge(110, 111, 1, true);
 
         //Multi node test part
         this.graph.edge(31, 200, 1, true);

@@ -161,11 +161,24 @@ public class CellRunnerTest {
     }
 
     @Test
-    public void duplicateCoordinatesTriangleStartedOnBothNodesHasDuplicate() {
-        final Polygon expectedCellShape = new Polygon(new double[] {15, 10, 11, 11}, new double[]{43, 47, 43, 43});
+    public void duplicateCoordinatesTriangleStartedOnBothNodesHasDuplicateLeft() {
+        final Polygon expectedCellShape = new Polygon(new double[] {15, 10, 11, 9, 11, 11}, new double[]{43, 47, 43, 41, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
         final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+        assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    @Test
+    public void duplicateCoordinatesTriangleStartedOnBothNodesHasDuplicateRight() {
+        final double[] expectedCellShapeLatitudes = {11.0, 11.0, 9.0, 11.0, 10.0, 3.0, 3.0, 7.0, 7.0, 5.0, 7.0, 9.0, 7.0, 7.0, 15.0};
+        final double[] expectedCellShapeLongitudes = {43.0, 43.0, 41.0, 43.0, 47.0, 47.0, 41.0, 38.0, 42.0, 44.0, 42.0, 44.0, 42.0, 38.0, 43.0};
+        final Polygon expectedCellShape = new Polygon(expectedCellShapeLatitudes, expectedCellShapeLongitudes);
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
+        final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
