@@ -29,9 +29,11 @@ public class VisibilityCell {
     }
 
     private static void fillLatLonArrayWithCoordinatesOfNodes(List<Integer> nodeIds, NodeAccess nodeAccess, double[] latitudes, double[] longitudes) {
-        for (int i = 0; i < nodeIds.size(); i++) {
-            latitudes[i] = nodeAccess.getLatitude(nodeIds.get(i));
-            longitudes[i] = nodeAccess.getLongitude(nodeIds.get(i));
+        int i = 0;
+        for (Integer nodeId : nodeIds) {
+            latitudes[i] = nodeAccess.getLatitude(nodeId);
+            longitudes[i] = nodeAccess.getLongitude(nodeId);
+            i++;
         }
     }
 

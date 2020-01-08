@@ -50,7 +50,7 @@ class VisibilityCellsCreator {
 
         int i = 0;
         while (allEdges.next()) {
-            System.out.println("###################################################################");
+            System.out.println("###################################################################" + i);
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
             StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i++ + "/" + graph.getEdges()).start();
 

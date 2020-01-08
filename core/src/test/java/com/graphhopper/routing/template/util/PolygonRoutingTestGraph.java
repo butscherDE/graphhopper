@@ -45,7 +45,7 @@ public class PolygonRoutingTestGraph {
         this.createEncodingManager();
         this.createTestGraph();
         this.createTestPolygon();
-//        this.createLocationIndex();
+        this.createLocationIndex();
         this.getNodeAccess();
         this.setTraversalMode();
         this.setAlgorithmName();

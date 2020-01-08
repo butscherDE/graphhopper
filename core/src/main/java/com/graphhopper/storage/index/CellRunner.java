@@ -41,12 +41,12 @@ abstract class CellRunner {
         addStartAndEndNodeOfCell();
 
         initializeNeighborIterator();
-        boolean endNotReached = true;
+        boolean endNotReached;
         do {
             endNotReached = processNextNeighborOnCell();
-//                    System.out.println(nodesOnCell);
         }
         while (endNotReached);
+        System.out.println(nodesOnCell);
 
         return createVisibilityCell();
     }
@@ -99,7 +99,7 @@ abstract class CellRunner {
         final boolean adjNodeEqual = lastEdge.getAdjNode() == startEdge.getAdjNode();
         final boolean sameDirection = baseNodeEqual && adjNodeEqual;
         final boolean edgeEqual = edgeIdEqual && sameDirection;
-        System.out.println(lastEdge + " # " + startEdge);
+//        System.out.println(lastEdge + " # " + startEdge);
         return !edgeEqual;
     }
 
