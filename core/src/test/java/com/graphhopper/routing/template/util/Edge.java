@@ -1,6 +1,6 @@
 package com.graphhopper.routing.template.util;
 
-class Edge {
+public class Edge {
     final int baseNode;
     final int adjNode;
     final double distance;

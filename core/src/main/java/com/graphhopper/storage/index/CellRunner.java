@@ -53,14 +53,14 @@ abstract class CellRunner {
         int i = 0;
         do {
             endNotReached = processNextNeighborOnCell();
-            if (i == 2_000) {
-                System.out.println(i);
-                if (RepititionFinder.isRepitition(nodesOnCell, 10)) {
-                    System.out.println(this.getClass().getSimpleName());
-                    System.out.println(nodesOnCell);
-                    System.exit(-1);
-                }
-            }
+//            if (i == 2_000) {
+//                System.out.println(i);
+//                if (RepititionFinder.isRepitition(nodesOnCell, 10)) {
+//                    System.out.println(this.getClass().getSimpleName());
+//                    System.out.println(nodesOnCell);
+//                    System.exit(-1);
+//                }
+//            }
             i++;
         }
         while (endNotReached);

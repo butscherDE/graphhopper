@@ -3,12 +3,12 @@ package com.graphhopper.routing.template.util;
 import com.graphhopper.routing.AbstractRoutingAlgorithmTester;
 import com.graphhopper.storage.Graph;
 
-class Node {
+public class Node {
     final int id;
     final double latitude;
     final double longitude;
 
-    Node(final int id, final double latitude, final double longitude) {
+    public Node(final int id, final double latitude, final double longitude) {
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;

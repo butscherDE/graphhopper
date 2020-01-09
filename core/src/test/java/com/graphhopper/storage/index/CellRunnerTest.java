@@ -1,5 +1,7 @@
 package com.graphhopper.storage.index;
 
+import com.graphhopper.routing.template.util.Edge;
+import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeExplorer;
@@ -207,6 +209,37 @@ public class CellRunnerTest {
         assertEquals(expectedCellShape, vc.cellShape);
 
         GRAPH_MOCKER = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
+    }
+
+    @Test
+    public void collinearEdges() {
+        final PolygonRoutingTestGraph customTestGraph = createCustomTestGraphToTryTrapTheAlgorithmInEndlessLoop();
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
+        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+
+        // At this point the test succeeded because we want to test if this test scenario traps the run in and endless loop.
+    }
+
+    private PolygonRoutingTestGraph createCustomTestGraphToTryTrapTheAlgorithmInEndlessLoop() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 2), //s
+                new Node(1, 0, 4), //v
+                new Node(2, 0, 5), //w
+                new Node(3, 1, 5),
+                new Node(4, 1, 3),
+                new Node(5, 0, 3)  //u
+        };
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(2, 3, 1, true),
+                new Edge(3, 4, 1, true),
+                new Edge(4, 5, 1, true),
+                new Edge(5, 1, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
     }
 
     public static class CellRunnerTestInputs {
