@@ -13,7 +13,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class NodesInVCButNotInROIFindingVisitorTest {
-    final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
 
     @Test
     public void fromPolygon() {

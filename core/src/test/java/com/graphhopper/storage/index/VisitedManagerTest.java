@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class VisitedManagerTest {
-    private static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph();
+    private static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     private static List<EdgeIteratorState> ALL_EDGES;
 
     @BeforeClass

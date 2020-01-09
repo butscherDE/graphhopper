@@ -5,7 +5,9 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.Polygon;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.List;
 
@@ -14,7 +16,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class CellRunnerTest {
-    private static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph();
+    private static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
 
     @Test
     public void simpleCell17to26Left() {
@@ -167,6 +173,8 @@ public class CellRunnerTest {
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
         final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Cannot start run on an edge with equal coordinates on both end nodes");
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
     }
@@ -180,6 +188,8 @@ public class CellRunnerTest {
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
         final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Cannot start run on an edge with equal coordinates on both end nodes");
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
     }
@@ -196,7 +206,7 @@ public class CellRunnerTest {
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
 
-        GRAPH_MOCKER = new PolygonRoutingTestGraph();
+        GRAPH_MOCKER = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     }
 
     public static class CellRunnerTestInputs {

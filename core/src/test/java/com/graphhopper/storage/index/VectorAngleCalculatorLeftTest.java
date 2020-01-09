@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class VectorAngleCalculatorLeftTest {
-    private final static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph();
+    private final static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
 
     @Test
     public void anglesToNode39to38right() {

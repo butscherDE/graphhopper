@@ -38,6 +38,10 @@ abstract class CellRunner {
     }
 
     public VisibilityCell runAroundCellAndLogNodes() {
+        if (vectorAngleCalculator.getAngle(startEdge.getBaseNode(), startEdge.getAdjNode(), startEdge) == VectorAngleCalculator.ANGLE_WHEN_COORDINATES_ARE_EQUAL) {
+            throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
+        }
+
         addStartAndEndNodeOfCell();
 
         if (startEdge.getBaseNode() == 61442 && startEdge.getAdjNode() == 2276168) {
@@ -49,9 +53,10 @@ abstract class CellRunner {
         int i = 0;
         do {
             endNotReached = processNextNeighborOnCell();
-            if (i == 100_000) {
-//                System.out.println(i);
+            if (i == 2_000) {
+                System.out.println(i);
                 if (RepititionFinder.isRepitition(nodesOnCell, 10)) {
+                    System.out.println(this.getClass().getSimpleName());
                     System.out.println(nodesOnCell);
                     System.exit(-1);
                 }
@@ -59,7 +64,7 @@ abstract class CellRunner {
             i++;
         }
         while (endNotReached);
-        System.out.println(nodesOnCell);
+//        System.out.println(nodesOnCell);
 
         return createVisibilityCell();
     }

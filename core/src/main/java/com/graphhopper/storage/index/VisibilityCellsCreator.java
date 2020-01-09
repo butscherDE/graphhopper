@@ -49,7 +49,7 @@ class VisibilityCellsCreator {
 //        System.out.println(nodeAccess.getLongitude(3883532) + ", " + nodeAccess.getLat(3883532));
 //        System.out.println(nodeAccess.getLongitude(6336509) + ", " + nodeAccess.getLat(6336509));
 //        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(
-//                new Integer[]{61442, 2276168, 8020459, 2276168, 3883532, 6336509, 6336510, 6336511, 131372, 148769, 2276153, 478557, 4226909, 4226911}));
+//                new Integer[]{3096452, 3331230, 242513, 3809843, 3809830, 3809845, 3809841, 3809834, 3809847, 3809836, }));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
@@ -64,6 +64,17 @@ class VisibilityCellsCreator {
             System.out.println("###################################################################" + i);
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
             StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i++ + "/" + graph.getEdges()).start();
+
+            final int baseNode = allEdges.getBaseNode();
+            final int adjNode = allEdges.getAdjNode();
+            final double baseNodeLatitude = nodeAccess.getLatitude(baseNode);
+            final double baseNodeLongitude = nodeAccess.getLongitude(baseNode);
+            final double adjNodeLatitude = nodeAccess.getLatitude(adjNode);
+            final double adjNodeLongitude = nodeAccess.getLongitude(adjNode);
+            if (baseNodeLatitude == adjNodeLatitude && baseNodeLongitude == adjNodeLongitude) {
+                continue;
+            }
+
 
             final EdgeIteratorState currentEdge = allEdges.detach(false);
             if (!visibilityCellOnTheLeftFound(currentEdge)) {

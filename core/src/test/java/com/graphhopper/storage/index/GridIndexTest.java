@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 
 public class GridIndexTest {
-    final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     GridIndex locationIndex = (GridIndex) new GridIndex(graphMocker.graph, new RAMDirectory()).setResolution(300).prepareIndex();
     List<VisibilityCell> completeTestAreaCells;
 

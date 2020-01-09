@@ -16,7 +16,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class RouteCandidateListTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     private final RouteCandidateList<RouteCandidateMocker> candidateList = new RouteCandidateList<>();
     private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double[]{5, 10, 10, 5}, new double[]{5, 5, 10, 10})).setVehicle("car");
 

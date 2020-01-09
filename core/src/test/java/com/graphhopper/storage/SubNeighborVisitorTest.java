@@ -19,7 +19,7 @@ public class SubNeighborVisitorTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-    private final static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph();
+    private final static PolygonRoutingTestGraph GRAPH_MOCKER = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
 
     @Test
     public void getLastOnEmptyVisitor() {

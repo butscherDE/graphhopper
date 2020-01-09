@@ -15,7 +15,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class LOTNodeExtractorTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     private LOTNodeExtractor extractor;
 
     @Before

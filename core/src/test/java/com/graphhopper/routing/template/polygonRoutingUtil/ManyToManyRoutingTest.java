@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ManyToManyRoutingTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     private ManyToManyRouting manyToManyRouting;
 
     @BeforeClass

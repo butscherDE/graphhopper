@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class OneToManyRoutingTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph();
+    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     private QueryGraph queryGraph;
     private OneToManyRouting oneToManyRouting;
     private int fromNode;

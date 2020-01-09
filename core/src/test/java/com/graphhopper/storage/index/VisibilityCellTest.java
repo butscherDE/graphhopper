@@ -18,7 +18,7 @@ public class VisibilityCellTest {
 
     @BeforeClass
     public static void createGraphMocker() {
-        graphMocker = new PolygonRoutingTestGraph();
+        graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
     }
 
     private VisibilityCell createDefaultVisibilityCell() {
