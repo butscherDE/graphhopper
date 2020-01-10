@@ -49,18 +49,21 @@ class VisibilityCellsCreator {
 //        System.out.println(nodeAccess.getLongitude(3883532) + ", " + nodeAccess.getLat(3883532));
 //        System.out.println(nodeAccess.getLongitude(6336509) + ", " + nodeAccess.getLat(6336509));
 //        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(
-//                new Integer[]{3096452, 3331230, 242513, 3809843, 3809830, 3809845, 3809841, 3809834, 3809847, 3809836, }));
+//                5409341, 6864047, 6864046, 499094, 6158347, 1472235, 1472085, 2652485, 7730678, 2652485, 7569351));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
 //        try {
-//            Thread.sleep(100000);
+//            Thread.sleep(10_000_000);
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
 
         int i = 0;
         while (allEdges.next()) {
+//            if (i++ < 200000) {
+//                continue;
+//            }
             System.out.println("###################################################################" + i);
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
             StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i++ + "/" + graph.getEdges()).start();

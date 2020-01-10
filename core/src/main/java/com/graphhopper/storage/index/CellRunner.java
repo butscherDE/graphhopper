@@ -41,6 +41,10 @@ abstract class CellRunner {
             throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
         }
 
+        if (startEdge.getEdge() == 222882) {
+            int j = 0;
+        }
+
         addStartAndEndNodeOfCell();
 
         if (startEdge.getBaseNode() == 61442 && startEdge.getAdjNode() == 2276168) {
@@ -53,7 +57,7 @@ abstract class CellRunner {
         do {
             endNotReached = processNextNeighborOnCell();
             if (i == 2_000) {
-                System.out.println(i);
+//                System.out.println(i);
                 if (RepititionFinder.isRepitition(nodesOnCell, 10)) {
                     System.out.println(this.getClass().getSimpleName());
                     System.out.println(nodesOnCell);
@@ -85,6 +89,7 @@ abstract class CellRunner {
 
     private boolean processNextNeighborOnCell() {
         final SubNeighborVisitor leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new SubNeighborVisitor(lastEdge));
+//        System.out.println(leftOrRightmostNeighborChain.getNextNodeHints());
 
         for (EdgeIteratorState edge : leftOrRightmostNeighborChain) {
             if (lastEdgeNotReached(edge)) {
@@ -138,6 +143,7 @@ abstract class CellRunner {
                         break;
                     }
                 }
+            nextNodeHints.clear();
             }
         } else {
             final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
@@ -151,7 +157,9 @@ abstract class CellRunner {
                 subNeighborVisitor.collinearEdgeFound();
             }
 
+            int numNeighbors = 1;
             while (neighbors.next()) {
+                numNeighbors++;
                 SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
 
                 final double angleToLastNode =
@@ -162,7 +170,7 @@ abstract class CellRunner {
                     leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
                 }
 
-                if (angleToLastNode == 0 && neighbors.getAdjNode() != lastEdgeReversedAdjNode) {
+                if (angleToLastNode == 0 && neighbors.getAdjNode() != lastEdgeReversedAdjNode && numNeighbors > 2) {
                     candidateEdgeContainingVisitor.collinearEdgeFound();
                     subNeighborVisitor.collinearEdgeFound();
                 }
