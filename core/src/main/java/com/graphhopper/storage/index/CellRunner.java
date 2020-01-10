@@ -42,7 +42,7 @@ abstract class CellRunner {
             throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
         }
 
-        if (startEdge.getEdge() == 353688) {
+        if (startEdge.getEdge() == 477163) {
             int j = 0;
         }
 
@@ -57,7 +57,7 @@ abstract class CellRunner {
         int i = 0;
         do {
             endNotReached = processNextNeighborOnCell();
-            if (i == 2_000) {
+            if (i == 200) {
 //                System.out.println(i);
                 if (RepititionFinder.isRepitition(nodesOnCell, 10)) {
                     System.out.println(this.getClass().getSimpleName());
@@ -176,6 +176,7 @@ abstract class CellRunner {
                 }
             }
         }
+
 
         return leftOrRightMostNeighborVisitedChain;
     }

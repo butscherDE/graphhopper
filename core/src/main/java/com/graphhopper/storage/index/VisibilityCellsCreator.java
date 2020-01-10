@@ -21,7 +21,6 @@ class VisibilityCellsCreator {
     private final Graph graph;
     private final NodeAccess nodeAccess;
     private final EdgeIterator allEdges;
-    private final EdgeExplorer neighborExplorer;
     private final VisitedManager visitedManager;
 
     final List<VisibilityCell> allFoundCells;
@@ -31,7 +30,6 @@ class VisibilityCellsCreator {
         this.graph = graph;
         this.nodeAccess = nodeAccess;
         this.allEdges = graph.getAllEdges();
-        this.neighborExplorer = graph.createEdgeExplorer();
         this.allFoundCells = new ArrayList<>(graph.getNodes());
         this.visitedManager = new VisitedManager(graph);
     }
@@ -43,7 +41,7 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(1792875, 1792873, 1792872, 4513687, 4513691, 4513699, 8406093));
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(6646435, 6646436, 511211, 511212, 511213, 511214, 511215, 6291667, 6615434, 4929889, 511210, 6646437, 511211, 6646436, 6646435));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
@@ -56,9 +54,9 @@ class VisibilityCellsCreator {
         int i = 0;
         while (allEdges.next()) {
             System.out.println("###################################################################" + i++);
-//            if (i < 347760) {
-//                continue;
-//            }
+            if (i++ < 755755) {
+                continue;
+            }
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
             StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
 

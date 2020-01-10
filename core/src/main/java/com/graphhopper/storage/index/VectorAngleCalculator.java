@@ -41,7 +41,7 @@ public abstract class VectorAngleCalculator {
 
     private double getAngleAsZeroIfCloseToTwoPi(double angleToContinuousInterval) {
         final double differenceToTwoPi = Math.abs(2 * Math.PI - angleToContinuousInterval);
-        return differenceToTwoPi < 0.000001 ? 0 : angleToContinuousInterval;
+        return differenceToTwoPi < 0.000000000000001 ? 0 : angleToContinuousInterval;
     }
 
     private Vector2D createLastEdgeVector(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode) {
