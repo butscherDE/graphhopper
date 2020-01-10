@@ -4,15 +4,15 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
+import com.graphhopper.storage.Graph;
 
 import java.util.*;
 
 abstract class CellRunner {
-
     final LinkedList<Integer> nodesOnCell = new LinkedList<>();
     final Map<Integer, Integer> nextNodeHints = new HashMap<>();
     private final Stack<EdgeIteratorState> lastEdges = new Stack<>();
-    private final EdgeExplorer neighborExplorer;
+    private final Graph graph;
     final NodeAccess nodeAccess;
     final VisitedManager visitedManager;
     private final VectorAngleCalculator vectorAngleCalculator;
@@ -23,9 +23,10 @@ abstract class CellRunner {
     EdgeIteratorState lastEdge;
     EdgeIterator neighbors;
 
-    public CellRunner(final EdgeExplorer neighborExplorer, final NodeAccess nodeAccess, final VisitedManager visitedManager, final VectorAngleCalculator vectorAngleCalculator,
+    public CellRunner(final Graph graph, final NodeAccess nodeAccess, final VisitedManager visitedManager,
+                      final VectorAngleCalculator vectorAngleCalculator,
                       final EdgeIteratorState startEdge) {
-        this.neighborExplorer = neighborExplorer;
+        this.graph = graph;
         this.nodeAccess = nodeAccess;
         this.visitedManager = visitedManager;
         this.vectorAngleCalculator = vectorAngleCalculator;
@@ -41,7 +42,7 @@ abstract class CellRunner {
             throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
         }
 
-        if (startEdge.getEdge() == 222882) {
+        if (startEdge.getEdge() == 353688) {
             int j = 0;
         }
 
@@ -83,7 +84,7 @@ abstract class CellRunner {
     }
 
     private void initializeNeighborIterator() {
-        neighbors = neighborExplorer.setBaseNode(startNode);
+        neighbors = graph.createEdgeExplorer().setBaseNode(startNode);
         neighbors.next();
     }
 
@@ -113,7 +114,7 @@ abstract class CellRunner {
     }
 
     private void getNextNeighborIterator(EdgeIteratorState leftOrRightmostNeighbor) {
-        neighbors = neighborExplorer.setBaseNode(leftOrRightmostNeighbor.getAdjNode());
+        neighbors = graph.createEdgeExplorer().setBaseNode(leftOrRightmostNeighbor.getAdjNode());
         neighbors.next();
     }
 
@@ -133,17 +134,17 @@ abstract class CellRunner {
             leftOrRightMostNeighborVisitedChain = subNeighborVisitor;
             if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
                 subNeighborVisitor.onEdge(neighbors.detach(false));
-                neighbors = neighborExplorer.setBaseNode(neighbors.getAdjNode());
+                neighbors = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
             }
             while (nodeHintExists(neighbors)) {
                 while (neighbors.next()) {
                     if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
                         subNeighborVisitor.onEdge(neighbors.detach(false));
-                        neighbors = neighborExplorer.setBaseNode(neighbors.getAdjNode());
+                        neighbors = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
                         break;
                     }
                 }
-            nextNodeHints.clear();
+                nextNodeHints.clear();
             }
         } else {
             final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
@@ -152,25 +153,24 @@ abstract class CellRunner {
             leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
             double leftOrRightMostAngle = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode,
                                                                                           leftOrRightMostNeighborVisitedChain.getLast());
-            if (leftOrRightMostAngle == 0 && neighbors.getAdjNode() != lastEdgeReversedAdjNode) {
+            if (leftOrRightMostAngle == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)) {
                 leftOrRightMostNeighborVisitedChain.collinearEdgeFound();
                 subNeighborVisitor.collinearEdgeFound();
             }
 
-            int numNeighbors = 1;
             while (neighbors.next()) {
-                numNeighbors++;
                 SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
 
                 final double angleToLastNode =
                         vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
 
-                if (angleToLastNode > leftOrRightMostAngle) {
+                if (angleToLastNode > leftOrRightMostAngle ||
+                    (angleToLastNode == leftOrRightMostAngle && candidateEdgeContainingVisitor.size() > leftOrRightMostNeighborVisitedChain.size())) {
                     leftOrRightMostAngle = angleToLastNode;
                     leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
                 }
 
-                if (angleToLastNode == 0 && neighbors.getAdjNode() != lastEdgeReversedAdjNode && numNeighbors > 2) {
+                if (angleToLastNode == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)/* && numNeighbors == 2*/) {
                     candidateEdgeContainingVisitor.collinearEdgeFound();
                     subNeighborVisitor.collinearEdgeFound();
                 }
@@ -178,6 +178,11 @@ abstract class CellRunner {
         }
 
         return leftOrRightMostNeighborVisitedChain;
+    }
+
+    private boolean areNodesDifferent(int currentAdjNode, int lastEdgeReversedAdjNode) {
+        return currentAdjNode != lastEdgeReversedAdjNode && nodeAccess.getLat(currentAdjNode) != nodeAccess.getLat(lastEdgeReversedAdjNode) &&
+               nodeAccess.getLon(currentAdjNode) != nodeAccess.getLon(lastEdgeReversedAdjNode);
     }
 
     private boolean nodeHintExists(EdgeIterator neighbors) {
@@ -231,7 +236,7 @@ abstract class CellRunner {
     }
 
     private SubNeighborVisitor findMostOrientedNeighborOfNeighbor(EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
-        final EdgeIterator subNeighborIterator = neighborExplorer.setBaseNode(neighbors.getAdjNode());
+        final EdgeIterator subNeighborIterator = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
         subNeighborIterator.next();
         final SubNeighborVisitor bestSubNeighbor = getMostLeftOrRightOrientedEdge(subNeighborIterator, subNeighborVisitor);
         return bestSubNeighbor;

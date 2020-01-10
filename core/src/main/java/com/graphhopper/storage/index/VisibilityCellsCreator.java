@@ -43,13 +43,7 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        System.out.println(nodeAccess.getLongitude(61442) + ", " + nodeAccess.getLat(61442));
-//        System.out.println(nodeAccess.getLongitude(2276168) + ", " + nodeAccess.getLat(2276168));
-//        System.out.println(nodeAccess.getLongitude(8020459) + ", " + nodeAccess.getLat(8020459));
-//        System.out.println(nodeAccess.getLongitude(3883532) + ", " + nodeAccess.getLat(3883532));
-//        System.out.println(nodeAccess.getLongitude(6336509) + ", " + nodeAccess.getLat(6336509));
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(
-//                5409341, 6864047, 6864046, 499094, 6158347, 1472235, 1472085, 2652485, 7730678, 2652485, 7569351));
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(1792875, 1792873, 1792872, 4513687, 4513691, 4513699, 8406093));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
@@ -61,12 +55,12 @@ class VisibilityCellsCreator {
 
         int i = 0;
         while (allEdges.next()) {
-//            if (i++ < 200000) {
+            System.out.println("###################################################################" + i++);
+//            if (i < 347760) {
 //                continue;
 //            }
-            System.out.println("###################################################################" + i);
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
-            StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i++ + "/" + graph.getEdges()).start();
+            StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
 
             final int baseNode = allEdges.getBaseNode();
             final int adjNode = allEdges.getAdjNode();
@@ -81,11 +75,11 @@ class VisibilityCellsCreator {
 
             final EdgeIteratorState currentEdge = allEdges.detach(false);
             if (!visibilityCellOnTheLeftFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerLeft(neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
+                addVisibilityCellToResults(new CellRunnerLeft(graph, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
             }
 
             if (!visibilityCellOnTheRightFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerRight(neighborExplorer, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
+                addVisibilityCellToResults(new CellRunnerRight(graph, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
             }
 
             System.out.println(sw1.stop());

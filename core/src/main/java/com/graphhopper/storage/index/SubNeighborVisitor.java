@@ -60,4 +60,8 @@ public class SubNeighborVisitor implements Iterable<EdgeIteratorState>, Cloneabl
 
         return hints;
     }
+
+    public int size() {
+        return visitedEdges.size();
+    }
 }

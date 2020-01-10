@@ -4,9 +4,9 @@ import com.graphhopper.routing.template.util.Edge;
 import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.storage.NodeAccess;
-import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.Polygon;
+import com.graphhopper.storage.Graph;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,7 +29,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 7}, new double[]{38, 33, 32});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 17, 26);
-        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
@@ -42,7 +42,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 7}, new double[]{38, 33, 32});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 26, 17);
-        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
@@ -88,7 +88,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 6}, new double[]{32, 33, 25});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 17, 26);
-        final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerRight(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
@@ -101,7 +101,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 6}, new double[]{32, 33, 25});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 26, 17);
-        final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerRight(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
@@ -151,7 +151,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{15, 10, 11, 11}, new double[]{43, 47, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 14, 106);
-        final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerRight(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
@@ -162,7 +162,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{10, 11, 11, 15}, new double[]{47, 43, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 106, 110);
-        final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerRight(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
@@ -173,7 +173,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{15, 10, 11, 9, 11, 11}, new double[]{43, 47, 43, 41, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
-        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("Cannot start run on an edge with equal coordinates on both end nodes");
@@ -188,7 +188,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(expectedCellShapeLatitudes, expectedCellShapeLongitudes);
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
-        final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerRight(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("Cannot start run on an edge with equal coordinates on both end nodes");
@@ -203,7 +203,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{7, 3, 7}, new double[]{38, 33, 32});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 17, 26);
-        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
 
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
         assertEquals(expectedCellShape, vc.cellShape);
@@ -218,7 +218,7 @@ public class CellRunnerTest {
         final PolygonRoutingTestGraph customTestGraph = createCustomTestGraphToTryTrapTheAlgorithmInEndlessLoop();
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
-        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
 
         assertEquals(expectedCellShape, vc.cellShape);
@@ -251,7 +251,7 @@ public class CellRunnerTest {
         final PolygonRoutingTestGraph customTestGraph = createSimpleImpasseTestGraph();
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
-        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
 
         assertEquals(expectedCellShape, vc.cellShape);
@@ -277,7 +277,7 @@ public class CellRunnerTest {
         final PolygonRoutingTestGraph customTestGraph = createAdvancedImpasseTestGraph();
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 5);
-        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
 
         assertEquals(expectedCellShape, vc.cellShape);
@@ -303,16 +303,50 @@ public class CellRunnerTest {
         return new PolygonRoutingTestGraph(nodes, edges);
     }
 
+    @Test
+    public void twoLength1ImpassesInARow() {
+        final Polygon expectedCellShape = new Polygon(new double[]{0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0}, new double[]{1.0, 2.0, 2.0, 2.0, 3.0, 2.0, 1.0, 0.0});
+        final PolygonRoutingTestGraph customTestGraph = twoImpassesInARowGraph();
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+
+        assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    private PolygonRoutingTestGraph twoImpassesInARowGraph() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 2),
+                new Node(3, -1, 2),
+                new Node(100, -1, 2),
+                new Node(4, 0, 3)
+        };
+
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(2, 3, 1, true),
+                new Edge(3, 100, 1, true),
+                new Edge(100, 2, 1, true),
+                new Edge(2, 4, 1, true),
+        };
+
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
     public static class CellRunnerTestInputs {
         private final PolygonRoutingTestGraph graphMocker;
-        public final EdgeExplorer neighborExplorer;
+        public final Graph graph;
         public final NodeAccess nodeAccess;
         public final VisitedManager visitedManager;
         public final EdgeIteratorState startingEdge;
 
         public CellRunnerTestInputs(final PolygonRoutingTestGraph graphMocker, final int startBaseNode, final int startAdjNode) {
             this.graphMocker = graphMocker;
-            this.neighborExplorer = graphMocker.graph.createEdgeExplorer();
+            this.graph = graphMocker.graph;
             this.nodeAccess = graphMocker.nodeAccess;
             this.visitedManager = new VisitedManager(graphMocker.graph);
             this.startingEdge = getEdge(startBaseNode, startAdjNode);
