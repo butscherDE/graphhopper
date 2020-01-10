@@ -159,7 +159,7 @@ public class CellRunnerTest {
 
     @Test
     public void duplicateCoordinatesTriangleStartedOnAdjNodeHasDuplicate() {
-        final Polygon expectedCellShape = new Polygon(new double[] {10, 11, 11, 15}, new double[]{47, 43, 43, 43});
+        final Polygon expectedCellShape = new Polygon(new double[]{10, 11, 11, 15}, new double[]{47, 43, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 106, 110);
         final CellRunner cr = new CellRunnerRight(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
@@ -170,7 +170,7 @@ public class CellRunnerTest {
 
     @Test
     public void duplicateCoordinatesTriangleStartedOnBothNodesHasDuplicateLeft() {
-        final Polygon expectedCellShape = new Polygon(new double[] {15, 10, 11, 9, 11, 11}, new double[]{43, 47, 43, 41, 43, 43});
+        final Polygon expectedCellShape = new Polygon(new double[]{15, 10, 11, 9, 11, 11}, new double[]{43, 47, 43, 41, 43, 43});
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(GRAPH_MOCKER, 109, 110);
         final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
@@ -213,26 +213,87 @@ public class CellRunnerTest {
 
     @Test
     public void collinearEdges() {
+        final Polygon expectedCellShape = new Polygon(new double[]{0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0}, new double[]{4.0, 3.0, 3.0, 5.0, 5.0, 4.0, 2.0});
+
         final PolygonRoutingTestGraph customTestGraph = createCustomTestGraphToTryTrapTheAlgorithmInEndlessLoop();
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
         final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
         final VisibilityCell vc = cr.runAroundCellAndLogNodes();
 
-        // At this point the test succeeded because we want to test if this test scenario traps the run in and endless loop.
+        assertEquals(expectedCellShape, vc.cellShape);
     }
 
     private PolygonRoutingTestGraph createCustomTestGraphToTryTrapTheAlgorithmInEndlessLoop() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 2), //s
                 new Node(1, 0, 4), //v
                 new Node(2, 0, 5), //w
-                new Node(3, 1, 5),
-                new Node(4, 1, 3),
+                new Node(3, -1, 5),
+                new Node(4, -1, 3),
                 new Node(5, 0, 3)  //u
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(2, 3, 1, true),
+                new Edge(3, 4, 1, true),
+                new Edge(4, 5, 1, true),
+                new Edge(5, 1, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
+    @Test
+    public void startOnImpasse() {
+        final Polygon expectedCellShape = new Polygon(new double[]{0, 0, 0, 0}, new double[]{1, 2, 1, 0});
+
+        final PolygonRoutingTestGraph customTestGraph = createSimpleImpasseTestGraph();
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
+        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+
+        assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    private PolygonRoutingTestGraph createSimpleImpasseTestGraph() {
+        final Node[] nodes = new Node[]{
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 2)
+        };
+        final Edge[] edges = new Edge[]{
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
+    @Test
+    public void startOnImpasse2() {
+        final Polygon expectedCellShape = new Polygon(new double[]{0, -1, -1, 0, 0, 0, 0}, new double[]{3, 3, 5, 5, 4, 3, 2});
+
+        final PolygonRoutingTestGraph customTestGraph = createAdvancedImpasseTestGraph();
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 5);
+        final CellRunner cr = new CellRunnerLeft(cti.neighborExplorer, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+
+        assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    private PolygonRoutingTestGraph createAdvancedImpasseTestGraph() {
+        final Node[] nodes = new Node[]{
+                new Node(0, 0, 2),
+                new Node(1, 0, 4),
+                new Node(2, 0, 5),
+                new Node(3, -1, 5),
+                new Node(4, -1, 3),
+                new Node(5, 0, 3)
+        };
+        final Edge[] edges = new Edge[]{
+                new Edge(0, 5, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(2, 3, 1, true),
                 new Edge(3, 4, 1, true),

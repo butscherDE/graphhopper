@@ -23,7 +23,7 @@ public class SubNeighborVisitorTest {
 
     @Test
     public void getLastOnEmptyVisitor() {
-        final SubNeighborVisitor subNeighborVisitor = new SubNeighborVisitor();
+        final SubNeighborVisitor subNeighborVisitor = new SubNeighborVisitor(GRAPH_MOCKER.getAllEdges().get(0));
 
         exceptionRule.expect(NoSuchElementException.class);
         subNeighborVisitor.getLast();
@@ -31,7 +31,7 @@ public class SubNeighborVisitorTest {
 
     @Test
     public void repeatedlyFindingLastAddedElement() {
-        final SubNeighborVisitor subNeighborVisitor = new SubNeighborVisitor();
+        final SubNeighborVisitor subNeighborVisitor = new SubNeighborVisitor(GRAPH_MOCKER.getAllEdges().get(0));
         final EdgeIterator allEdgesIterator = GRAPH_MOCKER.graph.getAllEdges();
 
         while (allEdgesIterator.next()) {
@@ -44,7 +44,7 @@ public class SubNeighborVisitorTest {
     }
 
     private SubNeighborVisitor createSubNeighborVisitorContainingAllTestEdges() {
-        final SubNeighborVisitor subNeighborVisitor = new SubNeighborVisitor();
+        final SubNeighborVisitor subNeighborVisitor = new SubNeighborVisitor(GRAPH_MOCKER.getAllEdges().get(0));
 
         final EdgeIterator allEdgesIteratorToFillSubNeighborVisitor = GRAPH_MOCKER.graph.getAllEdges();
         while (allEdgesIteratorToFillSubNeighborVisitor.next()) {
@@ -89,7 +89,7 @@ public class SubNeighborVisitorTest {
             allEdges.add(edgeIteratorState);
         }
 
-        final SubNeighborVisitor fromEdgesCreatedVisitor = new SubNeighborVisitor(allEdges);
+        final SubNeighborVisitor fromEdgesCreatedVisitor = new SubNeighborVisitor(allEdges, GRAPH_MOCKER.getAllEdges().get(0));
         return fromEdgesCreatedVisitor.iterator();
     }
 
