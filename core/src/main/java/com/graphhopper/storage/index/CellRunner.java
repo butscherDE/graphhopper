@@ -132,8 +132,43 @@ abstract class CellRunner {
     }
 
     private SubNeighborVisitor getMostLeftOrRightOrientedEdge(EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
-        SubNeighborVisitor leftOrRightMostNeighborVisitedChain;
-        if (nodeHintExists(neighbors) && areAllNeighborsVisited(nodesOnCell.get(nodesOnCell.size() - 1))) {
+        final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
+        final int lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
+
+        SubNeighborVisitor leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
+        double leftOrRightMostAngle = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode,
+                                                                                      leftOrRightMostNeighborVisitedChain.getLast());
+        boolean collinearEdgeFound = false;
+        if (leftOrRightMostAngle == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)) {
+            leftOrRightMostNeighborVisitedChain.collinearEdgeFound();
+            subNeighborVisitor.collinearEdgeFound();
+        }
+
+        while (neighbors.next()) {
+            SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
+
+            final double angleToLastNode =
+                    vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
+
+            if (angleToLastNode > leftOrRightMostAngle ||
+                (angleToLastNode == leftOrRightMostAngle && candidateEdgeContainingVisitor.size() > leftOrRightMostNeighborVisitedChain.size())) {
+                leftOrRightMostAngle = angleToLastNode;
+                leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
+            }
+
+            if (angleToLastNode == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)) {
+                collinearEdgeFound = true;
+//                candidateEdgeContainingVisitor.collinearEdgeFound();
+//                subNeighborVisitor.collinearEdgeFound();
+            }
+        }
+
+        if (collinearEdgeFound) {
+            leftOrRightMostNeighborVisitedChain.collinearEdgeFound();
+        }
+
+
+        if (nodeHintExists(neighbors) && localVisitedManager.isEdgeSettled(leftOrRightMostNeighborVisitedChain.getLast())) {
             leftOrRightMostNeighborVisitedChain = subNeighborVisitor;
             if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
                 subNeighborVisitor.onEdge(neighbors.detach(false));
@@ -149,37 +184,7 @@ abstract class CellRunner {
                 }
                 nextNodeHints.clear();
             }
-        } else {
-            final int lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
-            final int lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
-
-            leftOrRightMostNeighborVisitedChain = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
-            double leftOrRightMostAngle = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode,
-                                                                                          leftOrRightMostNeighborVisitedChain.getLast());
-            if (leftOrRightMostAngle == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)) {
-                leftOrRightMostNeighborVisitedChain.collinearEdgeFound();
-                subNeighborVisitor.collinearEdgeFound();
-            }
-
-            while (neighbors.next()) {
-                SubNeighborVisitor candidateEdgeContainingVisitor = setEdgeToCalcAngleTo(neighbors, subNeighborVisitor.clone());
-
-                final double angleToLastNode =
-                        vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
-
-                if (angleToLastNode > leftOrRightMostAngle ||
-                    (angleToLastNode == leftOrRightMostAngle && candidateEdgeContainingVisitor.size() > leftOrRightMostNeighborVisitedChain.size())) {
-                    leftOrRightMostAngle = angleToLastNode;
-                    leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
-                }
-
-                if (angleToLastNode == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)) {
-                    candidateEdgeContainingVisitor.collinearEdgeFound();
-                    subNeighborVisitor.collinearEdgeFound();
-                }
-            }
         }
-
 
         return leftOrRightMostNeighborVisitedChain;
     }
