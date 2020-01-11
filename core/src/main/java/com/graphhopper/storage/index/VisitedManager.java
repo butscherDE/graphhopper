@@ -1,45 +1,27 @@
 package com.graphhopper.storage.index;
 
-import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.storage.Graph;
-
 import java.util.HashMap;
 import java.util.Map;
+import com.graphhopper.storage.Graph;
+import com.graphhopper.util.EdgeIteratorState;
 
 public class VisitedManager {
-    final Map<Integer, Boolean> visitedLeft;
-    final Map<Integer, Boolean> visitedRight;
+    final Map<Integer, Boolean> visited;
 
     public VisitedManager(final Graph graph) {
-        this.visitedLeft = new HashMap<>(graph.getEdges());
-        this.visitedRight = new HashMap<>(graph.getEdges());
+        this.visited = new HashMap<>(graph.getEdges());
     }
 
-    public void settleEdgeLeft(EdgeIteratorState edge) {
+    public void settleEdge(EdgeIteratorState edge) {
         edge = forceNodeIdsAscending(edge);
-        if (visitedLeft.get(edge.getEdge()) == null) {
-            visitedLeft.put(edge.getEdge(), true);
+        if (visited.get(edge.getEdge()) == null) {
+            visited.put(edge.getEdge(), true);
         }
     }
 
-    public void settleEdgeRight(EdgeIteratorState edge) {
-        edge = forceNodeIdsAscending(edge);
-        if (visitedRight.get(edge.getEdge()) == null) {
-            visitedRight.put(edge.getEdge(), true);
-        }
-    }
-
-    public boolean isEdgeSettledLeft(EdgeIteratorState edge) {
-        return isEdgeSettled(edge, visitedLeft);
-    }
-
-    public boolean isEdgeSettledRight(EdgeIteratorState edge) {
-        return isEdgeSettled(edge, visitedRight);
-    }
-
-    private boolean isEdgeSettled(EdgeIteratorState edge, Map<Integer, Boolean> isVisited) {
-        final Boolean visited = isVisited.get(edge.getEdge());
-        return visited == null ? false : visited;
+    public boolean isEdgeSettled(EdgeIteratorState edge) {
+        final Boolean isVisited = visited.get(edge.getEdge());
+        return isVisited == null ? false : isVisited;
     }
 
     public static EdgeIteratorState forceNodeIdsAscending(final EdgeIteratorState edge) {

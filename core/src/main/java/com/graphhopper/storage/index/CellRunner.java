@@ -1,7 +1,6 @@
 package com.graphhopper.storage.index;
 
 import com.graphhopper.storage.NodeAccess;
-import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
@@ -14,7 +13,8 @@ abstract class CellRunner {
     private final Stack<EdgeIteratorState> lastEdges = new Stack<>();
     private final Graph graph;
     final NodeAccess nodeAccess;
-    final VisitedManager visitedManager;
+    final VisitedManager localVisitedManager;
+    final VisitedManagerDual globalVisitedManager;
     private final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState startEdge;
     private final int startNode;
@@ -23,15 +23,17 @@ abstract class CellRunner {
     EdgeIteratorState lastEdge;
     EdgeIterator neighbors;
 
-    public CellRunner(final Graph graph, final NodeAccess nodeAccess, final VisitedManager visitedManager,
+    public CellRunner(final Graph graph, final NodeAccess nodeAccess, final VisitedManagerDual globalVisitedManager,
                       final VectorAngleCalculator vectorAngleCalculator,
                       final EdgeIteratorState startEdge) {
         this.graph = graph;
         this.nodeAccess = nodeAccess;
-        this.visitedManager = visitedManager;
+        this.localVisitedManager = new VisitedManager(graph);
+        this.globalVisitedManager = globalVisitedManager;
         this.vectorAngleCalculator = vectorAngleCalculator;
 
-        this.startEdge = this.visitedManager.forceNodeIdsAscending(startEdge);
+        this.startEdge = VisitedManager.forceNodeIdsAscending(startEdge);
+        this.localVisitedManager.settleEdge(startEdge);
         this.lastEdge = this.startEdge;
         this.startNode = this.startEdge.getAdjNode();
         this.endNode = this.startEdge.getBaseNode();
@@ -76,7 +78,7 @@ abstract class CellRunner {
     private void addStartAndEndNodeOfCell() {
         nodesOnCell.add(endNode);
         nodesOnCell.add(startNode);
-        settleEdge(startEdge);
+        markGloballyVisited(startEdge);
 
         if (hasNeighborSameCoordinates(startEdge)) {
             lastEdges.push(startEdge);
@@ -94,7 +96,7 @@ abstract class CellRunner {
 
         for (EdgeIteratorState edge : leftOrRightmostNeighborChain) {
             if (lastEdgeNotReached(edge)) {
-                settledEdge(edge);
+                settleEdge(edge);
             } else {
                 final int removedNode = nodesOnCell.removeLast();
 //                System.out.println(nodesOnCell);
@@ -108,8 +110,9 @@ abstract class CellRunner {
         return true;
     }
 
-    private void settledEdge(EdgeIteratorState edge) {
-        settleEdge(edge);
+    private void settleEdge(EdgeIteratorState edge) {
+        markGloballyVisited(edge);
+        localVisitedManager.settleEdge(edge);
         nodesOnCell.add(edge.getAdjNode());
     }
 
@@ -130,7 +133,7 @@ abstract class CellRunner {
 
     private SubNeighborVisitor getMostLeftOrRightOrientedEdge(EdgeIterator neighbors, final SubNeighborVisitor subNeighborVisitor) {
         SubNeighborVisitor leftOrRightMostNeighborVisitedChain;
-        if (nodeHintExists(neighbors)) {
+        if (nodeHintExists(neighbors) && areAllNeighborsVisited(nodesOnCell.get(nodesOnCell.size() - 1))) {
             leftOrRightMostNeighborVisitedChain = subNeighborVisitor;
             if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
                 subNeighborVisitor.onEdge(neighbors.detach(false));
@@ -170,7 +173,7 @@ abstract class CellRunner {
                     leftOrRightMostNeighborVisitedChain = candidateEdgeContainingVisitor;
                 }
 
-                if (angleToLastNode == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)/* && numNeighbors == 2*/) {
+                if (angleToLastNode == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)) {
                     candidateEdgeContainingVisitor.collinearEdgeFound();
                     subNeighborVisitor.collinearEdgeFound();
                 }
@@ -179,6 +182,17 @@ abstract class CellRunner {
 
 
         return leftOrRightMostNeighborVisitedChain;
+    }
+
+    private boolean areAllNeighborsVisited(int lastEdgeReversedBaseNode) {
+        final EdgeIterator neighborExplorer = graph.createEdgeExplorer().setBaseNode(lastEdgeReversedBaseNode);
+        boolean allNeighborsVisited = true;
+
+        while (neighborExplorer.next()) {
+            allNeighborsVisited &= localVisitedManager.isEdgeSettled(neighborExplorer.detach(false));
+        }
+
+        return allNeighborsVisited;
     }
 
     private boolean areNodesDifferent(int currentAdjNode, int lastEdgeReversedAdjNode) {
@@ -245,5 +259,5 @@ abstract class CellRunner {
 
     abstract VisibilityCell createVisibilityCell();
 
-    abstract void settleEdge(EdgeIteratorState edge);
+    abstract void markGloballyVisited(EdgeIteratorState edge);
 }

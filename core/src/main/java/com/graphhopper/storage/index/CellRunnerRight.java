@@ -1,15 +1,14 @@
 package com.graphhopper.storage.index;
 
 import com.graphhopper.storage.NodeAccess;
-import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
 
 class CellRunnerRight extends CellRunner {
 
-    public CellRunnerRight(final Graph graph, final NodeAccess nodeAccess, final VisitedManager visitedManager,
+    public CellRunnerRight(final Graph graph, final NodeAccess nodeAccess, final VisitedManagerDual visitedManagerDual,
                            final EdgeIteratorState startEdge) {
-        super(graph, nodeAccess, visitedManager, new VectorAngleCalculatorRight(nodeAccess), startEdge);
+        super(graph, nodeAccess, visitedManagerDual, new VectorAngleCalculatorRight(nodeAccess), startEdge);
     }
 
     @Override
@@ -17,7 +16,7 @@ class CellRunnerRight extends CellRunner {
         return VisibilityCell.createVisibilityCellFromNodeIDs(nodesOnCell, nodeAccess);
     }
 
-    void settleEdge(final EdgeIteratorState edge) {
-        visitedManager.settleEdgeRight(edge);
+    void markGloballyVisited(final EdgeIteratorState edge) {
+        globalVisitedManager.settleEdgeRight(edge);
     }
 }

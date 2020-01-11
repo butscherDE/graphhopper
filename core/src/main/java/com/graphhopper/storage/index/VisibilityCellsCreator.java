@@ -2,12 +2,9 @@ package com.graphhopper.storage.index;
 
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
-import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.StopWatch;
-import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
-import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
 
 import java.util.*;
 
@@ -21,7 +18,7 @@ class VisibilityCellsCreator {
     private final Graph graph;
     private final NodeAccess nodeAccess;
     private final EdgeIterator allEdges;
-    private final VisitedManager visitedManager;
+    private final VisitedManagerDual visitedManagerDual;
 
     final List<VisibilityCell> allFoundCells;
 
@@ -31,7 +28,7 @@ class VisibilityCellsCreator {
         this.nodeAccess = nodeAccess;
         this.allEdges = graph.getAllEdges();
         this.allFoundCells = new ArrayList<>(graph.getNodes());
-        this.visitedManager = new VisitedManager(graph);
+        this.visitedManagerDual = new VisitedManagerDual(graph);
     }
 
     public List<VisibilityCell> create() {
@@ -74,11 +71,11 @@ class VisibilityCellsCreator {
 
             final EdgeIteratorState currentEdge = allEdges.detach(false);
             if (!visibilityCellOnTheLeftFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerLeft(graph, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
+                addVisibilityCellToResults(new CellRunnerLeft(graph, nodeAccess, visitedManagerDual, currentEdge).runAroundCellAndLogNodes());
             }
 
             if (!visibilityCellOnTheRightFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerRight(graph, nodeAccess, visitedManager, currentEdge).runAroundCellAndLogNodes());
+                addVisibilityCellToResults(new CellRunnerRight(graph, nodeAccess, visitedManagerDual, currentEdge).runAroundCellAndLogNodes());
             }
 
             System.out.println(sw1.stop());
@@ -91,11 +88,11 @@ class VisibilityCellsCreator {
     }
 
     private Boolean visibilityCellOnTheLeftFound(final EdgeIteratorState currentEdge) {
-        return visitedManager.isEdgeSettledLeft(visitedManager.forceNodeIdsAscending(currentEdge));
+        return visitedManagerDual.isEdgeSettledLeft(VisitedManager.forceNodeIdsAscending(currentEdge));
     }
 
     private Boolean visibilityCellOnTheRightFound(final EdgeIteratorState currentEdge) {
-        return visitedManager.isEdgeSettledRight(visitedManager.forceNodeIdsAscending(currentEdge));
+        return visitedManagerDual.isEdgeSettledRight(VisitedManager.forceNodeIdsAscending(currentEdge));
     }
 
 }
