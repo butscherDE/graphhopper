@@ -315,6 +315,33 @@ public class CellRunnerTest {
         assertEquals(expectedCellShape, vc.cellShape);
     }
 
+    @Test
+    public void twoNodesSameCoordinatesButNoEdgeBetween() {
+        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, 0.0, -1.0, 0.0, 0.0}, new double[]{1.0, 1.0, 1.0, 1.0, 1.0, 0.0});
+        final PolygonRoutingTestGraph customTestGraph = createTwoNodesSameCoordinatesNoEdgeTestGraph();
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.nodeAccess, cti.visitedManager, cti.startingEdge);
+        final VisibilityCell vc = cr.runAroundCellAndLogNodes();
+
+        assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    private PolygonRoutingTestGraph createTwoNodesSameCoordinatesNoEdgeTestGraph() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 1),
+                new Node(3, -1, 1)
+        };
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 3, 1, true),
+                new Edge(2, 3, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
     private PolygonRoutingTestGraph twoImpassesInARowGraph() {
         final Node[] nodes = new Node[] {
                 new Node(0, 0, 0),

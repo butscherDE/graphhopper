@@ -41,7 +41,8 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(6646435, 6646436, 511211, 511212, 511213, 511214, 511215, 6291667, 6615434, 4929889, 511210, 6646437, 511211, 6646436, 6646435));
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(646944, 7222461, 5277586, 5277585, 5277584/*, 5277583, 5277582, 5277581, 5277580,
+//        5277579*/));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
@@ -54,7 +55,7 @@ class VisibilityCellsCreator {
         int i = 0;
         while (allEdges.next()) {
             System.out.println("###################################################################" + i++);
-            if (i++ < 755755) {
+            if (i < 755755) {
                 continue;
             }
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());

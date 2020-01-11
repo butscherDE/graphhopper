@@ -42,7 +42,7 @@ abstract class CellRunner {
             throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
         }
 
-        if (startEdge.getEdge() == 477163) {
+        if (startEdge.getEdge() == 769105) {
             int j = 0;
         }
 
@@ -182,8 +182,8 @@ abstract class CellRunner {
     }
 
     private boolean areNodesDifferent(int currentAdjNode, int lastEdgeReversedAdjNode) {
-        return currentAdjNode != lastEdgeReversedAdjNode && nodeAccess.getLat(currentAdjNode) != nodeAccess.getLat(lastEdgeReversedAdjNode) &&
-               nodeAccess.getLon(currentAdjNode) != nodeAccess.getLon(lastEdgeReversedAdjNode);
+        return currentAdjNode != lastEdgeReversedAdjNode/* && nodeAccess.getLat(currentAdjNode) != nodeAccess.getLat(lastEdgeReversedAdjNode) &&
+               nodeAccess.getLon(currentAdjNode) != nodeAccess.getLon(lastEdgeReversedAdjNode)*/;
     }
 
     private boolean nodeHintExists(EdgeIterator neighbors) {
