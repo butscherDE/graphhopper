@@ -36,12 +36,15 @@ public class NodesAndNeighborDump {
         for (Node node : nodes) {
             final EdgeIterator neighbors = graph.createEdgeExplorer().setBaseNode(node.id);
 
+            System.out.print("Neighbors of " + node + ": ");
             while (neighbors.next()) {
                 final int edgeId = neighbors.getEdge();
                 final int baseNode = neighbors.getBaseNode();
                 final int adjNode = neighbors.getAdjNode();
                 edges.add(new Edge(edgeId, baseNode, adjNode));
+                System.out.print(adjNode + ", ");
             }
+            System.out.println();
         }
 
         for (Edge edge : edges) {

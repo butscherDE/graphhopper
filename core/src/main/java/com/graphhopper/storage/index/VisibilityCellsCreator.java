@@ -40,7 +40,7 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(372729, 4794787, 7855491, 372727, 303715, 7675661, 7675660, 7903366));
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(3309699, 3309701, 3309711, 3309702, 3309709, 3309711));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
@@ -53,7 +53,7 @@ class VisibilityCellsCreator {
         int i = 0;
         while (allEdges.next()) {
             System.out.println("###################################################################" + i++);
-            if (i < 7585) {
+            if (i < 91507 + 1) {
                 continue;
             }
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
@@ -71,12 +71,20 @@ class VisibilityCellsCreator {
 
 
             final EdgeIteratorState currentEdge = allEdges.detach(false);
-            if (!visibilityCellOnTheLeftFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerLeft(graph, nodeAccess, visitedManagerDual, currentEdge).runAroundCellAndLogNodes());
+            try {
+                if (!visibilityCellOnTheLeftFound(currentEdge)) {
+                    addVisibilityCellToResults(new CellRunnerLeft(graph, visitedManagerDual, currentEdge).extractVisibilityCell());
+                }
+            } catch (IllegalStateException e) {
+
             }
 
-            if (!visibilityCellOnTheRightFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerRight(graph, nodeAccess, visitedManagerDual, currentEdge).runAroundCellAndLogNodes());
+            try {
+                if (!visibilityCellOnTheRightFound(currentEdge)) {
+                    addVisibilityCellToResults(new CellRunnerRight(graph, visitedManagerDual, currentEdge).extractVisibilityCell());
+                }
+            } catch (IllegalStateException e) {
+
             }
 
             System.out.println(sw1.stop());

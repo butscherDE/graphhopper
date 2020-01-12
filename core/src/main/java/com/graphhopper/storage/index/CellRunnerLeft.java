@@ -1,6 +1,5 @@
 package com.graphhopper.storage.index;
 
-import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
 
@@ -8,18 +7,27 @@ import java.util.Collections;
 
 class CellRunnerLeft extends CellRunner {
 
-    public CellRunnerLeft(final Graph graph, final NodeAccess nodeAccess, final VisitedManagerDual visitedManagerDual,
-                          final EdgeIteratorState startEdge) {
-        super(graph, nodeAccess, visitedManagerDual, new VectorAngleCalculatorLeft(nodeAccess), startEdge);
+    public CellRunnerLeft(final Graph graph, final VisitedManagerDual globalVisitedManager, final EdgeIteratorState startEdge) {
+        super(graph, globalVisitedManager, new VectorAngleCalculatorLeft(graph.getNodeAccess()), startEdge);
+    }
+
+    public CellRunnerLeft(final Graph graph, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator, final EdgeIteratorState startEdge,
+                          final EdgeIteratorState endEdge) {
+        super(graph, globalVisitedManager, vectorAngleCalculator, startEdge, endEdge);
     }
 
     @Override
     VisibilityCell createVisibilityCell() {
-        Collections.reverse(nodesOnCell);
-        return VisibilityCell.createVisibilityCellFromNodeIDs(nodesOnCell, nodeAccess);
+        Collections.reverse(edgesOnCell);
+        return VisibilityCell.createVisibilityCellFromNodeIDs(extractNodesFromVisitedEdges(), nodeAccess);
     }
 
     void markGloballyVisited(final EdgeIteratorState edge) {
         globalVisitedManager.settleEdgeLeft(edge);
+    }
+
+    @Override
+    CellRunner createNewSubRunner(EdgeIteratorState startEdge, EdgeIteratorState endEdge) {
+        return new CellRunnerLeft(graph, globalVisitedManager, vectorAngleCalculator, startEdge, endEdge);
     }
 }

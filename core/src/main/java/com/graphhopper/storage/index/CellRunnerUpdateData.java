@@ -2,7 +2,9 @@ package com.graphhopper.storage.index;
 
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.storage.Graph;
+import com.graphhopper.util.EdgeIteratorState;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,26 +14,31 @@ public class CellRunnerUpdateData {
     private final VectorAngleCalculator vectorAngleCalculator;
     final int lastEdgeReversedBaseNode;
     final int lastEdgeReversedAdjNode;
-    SubNeighborVisitor leftOrRightMostNeighborVisitedChain;
-    double leftOrRightMostAngle;
-    boolean collinearEdgeFound = false;
-    double lastCandidateAngle;
+    private SubNeighborVisitor leftOrRightMostNeighborVisitedChain;
+    private final List<SubNeighborVisitor> allNeighbors = new LinkedList<>();
+    private double leftOrRightMostAngle;
+    private boolean collinearEdgeFound = false;
+    private double lastCandidateAngle;
 
     public CellRunnerUpdateData(Graph graph, VisitedManager localVisitedManager, VectorAngleCalculator vectorAngleCalculator,
-                                final List<Integer> nodesOnCell,
+                                final LinkedList<EdgeIteratorState> edgesOnCell,
                                 SubNeighborVisitor leftOrRightMostNeighborVisitedChain) {
         this.graph = graph;
         this.localVisitedManager = localVisitedManager;
         this.vectorAngleCalculator = vectorAngleCalculator;
-        this.lastEdgeReversedBaseNode = nodesOnCell.get(nodesOnCell.size() - 1);
-        this.lastEdgeReversedAdjNode = nodesOnCell.get(nodesOnCell.size() - 2);
+//        this.lastEdgeReversedBaseNode = nodesOnCell.get(edgesOnCell.size() - 1);
+//        this.lastEdgeReversedAdjNode = nodesOnCell.get(edgesOnCell.size() - 2);
+        this.lastEdgeReversedBaseNode = edgesOnCell.getLast().getAdjNode();
+        this.lastEdgeReversedAdjNode = edgesOnCell.getLast().getBaseNode();
         this.leftOrRightMostNeighborVisitedChain = leftOrRightMostNeighborVisitedChain;
         this.leftOrRightMostAngle = this.vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode,
                                                                                          leftOrRightMostNeighborVisitedChain.getLast());
         this.lastCandidateAngle = this.leftOrRightMostAngle;
+        allNeighbors.add(leftOrRightMostNeighborVisitedChain);
     }
 
-    public void saveNewChaintIfGreaterAngle(final SubNeighborVisitor candidateEdgeContainingVisitor) {
+    public void saveNewChainIfGreaterAngle(final SubNeighborVisitor candidateEdgeContainingVisitor) {
+        allNeighbors.add(candidateEdgeContainingVisitor);
         final double candidateAngle = vectorAngleCalculator.getAngleOfVectorsOriented(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdgeContainingVisitor.getLast());
         if (updateRequired(leftOrRightMostNeighborVisitedChain, leftOrRightMostAngle, candidateEdgeContainingVisitor, candidateAngle)) {
             leftOrRightMostAngle = candidateAngle;
@@ -65,12 +72,12 @@ public class CellRunnerUpdateData {
 
 
     public void updateCollinearEdgeFound(EdgeIterator neighbors) {
-        if (lastCandidateAngle == 0 && areNodesDifferent(neighbors.getAdjNode())) {
+        if (lastCandidateAngle == 0 && areAdjNodesDifferent(neighbors.getAdjNode())) {
             collinearEdgeFound = true;
         }
     }
 
-    private boolean areNodesDifferent(int currentAdjNode) {
+    private boolean areAdjNodesDifferent(int currentAdjNode) {
         return currentAdjNode != lastEdgeReversedAdjNode;
     }
 
@@ -80,11 +87,14 @@ public class CellRunnerUpdateData {
         }
     }
 
-    public SubNeighborVisitor replaceWithNextNodeHintChainIfApplicable(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor, final Map<Integer, Integer> nextNodeHints) {
+    public boolean replaceWithNextNodeHintChainIfApplicable(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor, final Map<Integer, Integer> nextNodeHints) {
         if (isNextNodeHintsChainToBuild(neighbors, leftOrRightMostNeighborVisitedChain, nextNodeHints)) {
             leftOrRightMostNeighborVisitedChain = replaceWithNextNodeHintChain(subNeighborVisitor, nextNodeHints);
+
+            return true;
+        } else {
+            return false;
         }
-        return leftOrRightMostNeighborVisitedChain;
     }
 
     private SubNeighborVisitor replaceWithNextNodeHintChain(SubNeighborVisitor subNeighborVisitor, final Map<Integer, Integer> nextNodeHints) {
@@ -98,7 +108,7 @@ public class CellRunnerUpdateData {
     }
 
     private boolean isNextNodeHintsChainToBuild(EdgeIterator neighbors, SubNeighborVisitor leftOrRightMostNeighborVisitedChain, final Map<Integer, Integer> nextNodeHints) {
-        return nodeHintExists(neighbors, nextNodeHints) && isEdgePickedAsMostOrientedAlreadyVisited(leftOrRightMostNeighborVisitedChain);
+        return nodeHintExists(neighbors, nextNodeHints) && !isEdgePickedAsMostOrientedAlreadyVisited(leftOrRightMostNeighborVisitedChain);
     }
 
     private boolean isEdgePickedAsMostOrientedAlreadyVisited(SubNeighborVisitor leftOrRightMostNeighborVisitedChain) {
@@ -108,6 +118,7 @@ public class CellRunnerUpdateData {
     private EdgeIterator findNeighborThatsHintedAsNextNodeAndSaveEdge(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor, final Map<Integer, Integer> nextNodeHints) {
         while (neighbors.next()) {
             if (isThisEdgeAdjNodeTheHintedNeighbor(neighbors, nextNodeHints)) {
+                nextNodeHints.remove(neighbors.getBaseNode());
                 neighbors = saveEdgeAndCreateNeighborIteratorForAdjNode(neighbors, subNeighborVisitor);
                 break;
             }
@@ -127,5 +138,21 @@ public class CellRunnerUpdateData {
 
     private boolean nodeHintExists(EdgeIterator neighbors, final Map<Integer, Integer> nextNodeHints) {
         return nextNodeHints.get(neighbors.getBaseNode()) != null;
+    }
+
+    public boolean isCollinearEdgeFound() {
+        return collinearEdgeFound;
+    }
+
+    public SubNeighborVisitor getLeftOrRightMostNeighborVisitedChain() {
+        return leftOrRightMostNeighborVisitedChain;
+    }
+
+    public List<SubNeighborVisitor> getAllNeighbors() {
+        return allNeighbors;
+    }
+
+    public double getLeftOrRightMostAngle() {
+        return leftOrRightMostAngle;
     }
 }
