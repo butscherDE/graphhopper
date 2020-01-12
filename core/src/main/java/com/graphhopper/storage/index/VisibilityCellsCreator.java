@@ -5,6 +5,8 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.StopWatch;
+import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
+import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
 
 import java.util.*;
 
@@ -38,8 +40,7 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(646944, 7222461, 5277586, 5277585, 5277584/*, 5277583, 5277582, 5277581, 5277580,
-//        5277579*/));
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(372729, 4794787, 7855491, 372727, 303715, 7675661, 7675660, 7903366));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
@@ -52,7 +53,7 @@ class VisibilityCellsCreator {
         int i = 0;
         while (allEdges.next()) {
             System.out.println("###################################################################" + i++);
-            if (i < 755755) {
+            if (i < 7585) {
                 continue;
             }
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());

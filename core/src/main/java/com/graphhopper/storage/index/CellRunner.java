@@ -23,8 +23,7 @@ abstract class CellRunner {
     EdgeIteratorState lastEdge;
     EdgeIterator neighbors;
 
-    public CellRunner(final Graph graph, final NodeAccess nodeAccess, final VisitedManagerDual globalVisitedManager,
-                      final VectorAngleCalculator vectorAngleCalculator,
+    public CellRunner(final Graph graph, final NodeAccess nodeAccess, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
                       final EdgeIteratorState startEdge) {
         this.graph = graph;
         this.nodeAccess = nodeAccess;
@@ -58,11 +57,14 @@ abstract class CellRunner {
         boolean endNotReached;
         int i = 0;
         do {
+            if (i == 7584) {
+                int j = 0;
+            }
             endNotReached = processNextNeighborOnCell();
-            if (i == 200) {
+            if (i == 10000) {
 //                System.out.println(i);
                 if (RepititionFinder.isRepitition(nodesOnCell, 10)) {
-                    System.out.println(this.getClass().getSimpleName());
+                    System.out.println(i + ": " + this.getClass().getSimpleName());
                     System.out.println(nodesOnCell);
                     System.exit(-1);
                 }
@@ -167,8 +169,9 @@ abstract class CellRunner {
             leftOrRightMostNeighborVisitedChain.collinearEdgeFound();
         }
 
-
+        neighbors = graph.createEdgeExplorer().setBaseNode(lastEdgeReversedBaseNode);
         if (nodeHintExists(neighbors) && localVisitedManager.isEdgeSettled(leftOrRightMostNeighborVisitedChain.getLast())) {
+            neighbors = graph.createEdgeExplorer().setBaseNode(lastEdgeReversedBaseNode);
             leftOrRightMostNeighborVisitedChain = subNeighborVisitor;
             if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
                 subNeighborVisitor.onEdge(neighbors.detach(false));
