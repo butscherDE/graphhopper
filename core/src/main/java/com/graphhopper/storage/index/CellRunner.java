@@ -51,23 +51,12 @@ abstract class CellRunner {
             throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
         }
 
-        if (startEdge.getEdge() == 769105) {
-            int j = 0;
-        }
-
         addStartAndEndNodeOfCell();
-
-        if (startEdge.getBaseNode() == 61442 && startEdge.getAdjNode() == 2276168) {
-            int i = 0;
-        }
 
         initializeNeighborIterator();
         boolean endNotReached;
         int i = 0;
         do {
-            if (i == 7584) {
-                int j = 0;
-            }
             endNotReached = processNextNeighborOnCell();
             if (i == 10000) {
 //                System.out.println(i);
@@ -80,7 +69,6 @@ abstract class CellRunner {
             i++;
         }
         while (endNotReached);
-//        System.out.println(nodesOnCell);
 
         return createVisibilityCell();
     }
@@ -102,8 +90,15 @@ abstract class CellRunner {
 
     private boolean processNextNeighborOnCell() {
         final SubNeighborVisitor leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new SubNeighborVisitor(lastEdge));
-//        System.out.println(leftOrRightmostNeighborChain.getNextNodeHints());
+        boolean cellRunHasNotEnded = true;
 
+        cellRunHasNotEnded = settleAllFoundEdgesAndSetWhenRunHasStopped(leftOrRightmostNeighborChain);
+
+        updateDatastructureForNextEdge(leftOrRightmostNeighborChain);
+        return cellRunHasNotEnded;
+    }
+
+    private boolean settleAllFoundEdgesAndSetWhenRunHasStopped(SubNeighborVisitor leftOrRightmostNeighborChain) {
         for (EdgeIteratorState edge : leftOrRightmostNeighborChain) {
             if (lastEdgeNotReached(edge)) {
                 settleEdge(edge);
@@ -113,11 +108,13 @@ abstract class CellRunner {
                 return false;
             }
         }
+        return true;
+    }
 
+    private void updateDatastructureForNextEdge(SubNeighborVisitor leftOrRightmostNeighborChain) {
         nextNodeHints.putAll(leftOrRightmostNeighborChain.getNextNodeHints());
         lastEdge = leftOrRightmostNeighborChain.getLast();
         getNextNeighborIterator(leftOrRightmostNeighborChain.getLast());
-        return true;
     }
 
     private void settleEdge(EdgeIteratorState edge) {
@@ -168,8 +165,6 @@ abstract class CellRunner {
 
             if (angleToLastNode == 0 && areNodesDifferent(neighbors.getAdjNode(), lastEdgeReversedAdjNode)) {
                 collinearEdgeFound = true;
-//                candidateEdgeContainingVisitor.collinearEdgeFound();
-//                subNeighborVisitor.collinearEdgeFound();
             }
         }
 
@@ -177,27 +172,57 @@ abstract class CellRunner {
             leftOrRightMostNeighborVisitedChain.collinearEdgeFound();
         }
 
-        if (nodeHintExists(neighbors) && localVisitedManager.isEdgeSettled(leftOrRightMostNeighborVisitedChain.getLast())) {
-            neighbors = graph.createEdgeExplorer().setBaseNode(lastEdgeReversedBaseNode);
-//            neighbors.next();
-            leftOrRightMostNeighborVisitedChain = subNeighborVisitor;
-//            if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
-//                subNeighborVisitor.onEdge(neighbors.detach(false));
-//                neighbors = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
-//            }
-            while (nodeHintExists(neighbors)) {
-                while (neighbors.next()) {
-                    if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
-                        subNeighborVisitor.onEdge(neighbors.detach(false));
-                        neighbors = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
-                        break;
-                    }
-                }
-                nextNodeHints.clear();
-            }
-        }
+        leftOrRightMostNeighborVisitedChain = replaceWithNextNodeHintChainIfApplicable(neighbors, subNeighborVisitor, lastEdgeReversedBaseNode, leftOrRightMostNeighborVisitedChain);
 
         return leftOrRightMostNeighborVisitedChain;
+    }
+
+    private SubNeighborVisitor replaceWithNextNodeHintChainIfApplicable(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor, int lastEdgeReversedBaseNode,
+                                                                        SubNeighborVisitor leftOrRightMostNeighborVisitedChain) {
+        if (isNextNodeHintsChainToBuild(neighbors, leftOrRightMostNeighborVisitedChain)) {
+            leftOrRightMostNeighborVisitedChain = replaceWithNextNodeHintChain(subNeighborVisitor, lastEdgeReversedBaseNode);
+        }
+        return leftOrRightMostNeighborVisitedChain;
+    }
+
+    private SubNeighborVisitor replaceWithNextNodeHintChain(SubNeighborVisitor subNeighborVisitor, int lastEdgeReversedBaseNode) {
+        EdgeIterator neighbors;
+        SubNeighborVisitor leftOrRightMostNeighborVisitedChain;
+        neighbors = graph.createEdgeExplorer().setBaseNode(lastEdgeReversedBaseNode);
+        leftOrRightMostNeighborVisitedChain = subNeighborVisitor;
+        while (nodeHintExists(neighbors)) {
+            neighbors = findNeighborThatsHintedAsNextNodeAndSaveEdge(neighbors, subNeighborVisitor);
+            nextNodeHints.clear();
+        }
+        return leftOrRightMostNeighborVisitedChain;
+    }
+
+    private boolean isNextNodeHintsChainToBuild(EdgeIterator neighbors, SubNeighborVisitor leftOrRightMostNeighborVisitedChain) {
+        return nodeHintExists(neighbors) && isEdgePickedAsMostOrientedAlreadyVisited(leftOrRightMostNeighborVisitedChain);
+    }
+
+    private boolean isEdgePickedAsMostOrientedAlreadyVisited(SubNeighborVisitor leftOrRightMostNeighborVisitedChain) {
+        return localVisitedManager.isEdgeSettled(leftOrRightMostNeighborVisitedChain.getLast());
+    }
+
+    private EdgeIterator findNeighborThatsHintedAsNextNodeAndSaveEdge(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor) {
+        while (neighbors.next()) {
+            if (isThisEdgeAdjNodeTheHintedNeighbor(neighbors)) {
+                neighbors = saveEdgeAndCreateNeighborIteratorForAdjNode(neighbors, subNeighborVisitor);
+                break;
+            }
+        }
+        return neighbors;
+    }
+
+    private boolean isThisEdgeAdjNodeTheHintedNeighbor(EdgeIterator neighbors) {
+        return neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode());
+    }
+
+    private EdgeIterator saveEdgeAndCreateNeighborIteratorForAdjNode(EdgeIterator neighbors, SubNeighborVisitor subNeighborVisitor) {
+        subNeighborVisitor.onEdge(neighbors.detach(false));
+        neighbors = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
+        return neighbors;
     }
 
     private boolean areAllNeighborsVisited(int lastEdgeReversedBaseNode) {
