@@ -17,6 +17,7 @@ abstract class CellRunner {
     final VisitedManagerDual globalVisitedManager;
     private final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState startEdge;
+    private final EdgeIteratorState endEdge;
     private final int startNode;
     private final int endNode;
 
@@ -25,6 +26,11 @@ abstract class CellRunner {
 
     public CellRunner(final Graph graph, final NodeAccess nodeAccess, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
                       final EdgeIteratorState startEdge) {
+        this(graph, nodeAccess, globalVisitedManager, vectorAngleCalculator, startEdge, startEdge);
+    }
+
+    public CellRunner(final Graph graph, final NodeAccess nodeAccess, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
+                      final EdgeIteratorState startEdge, final EdgeIteratorState endEdge) {
         this.graph = graph;
         this.nodeAccess = nodeAccess;
         this.localVisitedManager = new VisitedManager(graph);
@@ -32,10 +38,12 @@ abstract class CellRunner {
         this.vectorAngleCalculator = vectorAngleCalculator;
 
         this.startEdge = VisitedManager.forceNodeIdsAscending(startEdge);
+        this.endEdge = VisitedManager.forceNodeIdsAscending(endEdge);
         this.localVisitedManager.settleEdge(startEdge);
         this.lastEdge = this.startEdge;
         this.startNode = this.startEdge.getAdjNode();
         this.endNode = this.startEdge.getBaseNode();
+
     }
 
     public VisibilityCell runAroundCellAndLogNodes() {
@@ -169,14 +177,14 @@ abstract class CellRunner {
             leftOrRightMostNeighborVisitedChain.collinearEdgeFound();
         }
 
-        neighbors = graph.createEdgeExplorer().setBaseNode(lastEdgeReversedBaseNode);
         if (nodeHintExists(neighbors) && localVisitedManager.isEdgeSettled(leftOrRightMostNeighborVisitedChain.getLast())) {
             neighbors = graph.createEdgeExplorer().setBaseNode(lastEdgeReversedBaseNode);
+//            neighbors.next();
             leftOrRightMostNeighborVisitedChain = subNeighborVisitor;
-            if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
-                subNeighborVisitor.onEdge(neighbors.detach(false));
-                neighbors = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
-            }
+//            if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
+//                subNeighborVisitor.onEdge(neighbors.detach(false));
+//                neighbors = graph.createEdgeExplorer().setBaseNode(neighbors.getAdjNode());
+//            }
             while (nodeHintExists(neighbors)) {
                 while (neighbors.next()) {
                     if (neighbors.getAdjNode() == nextNodeHints.get(neighbors.getBaseNode())) {
