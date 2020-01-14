@@ -161,6 +161,10 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
         return sortedEdges.subList(fromIndex, toIndex);
     }
 
+    public EdgeIteratorState getMostOrientedEdge() {
+        return sortedEdges.get(sortedEdges.size());
+    }
+
     private class ComparableEdge implements Comparable<ComparableEdge> {
         private final EdgeIteratorState edge;
 

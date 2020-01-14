@@ -39,6 +39,10 @@ public class PolygonRoutingTestGraph {
     public Weighting weighting;
     public AlgorithmOptions algorithmOptions;
 
+    public PolygonRoutingTestGraph() {
+        this(getDefaultNodeList(), getDefaultEdgeList());
+    }
+
     public PolygonRoutingTestGraph(final Node[] nodes, final Edge[] edges) {
         this.nodes = nodes;
         this.edges = edges;
