@@ -4,7 +4,6 @@ import com.graphhopper.routing.template.util.Edge;
 import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -48,12 +47,23 @@ public class SortedNeighborsTest {
     }
 
     @Test
-    public void collinearInEdges() {
+    public void collinearInEdges1() {
         final PolygonRoutingTestGraph graphMocker = getCollinearInEdgesTestGraph();
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 2, 0);
 
         final int[] expectedOrder = new int[] {0, 1, 3};
+
+        assertOrdering(expectedOrder, sortedNeighbors);
+    }
+
+    @Test
+    public void collinearInEdges2() {
+        final PolygonRoutingTestGraph graphMocker = getCollinearInEdgesTestGraph();
+
+        final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 2, 1);
+
+        final int[] expectedOrder = new int[] {1, 0, 3};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }

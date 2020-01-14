@@ -3,7 +3,6 @@ package com.graphhopper.storage.index;
 import com.graphhopper.routing.template.util.Edge;
 import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
-import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.Polygon;
 import com.graphhopper.storage.Graph;

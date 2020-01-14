@@ -7,6 +7,7 @@ import com.graphhopper.storage.Graph;
 import java.util.*;
 
 public class SortedNeighbors implements List<EdgeIteratorState> {
+    public final static int DONT_IGNORE_NODE = -1;
     private final VectorAngleCalculator vectorAngleCalculator;
     private final Graph graph;
     private final EdgeIteratorState baseEdge;
@@ -25,7 +26,7 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
     }
 
     public SortedNeighbors(VectorAngleCalculator vectorAngleCalculator, Graph graph, int baseNode, EdgeIteratorState baseEdge) {
-        this(vectorAngleCalculator, graph, baseNode, baseEdge, -1);
+        this(vectorAngleCalculator, graph, baseNode, baseEdge, DONT_IGNORE_NODE);
     }
 
     private void sort(final int baseNode) {
@@ -174,6 +175,11 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
         return sortedEdges.get(sortedEdges.size() - 1);
     }
 
+    @Override
+    public String toString() {
+        return sortedEdges.toString();
+    }
+
     private class ComparableEdge implements Comparable<ComparableEdge> {
         private final EdgeIteratorState edge;
 
@@ -183,16 +189,51 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
 
         @Override
         public int compareTo(ComparableEdge o) {
+            int resultBasedOnAngle = getResultBasedOnAngle(o);
+            int resultBasedOnId = getResultBasedOnId(o);
+
+            return resultBasedOnAngle != 0 ? resultBasedOnAngle : resultBasedOnId;
+        }
+
+        private int getResultBasedOnAngle(ComparableEdge o) {
             final Double thisAngleToBaseEdge = getAngle(baseEdge, edge);
             final Double otherAngleToBaseEdge = getAngle(baseEdge, o.edge);
 
+
+            return thisAngleToBaseEdge.compareTo(otherAngleToBaseEdge);
+        }
+
+        private int getResultBasedOnId(ComparableEdge o) {
+            final Integer baseId = baseEdge.getEdge();
             final Integer thisId = edge.getEdge();
             final Integer otherId = o.edge.getEdge();
 
-            int resultBasedOnAngle = thisAngleToBaseEdge.compareTo(otherAngleToBaseEdge);
-            int resultBasedOnId = thisId.compareTo(otherId);
+            int resultBasedOnId;
+//            System.out.println("---------------------");
+//            System.out.println(this + " : " + o + " : " + baseEdge);
+//            System.out.println("baseId: " + baseId);
+//            System.out.println("thisId: " + thisId);
+//            System.out.println("otherId: " + otherId);
+//            System.out.println("thisToBase: " + thisIdToBaseId);
+//            System.out.println("thisToOther: " + otherIdToBaseId);
+            if ((thisId > baseId && otherId > baseId) || (thisId < baseId && otherId < baseId)) {
+                resultBasedOnId = thisId.compareTo(otherId);
+            } else if (thisId == otherId) {
+                resultBasedOnId = 0;
+            } else if (thisId == baseId) {
+                resultBasedOnId = -1;
+            } else if (otherId == baseId) {
+                resultBasedOnId = 1;
+            } else if (thisId > baseId) {
+                resultBasedOnId = -1;
+            } else if (thisId < baseId) {
+                resultBasedOnId = 1;
+            } else {
+                throw new IllegalStateException("wtf");
+            }
 
-            return resultBasedOnAngle != 0 ? resultBasedOnAngle : resultBasedOnId;
+//            System.out.println("result: " + resultBasedOnId);
+            return resultBasedOnId;
         }
 
         private Double getAngle(final EdgeIteratorState baseEdge, final EdgeIteratorState otherEdge) {
@@ -220,6 +261,11 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
             } else {
                 return false;
             }
+        }
+
+        @Override
+        public String toString() {
+            return edge.toString();
         }
     }
 }
