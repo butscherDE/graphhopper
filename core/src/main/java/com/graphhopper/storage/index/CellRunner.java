@@ -94,8 +94,6 @@ abstract class CellRunner {
     }
 
     private void addStartAndEndNodeOfCell() {
-//        edgesOnCell.add(endNode);
-//        edgesOnCell.add(startNode);
         edgesOnCell.add(startEdge);
         markGloballyVisited(startEdge);
 

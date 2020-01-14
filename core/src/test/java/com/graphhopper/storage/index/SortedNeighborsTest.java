@@ -22,6 +22,7 @@ public class SortedNeighborsTest {
         final int[] expectedOrder = new int[] {52, 51, 56, 55, 54, 53};
 
         assertOrdering(expectedOrder, sortedNeighbors);
+        assertEquals(53, sortedNeighbors.getMostOrientedEdge().getAdjNode());
     }
 
     @Test
@@ -120,6 +121,62 @@ public class SortedNeighborsTest {
                 new Edge(0, 1, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(1, 3, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
+    @Test
+    public void equalCoordinateNeighbor() {
+        final PolygonRoutingTestGraph graphMocker = getEqualCoordinateNeighborTestGraph();
+
+        final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
+
+        final int[] expectedOrder = new int[] {0, 2};
+
+        assertOrdering(expectedOrder, sortedNeighbors);
+    }
+
+    private PolygonRoutingTestGraph getEqualCoordinateNeighborTestGraph() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 1),
+                new Node(3, 0, 2)
+        };
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(2, 3, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
+    @Test
+    public void equalCoordinateNeighborPath() {
+        final PolygonRoutingTestGraph graphMocker = getEqualCoordinateNeighborPathTestGraph();
+
+        final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
+
+        final int[] expectedOrder = new int[] {0, 2};
+
+        assertOrdering(expectedOrder, sortedNeighbors);
+    }
+
+    private PolygonRoutingTestGraph getEqualCoordinateNeighborPathTestGraph() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 1),
+                new Node(3, 0, 1),
+                new Node(4, 0, 1),
+                new Node(5, 0, 2)
+        };
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(2, 3, 1, true),
+                new Edge(3, 4, 1, true),
+                new Edge(4, 5, 1, true)
         };
         return new PolygonRoutingTestGraph(nodes, edges);
     }

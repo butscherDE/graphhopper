@@ -10,15 +10,22 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
     private final VectorAngleCalculator vectorAngleCalculator;
     private final Graph graph;
     private final EdgeIteratorState baseEdge;
+    private final int ignore;
+    private final Map<Integer, SortedNeighbors> subIterators = new HashMap<>();
 
     private ArrayList<EdgeIteratorState> sortedEdges = new ArrayList<>();
 
-    public SortedNeighbors(VectorAngleCalculator vectorAngleCalculator, Graph graph, int baseNode, EdgeIteratorState baseEdge) {
+    public SortedNeighbors(VectorAngleCalculator vectorAngleCalculator, Graph graph, int baseNode, EdgeIteratorState baseEdge, int ignore) {
         this.vectorAngleCalculator = vectorAngleCalculator;
         this.graph = graph;
         this.baseEdge = baseEdge;
+        this.ignore = ignore;
 
         sort(baseNode);
+    }
+
+    public SortedNeighbors(VectorAngleCalculator vectorAngleCalculator, Graph graph, int baseNode, EdgeIteratorState baseEdge) {
+        this(vectorAngleCalculator, graph, baseNode, baseEdge, -1);
     }
 
     private void sort(final int baseNode) {
@@ -34,7 +41,9 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
         final List<ComparableEdge> comparableEdges = new ArrayList<>();
 
         while(neighborIterator.next()) {
-            comparableEdges.add(new ComparableEdge(neighborIterator.detach(false)));
+            if (neighborIterator.getAdjNode() != ignore) {
+                comparableEdges.add(new ComparableEdge(neighborIterator.detach(false)));
+            }
         }
         return comparableEdges;
     }
@@ -162,7 +171,7 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
     }
 
     public EdgeIteratorState getMostOrientedEdge() {
-        return sortedEdges.get(sortedEdges.size());
+        return sortedEdges.get(sortedEdges.size() - 1);
     }
 
     private class ComparableEdge implements Comparable<ComparableEdge> {
@@ -174,8 +183,9 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
 
         @Override
         public int compareTo(ComparableEdge o) {
-            final Double thisAngleToBaseEdge = vectorAngleCalculator.getAngleOfVectorsOriented(baseEdge, edge);
-            final Double otherAngleToBaseEdge = vectorAngleCalculator.getAngleOfVectorsOriented(baseEdge, o.edge);
+            final Double thisAngleToBaseEdge = getAngle(baseEdge, edge);
+            final Double otherAngleToBaseEdge = getAngle(baseEdge, o.edge);
+
             final Integer thisId = edge.getEdge();
             final Integer otherId = o.edge.getEdge();
 
@@ -183,6 +193,22 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
             int resultBasedOnId = thisId.compareTo(otherId);
 
             return resultBasedOnAngle != 0 ? resultBasedOnAngle : resultBasedOnId;
+        }
+
+        private Double getAngle(final EdgeIteratorState baseEdge, final EdgeIteratorState otherEdge) {
+            Double angle = vectorAngleCalculator.getAngleOfVectorsOriented(baseEdge, otherEdge);
+
+            if (angle == -Double.MAX_VALUE) {
+                final int otherBaseNode = otherEdge.getBaseNode();
+                final int otherAdjNode = otherEdge.getAdjNode();
+                if (subIterators.get(otherAdjNode) == null) {
+                    subIterators.put(otherAdjNode, new SortedNeighbors(vectorAngleCalculator, graph, otherAdjNode, otherEdge.detach(true), otherBaseNode));
+                }
+
+                angle = getAngle(baseEdge, subIterators.get(otherAdjNode).getMostOrientedEdge());
+            }
+
+            return angle;
         }
 
         @Override
