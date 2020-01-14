@@ -14,19 +14,19 @@ public abstract class VectorAngleCalculator {
         this.nodeAccess = nodeAccess;
     }
 
-    public abstract double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge);
+    public abstract double getAngleOfVectorsOriented(EdgeIteratorState lastEdgeReversed, final EdgeIteratorState candidateEdge);
 
-    double getAngle(final int lastEdgeReversedBaseNode, final int lastEdgeReversedAdjNode, final EdgeIteratorState candidateEdge) {
+    double getAngle(final EdgeIteratorState lastEdgeReversed, final EdgeIteratorState candidateEdge) {
         try {
-            return getAngleAfterErrorHandling(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
+            return getAngleAfterErrorHandling(lastEdgeReversed, candidateEdge);
         } catch (IllegalArgumentException e) {
             return ANGLE_WHEN_COORDINATES_ARE_EQUAL;
         }
     }
 
-    private double getAngleAfterErrorHandling(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
-        final Vector2D lastEdgeVector = createLastEdgeVector(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode);
-        final Vector2D candidateEdgeVector = createCandidateEdgeVector(candidateEdge);
+    private double getAngleAfterErrorHandling(final EdgeIteratorState lastEdgeReversed, final EdgeIteratorState candidateEdge) {
+        final Vector2D lastEdgeVector = createVectorCorrespondingToEdge(lastEdgeReversed);
+        final Vector2D candidateEdgeVector = createVectorCorrespondingToEdge(candidateEdge);
 
         return getAngle(lastEdgeVector, candidateEdgeVector);
     }
@@ -44,11 +44,7 @@ public abstract class VectorAngleCalculator {
         return differenceToTwoPi < 0.000000000000001 ? 0 : angleToContinuousInterval;
     }
 
-    private Vector2D createLastEdgeVector(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode) {
-        return createVectorByNodeIds(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode);
-    }
-
-    private Vector2D createCandidateEdgeVector(EdgeIteratorState candidateEdge) {
+    private Vector2D createVectorCorrespondingToEdge(EdgeIteratorState candidateEdge) {
         return createVectorByNodeIds(candidateEdge.getBaseNode(), candidateEdge.getAdjNode());
     }
 

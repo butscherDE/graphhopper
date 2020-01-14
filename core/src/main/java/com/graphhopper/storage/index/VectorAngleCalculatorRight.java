@@ -9,8 +9,8 @@ public class VectorAngleCalculatorRight extends VectorAngleCalculator{
     }
 
     @Override
-    public double getAngleOfVectorsOriented(int lastEdgeReversedBaseNode, int lastEdgeReversedAdjNode, EdgeIteratorState candidateEdge) {
-        final double angle = getAngle(lastEdgeReversedBaseNode, lastEdgeReversedAdjNode, candidateEdge);
+    public double getAngleOfVectorsOriented(EdgeIteratorState lastEdgeReversed, EdgeIteratorState candidateEdge) {
+        final double angle = getAngle(lastEdgeReversed, candidateEdge);
         return angle == 0 || angle == ANGLE_WHEN_COORDINATES_ARE_EQUAL ? angle : angle * (-1) + 2 * Math.PI;
     }
 }

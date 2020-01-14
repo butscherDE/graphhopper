@@ -332,7 +332,6 @@ public class PolygonRoutingTestGraph {
 
     private LocationIndex getCorrespondingIndex() {
         return new PolygonRoutingTestIndex(graph, new RAMDirectory()).setResolution(300).prepareIndex();
-
     }
 
     private class MinDistanceNodeFinder {
@@ -436,6 +435,26 @@ public class PolygonRoutingTestGraph {
         }
 
         return allEdges;
+    }
+
+    public EdgeIteratorState getEdge(final int baseNode, final int adjNode) {
+        final List<EdgeIteratorState> allEdges = getAllEdges();
+
+        for (EdgeIteratorState edge : allEdges) {
+            if (isEdgeEqual(baseNode, adjNode, edge)) {
+                return edge;
+            }
+            edge = edge.detach(true);
+            if (isEdgeEqual(baseNode, adjNode, edge)) {
+                return edge;
+            }
+        }
+
+        throw new IllegalArgumentException("Such a Edge doesn't exist");
+    }
+
+    private boolean isEdgeEqual(int baseNode, int adjNode, EdgeIteratorState edge) {
+        return edge.getBaseNode() == baseNode && edge.getAdjNode() == adjNode;
     }
 
     public class PolygonRoutingTestIndex extends GridIndex {

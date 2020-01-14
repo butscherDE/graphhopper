@@ -22,9 +22,4 @@ class CellRunnerRight extends CellRunner {
     void markGloballyVisited(final EdgeIteratorState edge) {
         globalVisitedManager.settleEdgeRight(edge);
     }
-
-    @Override
-    CellRunner createNewSubRunner(EdgeIteratorState startEdge, EdgeIteratorState endEdge) {
-        return new CellRunnerRight(graph, globalVisitedManager, vectorAngleCalculator, startEdge, endEdge);
-    }
 }
