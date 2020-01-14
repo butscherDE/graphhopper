@@ -14,18 +14,17 @@ public abstract class VectorAngleCalculator {
         this.nodeAccess = nodeAccess;
     }
 
-    public abstract double getAngleOfVectorsOriented(EdgeIteratorState lastEdgeReversed, final EdgeIteratorState candidateEdge);
+    public abstract double getAngleOfVectorsOriented(final EdgeIteratorState candidateEdge);
 
-    double getAngle(final EdgeIteratorState lastEdgeReversed, final EdgeIteratorState candidateEdge) {
+    double getAngle(final EdgeIteratorState candidateEdge) {
         try {
-            return getAngleAfterErrorHandling(lastEdgeReversed, candidateEdge);
+            return getAngleAfterErrorHandling(candidateEdge);
         } catch (IllegalArgumentException e) {
             return ANGLE_WHEN_COORDINATES_ARE_EQUAL;
         }
     }
 
-    private double getAngleAfterErrorHandling(final EdgeIteratorState lastEdgeReversed, final EdgeIteratorState candidateEdge) {
-//        final Vector2D lastEdgeVector = createVectorCorrespondingToEdge(lastEdgeReversed);
+    private double getAngleAfterErrorHandling(final EdgeIteratorState candidateEdge) {
         final Vector2D lastEdgeVector = createHorizontalRightVector(candidateEdge);
         final Vector2D candidateEdgeVector = createVectorCorrespondingToEdge(candidateEdge);
 

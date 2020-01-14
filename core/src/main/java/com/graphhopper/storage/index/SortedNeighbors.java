@@ -140,7 +140,7 @@ public class SortedNeighbors {
         }
 
         private Double getAngle(final EdgeIteratorState edge) {
-            Double angle = vectorAngleCalculator.getAngleOfVectorsOriented(edge, edge);
+            Double angle = vectorAngleCalculator.getAngleOfVectorsOriented(edge);
 
             if (angle == -Double.MAX_VALUE) {
                 final int baseNode = edge.getBaseNode();

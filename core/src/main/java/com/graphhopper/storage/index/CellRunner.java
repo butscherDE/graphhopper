@@ -50,7 +50,7 @@ abstract class CellRunner {
     }
 
     private void runAroundCellAndLogNodes() {
-        if (vectorAngleCalculator.getAngle(startEdge, startEdge) == VectorAngleCalculator.ANGLE_WHEN_COORDINATES_ARE_EQUAL) {
+        if (hasEdgeEndPointsWithEqualCoordinates(startEdge)) {
             throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
         }
 
@@ -122,8 +122,6 @@ abstract class CellRunner {
         final int ignoreBackwardsEdge = hasEdgeEndPointsWithEqualCoordinates(lastEdge) ? lastEdgeBaseNode : SortedNeighbors.DONT_IGNORE_NODE;
         final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastNonZeroLengthEdge.detach(true));
         final EdgeIteratorState mostOrientedEdge = sortedNeighbors.getMostOrientedEdge();
-
-//        System.out.println(sortedNeighbors);
 
         if (!hasEdgeEndPointsWithEqualCoordinates(mostOrientedEdge)) {
             this.lastNonZeroLengthEdge = mostOrientedEdge;

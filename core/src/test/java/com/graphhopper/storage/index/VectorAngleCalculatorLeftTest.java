@@ -17,7 +17,7 @@ public class VectorAngleCalculatorLeftTest {
         final EdgeIteratorState baseEdge = GRAPH_MOCKER.getEdge(39, 38);
         final EdgeIteratorState edgeToCalcAngleTo = GRAPH_MOCKER.graph.getEdgeIteratorState(59, 21);
 
-        assertEquals(0, vac.getAngleOfVectorsOriented(baseEdge, edgeToCalcAngleTo), 0);
+        assertEquals(0, vac.getAngleOfVectorsOriented(edgeToCalcAngleTo), 0);
 
         GRAPH_MOCKER.nodeAccess.setNode(21, 3, 7);
         GRAPH_MOCKER.nodeAccess.setNode(38, 5, 17);
@@ -28,10 +28,9 @@ public class VectorAngleCalculatorLeftTest {
         GRAPH_MOCKER.nodeAccess.setNode(21, 6, 13);
         GRAPH_MOCKER.nodeAccess.setNode(38, 6, 15);
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(GRAPH_MOCKER.nodeAccess);
-        final EdgeIteratorState baseEdge = GRAPH_MOCKER.getEdge(39, 38);
         final EdgeIteratorState edgeToCalcAngleTo = GRAPH_MOCKER.graph.getEdgeIteratorState(59, 21);
 
-        assertEquals(Math.PI, vac.getAngleOfVectorsOriented(baseEdge, edgeToCalcAngleTo), 0);
+        assertEquals(Math.PI, vac.getAngleOfVectorsOriented(edgeToCalcAngleTo), 0);
 
         GRAPH_MOCKER.nodeAccess.setNode(21, 3, 7);
         GRAPH_MOCKER.nodeAccess.setNode(38, 5, 17);
@@ -42,10 +41,9 @@ public class VectorAngleCalculatorLeftTest {
         GRAPH_MOCKER.nodeAccess.setNode(21, 5, 14);
         GRAPH_MOCKER.nodeAccess.setNode(38, 6, 15);
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(GRAPH_MOCKER.nodeAccess);
-        final EdgeIteratorState baseEdge = GRAPH_MOCKER.getEdge(39, 38);
         final EdgeIteratorState edgeToCalcAngleTo = GRAPH_MOCKER.graph.getEdgeIteratorState(59, 21);
 
-        assertEquals(Math.PI * 1.5, vac.getAngleOfVectorsOriented(baseEdge, edgeToCalcAngleTo), 0);
+        assertEquals(Math.PI * 1.5, vac.getAngleOfVectorsOriented(edgeToCalcAngleTo), 0);
 
         GRAPH_MOCKER.nodeAccess.setNode(21, 3, 7);
         GRAPH_MOCKER.nodeAccess.setNode(38, 5, 17);
@@ -56,10 +54,9 @@ public class VectorAngleCalculatorLeftTest {
         GRAPH_MOCKER.nodeAccess.setNode(21, 7, 14);
         GRAPH_MOCKER.nodeAccess.setNode(38, 6, 15);
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(GRAPH_MOCKER.nodeAccess);
-        final EdgeIteratorState baseEdge = GRAPH_MOCKER.getEdge(39, 38);
         final EdgeIteratorState edgeToCalcAngleTo = GRAPH_MOCKER.graph.getEdgeIteratorState(59, 21);
 
-        assertEquals(Math.PI * 0.5, vac.getAngleOfVectorsOriented(baseEdge, edgeToCalcAngleTo), 0);
+        assertEquals(Math.PI * 0.5, vac.getAngleOfVectorsOriented(edgeToCalcAngleTo), 0);
 
         GRAPH_MOCKER.nodeAccess.setNode(21, 3, 7);
         GRAPH_MOCKER.nodeAccess.setNode(38, 5, 17);
@@ -67,17 +64,17 @@ public class VectorAngleCalculatorLeftTest {
 
     @Test
     public void anglesOnNodesWithEqualCoordinatesLastEdge() {
-        GRAPH_MOCKER.nodeAccess.setNode(21, 7, 14);
-        GRAPH_MOCKER.nodeAccess.setNode(38, 6, 14);
+        GRAPH_MOCKER.nodeAccess.setNode(0, 25, 0);
+        GRAPH_MOCKER.nodeAccess.setNode(1, 25, 0);
 
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(GRAPH_MOCKER.nodeAccess);
-        final EdgeIteratorState baseEdge = GRAPH_MOCKER.getEdge(39, 38);
-        final EdgeIteratorState edgeToCalcAngleTo = GRAPH_MOCKER.graph.getEdgeIteratorState(59, 21);
+        final EdgeIteratorState edgeToCalcAngleTo = GRAPH_MOCKER.getEdge(0,1);
 
-        assertEquals(-Double.MAX_VALUE, vac.getAngleOfVectorsOriented(baseEdge, edgeToCalcAngleTo), 0);
+        assertEquals(-Double.MAX_VALUE, vac.getAngleOfVectorsOriented(edgeToCalcAngleTo), 0);
 
-        GRAPH_MOCKER.nodeAccess.setNode(21, 3, 7);
-        GRAPH_MOCKER.nodeAccess.setNode(38, 5, 17);
+
+        GRAPH_MOCKER.nodeAccess.setNode(0, 25, 0);
+        GRAPH_MOCKER.nodeAccess.setNode(1, 25, 8);
     }
 
     @Test
@@ -86,10 +83,9 @@ public class VectorAngleCalculatorLeftTest {
         GRAPH_MOCKER.nodeAccess.setNode(38, 6, 15);
 
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(GRAPH_MOCKER.nodeAccess);
-        final EdgeIteratorState baseEdge = GRAPH_MOCKER.getEdge(39, 38);
         final EdgeIteratorState edgeToCalcAngleTo = GRAPH_MOCKER.graph.getEdgeIteratorState(59, 21);
 
-        assertEquals(-Double.MAX_VALUE, vac.getAngleOfVectorsOriented(baseEdge, edgeToCalcAngleTo), 0);
+        assertEquals(-Double.MAX_VALUE, vac.getAngleOfVectorsOriented(edgeToCalcAngleTo), 0);
 
         GRAPH_MOCKER.nodeAccess.setNode(21, 3, 7);
         GRAPH_MOCKER.nodeAccess.setNode(38, 5, 17);
