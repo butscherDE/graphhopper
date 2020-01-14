@@ -117,10 +117,10 @@ abstract class CellRunner {
 
     private EdgeIteratorState getMostLeftOrRightOrientedEdge() {
         final EdgeIteratorState lastEdge = edgesOnCell.getLast();
-        final int lastEdgeAdjNode = lastEdge.getAdjNode();
         final int lastEdgeBaseNode = lastEdge.getBaseNode();
+        final int lastEdgeAdjNode = lastEdge.getAdjNode();
         final int ignoreBackwardsEdge = hasEdgeEndPointsWithEqualCoordinates(lastEdge) ? lastEdgeBaseNode : SortedNeighbors.DONT_IGNORE_NODE;
-        final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastEdge);
+        final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastNonZeroLengthEdge.detach(true));
         final EdgeIteratorState mostOrientedEdge = sortedNeighbors.getMostOrientedEdge();
 
 //        System.out.println(sortedNeighbors);
@@ -133,8 +133,15 @@ abstract class CellRunner {
     }
 
     private boolean hasEdgeEndPointsWithEqualCoordinates(EdgeIteratorState edge) {
-        return nodeAccess.getLongitude(edge.getBaseNode()) == nodeAccess.getLongitude(edge.getAdjNode()) &&
-               nodeAccess.getLatitude(edge.getBaseNode()) == nodeAccess.getLatitude(edge.getAdjNode());
+        final double baseNodeLongitude = nodeAccess.getLongitude(edge.getBaseNode());
+        final double adjNodeLongitude = nodeAccess.getLongitude(edge.getAdjNode());
+        final boolean longitudeEqual = baseNodeLongitude == adjNodeLongitude;
+
+        final double baseNodeLatitude = nodeAccess.getLatitude(edge.getBaseNode());
+        final double adjNodeLatitude = nodeAccess.getLatitude(edge.getAdjNode());
+        final boolean latitudeEqual = baseNodeLatitude == adjNodeLatitude;
+
+        return longitudeEqual && latitudeEqual;
     }
 
     List<Integer> extractNodesFromVisitedEdges() {
