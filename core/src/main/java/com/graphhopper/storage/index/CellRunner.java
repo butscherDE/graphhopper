@@ -111,7 +111,7 @@ abstract class CellRunner {
     }
 
     private boolean processNextNeighborOnCell() {
-        final SubNeighborVisitor leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new SubNeighborVisitor(lastEdge));
+        final SubNeighborVisitor leftOrRightmostNeighborChain = getMostLeftOrRightOrientedEdge(neighbors, new S bNeighborVisitor(lastEdge));
 
         boolean cellRunHasNotEnded = settleAllFoundEdgesAndSetWhenRunHasStopped(leftOrRightmostNeighborChain);
 
