@@ -400,8 +400,8 @@ public class CellRunnerTest {
 
     @Test
     public void collinearityStackOverFlowLeft() {
-        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -2.0, -3.0, -2.0, -1.0,  0.0}, new double[]{1.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0});
-        final PolygonRoutingTestGraph customTestGraph = collinearityStackOverFlowGraph();
+        final Polygon expectedCellShape = new Polygon(new double[]{-1.0, -3.0, -4.0, -2.0, -1.0, 0.0}, new double[]{1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
+        final PolygonRoutingTestGraph customTestGraph = collinearEdgeWithNoOtherNeighborsThanBackwardsTestGraph();
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1,2);
         final CellRunner cr = new CellRunnerLeft(cti.graph, cti.visitedManagerDual, cti.startingEdge);
@@ -413,8 +413,8 @@ public class CellRunnerTest {
 
     @Test
     public void collinearityStackOverFlowRight() {
-        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -2.0, -3.0, -2.0, -1.0,  0.0}, new double[]{1.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0});
-        final PolygonRoutingTestGraph customTestGraph = collinearityStackOverFlowGraph();
+        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -3.0, -4.0, -3.0, -2.0, -1.0}, new double[]{1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
+        final PolygonRoutingTestGraph customTestGraph = collinearEdgeWithNoOtherNeighborsThanBackwardsTestGraph();
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1,2);
         final CellRunner cr = new CellRunnerRight(cti.graph, cti.visitedManagerDual, cti.startingEdge);
@@ -424,7 +424,7 @@ public class CellRunnerTest {
         assertEquals(expectedCellShape, vc.cellShape);
     }
 
-    private PolygonRoutingTestGraph collinearityStackOverFlowGraph() {
+    private PolygonRoutingTestGraph collinearEdgeWithNoOtherNeighborsThanBackwardsTestGraph() {
         final Node[] nodes = new Node[]{
                 new Node(1, 0, 1),
                 new Node(2, -1, 1),
