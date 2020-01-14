@@ -14,18 +14,18 @@ public class VisitedManagerDual {
 
 
     public void settleEdgeLeft(EdgeIteratorState edge) {
-        visitedLeft.settleEdge(edge);
+        visitedLeft.settleEdge(VisitedManager.forceNodeIdsAscending(edge));
     }
 
     public void settleEdgeRight(EdgeIteratorState edge) {
-        visitedRight.settleEdge(edge);
+        visitedRight.settleEdge(VisitedManager.forceNodeIdsAscending(edge));
     }
 
     public boolean isEdgeSettledLeft(EdgeIteratorState edge) {
-        return visitedLeft.isEdgeSettled(edge);
+        return visitedLeft.isEdgeSettled(VisitedManager.forceNodeIdsAscending(edge));
     }
 
     public boolean isEdgeSettledRight(EdgeIteratorState edge) {
-        return visitedRight.isEdgeSettled(edge);
+        return visitedRight.isEdgeSettled(VisitedManager.forceNodeIdsAscending(edge));
     }
 }
