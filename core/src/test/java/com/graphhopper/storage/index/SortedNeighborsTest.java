@@ -72,6 +72,32 @@ public class SortedNeighborsTest {
         return new PolygonRoutingTestGraph(nodes, edges);
     }
 
+    @Test
+    public void collinearOutEdges() {
+        final PolygonRoutingTestGraph graphMocker = getCollinearOutEdgesTestGraph();
+
+        final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
+
+        final int[] expectedOrder = new int[] {0, 2, 3};
+
+        assertOrdering(expectedOrder, sortedNeighbors);
+    }
+
+    private PolygonRoutingTestGraph getCollinearOutEdgesTestGraph() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 2),
+                new Node(3, 0, 3)
+        };
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(1, 3, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
     private SortedNeighbors getSortedNeighbors(final PolygonRoutingTestGraph graphMocker, final int baseNode, final int adjNode) {
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(graphMocker.nodeAccess);
 
