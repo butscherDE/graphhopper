@@ -6,173 +6,114 @@ import com.graphhopper.storage.Graph;
 
 import java.util.*;
 
-public class SortedNeighbors implements List<EdgeIteratorState> {
+public class SortedNeighbors {
     public final static int DONT_IGNORE_NODE = -1;
-    private final VectorAngleCalculator vectorAngleCalculator;
     private final Graph graph;
+    private final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState baseEdge;
-    private final int ignore;
+//    private final EdgeIteratorState compareEdge;
+
     private final Map<Integer, SortedNeighbors> subIterators = new HashMap<>();
 
-    private ArrayList<EdgeIteratorState> sortedEdges = new ArrayList<>();
+    private final List<EdgeIteratorState> sortedEdges;
 
-    public SortedNeighbors(VectorAngleCalculator vectorAngleCalculator, Graph graph, int baseNode, EdgeIteratorState baseEdge, int ignore) {
-        this.vectorAngleCalculator = vectorAngleCalculator;
+
+//    public SortedNeighbors(final Graph graph, final int baseNode, final int ignore, final VectorAngleCalculator vectorAngleCalculator, final EdgeIteratorState baseEdge,
+//                           final EdgeIteratorState compareEdge) {
+//        this.graph = graph;
+//        this.vectorAngleCalculator = vectorAngleCalculator;
+//        this.baseEdge = baseEdge;
+//        this.compareEdge = compareEdge;
+//
+//        List<EdgeIteratorState> sortedEdges = sort(baseNode, ignore);
+//        this.sortedEdges = rearrangeSuchThatMostOrientedEdgeComesLast(sortedEdges);
+//    }
+
+    public SortedNeighbors(Graph graph, final int baseNode, final int ignore, VectorAngleCalculator vectorAngleCalculator, EdgeIteratorState baseEdge) {
+//        this(graph, baseNode, ignore, vectorAngleCalculator, baseEdge, baseEdge);
         this.graph = graph;
+        this.vectorAngleCalculator = vectorAngleCalculator;
         this.baseEdge = baseEdge;
-        this.ignore = ignore;
+//        this.compareEdge = compareEdge;
 
-        sort(baseNode);
+        List<EdgeIteratorState> sortedEdges = sort(baseNode, ignore);
+        this.sortedEdges = rearrangeSuchThatMostOrientedEdgeComesLast(sortedEdges);
     }
 
-    public SortedNeighbors(VectorAngleCalculator vectorAngleCalculator, Graph graph, int baseNode, EdgeIteratorState baseEdge) {
-        this(vectorAngleCalculator, graph, baseNode, baseEdge, DONT_IGNORE_NODE);
-    }
-
-    private void sort(final int baseNode) {
-        final List<ComparableEdge> comparableEdges = getAllNeighbors(baseNode);
+    private List<EdgeIteratorState> sort(final int baseNode, final int ignore) {
+        final List<ComparableEdge> comparableEdges = getAllNeighbors(baseNode, ignore);
 
         Collections.sort(comparableEdges);
 
-        unpackEdgesFromWrapperObjects(comparableEdges);
+        return unpackEdgesFromWrapperObjects(comparableEdges);
     }
 
-    private List<ComparableEdge> getAllNeighbors(int baseNode) {
+    private List<ComparableEdge> getAllNeighbors(int baseNode, final int ignore) {
         final EdgeIterator neighborIterator = graph.createEdgeExplorer().setBaseNode(baseNode);
         final List<ComparableEdge> comparableEdges = new ArrayList<>();
 
+        addAllNeighborsMaybeIncludingCompareEdge(ignore, neighborIterator, comparableEdges);
+        addBaseEdgeIfNotAlready(comparableEdges);
+
+        return comparableEdges;
+    }
+
+    private void addAllNeighborsMaybeIncludingCompareEdge(int ignore, EdgeIterator neighborIterator, List<ComparableEdge> comparableEdges) {
         while(neighborIterator.next()) {
             if (neighborIterator.getAdjNode() != ignore) {
                 comparableEdges.add(new ComparableEdge(neighborIterator.detach(false)));
             }
         }
-        return comparableEdges;
     }
 
-    private void unpackEdgesFromWrapperObjects(List<ComparableEdge> comparableEdges) {
-        for (ComparableEdge comparableEdge : comparableEdges) {
-            sortedEdges.add(comparableEdge.edge);
+    private void addBaseEdgeIfNotAlready(List<ComparableEdge> comparableEdges) {
+        final ComparableEdge compareEdge = new ComparableEdge(this.baseEdge);
+        if (!comparableEdges.contains(compareEdge)) {
+            comparableEdges.add(compareEdge);
         }
     }
 
-    @Override
-    public int size() {
-        return sortedEdges.size();
+    private List<EdgeIteratorState> unpackEdgesFromWrapperObjects(List<ComparableEdge> comparableEdges) {
+        List<EdgeIteratorState> sortedEdges = new ArrayList<>(comparableEdges.size());
+
+        for (ComparableEdge comparableEdge : comparableEdges) {
+            sortedEdges.add(comparableEdge.edge);
+        }
+
+        return sortedEdges;
     }
 
-    @Override
-    public boolean isEmpty() {
-        return sortedEdges.isEmpty();
+    private List<EdgeIteratorState> rearrangeSuchThatMostOrientedEdgeComesLast(final List<EdgeIteratorState> sortedEdges) {
+        final int baseEdgeIndex = indexOfBaseEdge(sortedEdges);
+
+        final List<EdgeIteratorState> rearrangedSortedEdges = new ArrayList<>(sortedEdges.size());
+        rearrangedSortedEdges.addAll(sortedEdges.subList(baseEdgeIndex, sortedEdges.size()));
+        rearrangedSortedEdges.addAll(sortedEdges.subList(0, baseEdgeIndex));
+
+        return rearrangedSortedEdges;
     }
 
-    @Override
-    public boolean contains(Object o) {
-        return sortedEdges.contains(o);
-    }
+    private int indexOfBaseEdge(List<EdgeIteratorState> sortedEdges) {
+        for (int i = 0; i < sortedEdges.size(); i++) {
+            final EdgeIteratorState edge = sortedEdges.get(i);
+            if ((edge.getBaseNode() == baseEdge.getBaseNode() && edge.getAdjNode() == baseEdge.getAdjNode() && edge.getEdge() == baseEdge.getEdge())) {
+                return i;
+            }
+        }
 
-    @Override
-    public Iterator<EdgeIteratorState> iterator() {
-        return sortedEdges.iterator();
-    }
-
-    @Override
-    public Object[] toArray() {
-        return sortedEdges.toArray();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T[] toArray(T[] a) {
-        return (T[]) sortedEdges.toArray();
-    }
-
-    @Override
-    public boolean add(EdgeIteratorState edgeIteratorState) {
-        throw new UnsupportedOperationException("This object already knows all neighbors of the given base node.");
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        throw new UnsupportedOperationException("This object wants to know all neighbors of the given base node.");
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        return sortedEdges.containsAll(c);
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends EdgeIteratorState> c) {
-        throw new UnsupportedOperationException("This object already knows all neighbors of the given base node.");
-    }
-
-    @Override
-    public boolean addAll(int index, Collection<? extends EdgeIteratorState> c) {
-        throw new UnsupportedOperationException("This object already knows all neighbors of the given base node.");
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException("This object wants to know all neighbors of the given base node.");
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException("This object wants to know all neighbors of the given base node.");
-    }
-
-    @Override
-    public void clear() {
-        throw new UnsupportedOperationException("This object wants to know all neighbors of the given base node.");
-    }
-
-    @Override
-    public EdgeIteratorState get(int index) {
-        return sortedEdges.get(index);
-    }
-
-    @Override
-    public EdgeIteratorState set(int index, EdgeIteratorState element) {
-        throw new UnsupportedOperationException("This object already knows all neighbors of the given base node.");
-    }
-
-    @Override
-    public void add(int index, EdgeIteratorState element) {
-        throw new UnsupportedOperationException("This object already knows all neighbors of the given base node.");
-    }
-
-    @Override
-    public EdgeIteratorState remove(int index) {
-        throw new UnsupportedOperationException("This object wants to know all neighbors of the given base node.");
-    }
-
-    @Override
-    public int indexOf(Object o) {
-        return sortedEdges.indexOf(o);
-    }
-
-    @Override
-    public int lastIndexOf(Object o) {
-        return sortedEdges.indexOf(o);
-    }
-
-    @Override
-    public ListIterator<EdgeIteratorState> listIterator() {
-        return sortedEdges.listIterator();
-    }
-
-    @Override
-    public ListIterator<EdgeIteratorState> listIterator(int index) {
-        return sortedEdges.listIterator(index);
-    }
-
-    @Override
-    public List<EdgeIteratorState> subList(int fromIndex, int toIndex) {
-        return sortedEdges.subList(fromIndex, toIndex);
+        throw new IllegalArgumentException("List does not contain the base edge");
     }
 
     public EdgeIteratorState getMostOrientedEdge() {
         return sortedEdges.get(sortedEdges.size() - 1);
+    }
+
+    public EdgeIteratorState get(final int index) {
+        return sortedEdges.get(index);
+    }
+
+    public int size() {
+        return sortedEdges.size();
     }
 
     @Override
@@ -181,72 +122,34 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
     }
 
     private class ComparableEdge implements Comparable<ComparableEdge> {
-        private final EdgeIteratorState edge;
+        final EdgeIteratorState edge;
 
-        public ComparableEdge(final EdgeIteratorState edge) {
+        public ComparableEdge(EdgeIteratorState edge) {
             this.edge = edge;
         }
 
         @Override
         public int compareTo(ComparableEdge o) {
-            int resultBasedOnAngle = getResultBasedOnAngle(o);
-            int resultBasedOnId = getResultBasedOnId(o);
+            final double angleThis = getAngle(edge);
+            final double angleOther = getAngle(o.edge);
+            final double angleDifference = angleThis - angleOther;
+            final int angleResult = angleDifference > 0 ? 1 : angleDifference == 0 ? 0 : -1;
+            final int idDifference = edge.getEdge() - o.edge.getEdge();
 
-            return resultBasedOnAngle != 0 ? resultBasedOnAngle : resultBasedOnId;
+            return angleResult != 0 ? angleResult : idDifference;
         }
 
-        private int getResultBasedOnAngle(ComparableEdge o) {
-            final Double thisAngleToBaseEdge = getAngle(baseEdge, edge);
-            final Double otherAngleToBaseEdge = getAngle(baseEdge, o.edge);
-
-
-            return thisAngleToBaseEdge.compareTo(otherAngleToBaseEdge);
-        }
-
-        private int getResultBasedOnId(ComparableEdge o) {
-            final Integer baseId = baseEdge.getEdge();
-            final Integer thisId = edge.getEdge();
-            final Integer otherId = o.edge.getEdge();
-
-            int resultBasedOnId;
-//            System.out.println("---------------------");
-//            System.out.println(this + " : " + o + " : " + baseEdge);
-//            System.out.println("baseId: " + baseId);
-//            System.out.println("thisId: " + thisId);
-//            System.out.println("otherId: " + otherId);
-//            System.out.println("thisToBase: " + thisIdToBaseId);
-//            System.out.println("thisToOther: " + otherIdToBaseId);
-            if ((thisId > baseId && otherId > baseId) || (thisId < baseId && otherId < baseId)) {
-                resultBasedOnId = thisId.compareTo(otherId);
-            } else if (thisId == otherId) {
-                resultBasedOnId = 0;
-            } else if (thisId == baseId) {
-                resultBasedOnId = -1;
-            } else if (otherId == baseId) {
-                resultBasedOnId = 1;
-            } else if (thisId > baseId) {
-                resultBasedOnId = -1;
-            } else if (thisId < baseId) {
-                resultBasedOnId = 1;
-            } else {
-                throw new IllegalStateException("wtf");
-            }
-
-//            System.out.println("result: " + resultBasedOnId);
-            return resultBasedOnId;
-        }
-
-        private Double getAngle(final EdgeIteratorState baseEdge, final EdgeIteratorState otherEdge) {
-            Double angle = vectorAngleCalculator.getAngleOfVectorsOriented(baseEdge, otherEdge);
+        private Double getAngle(final EdgeIteratorState edge) {
+            Double angle = vectorAngleCalculator.getAngleOfVectorsOriented(edge, edge);
 
             if (angle == -Double.MAX_VALUE) {
-                final int otherBaseNode = otherEdge.getBaseNode();
-                final int otherAdjNode = otherEdge.getAdjNode();
-                if (subIterators.get(otherAdjNode) == null) {
-                    subIterators.put(otherAdjNode, new SortedNeighbors(vectorAngleCalculator, graph, otherAdjNode, otherEdge.detach(true), otherBaseNode));
+                final int baseNode = edge.getBaseNode();
+                final int adjNode = edge.getAdjNode();
+                if (subIterators.get(adjNode) == null) {
+                    subIterators.put(adjNode, new SortedNeighbors(graph, adjNode, baseNode, vectorAngleCalculator, baseEdge));
                 }
 
-                angle = getAngle(baseEdge, subIterators.get(otherAdjNode).getMostOrientedEdge());
+                angle = getAngle(subIterators.get(adjNode).getMostOrientedEdge());
             }
 
             return angle;
@@ -255,17 +158,11 @@ public class SortedNeighbors implements List<EdgeIteratorState> {
         @Override
         public boolean equals(final Object o) {
             if (o instanceof ComparableEdge) {
-                final ComparableEdge oAsCE = (ComparableEdge) o;
-
-                return edge.getEdge() == oAsCE.edge.getEdge();
+                final ComparableEdge ce = (ComparableEdge) o;
+                return edge.getEdge() == ce.edge.getEdge() && edge.getBaseNode() == ce.edge.getBaseNode();
             } else {
                 return false;
             }
-        }
-
-        @Override
-        public String toString() {
-            return edge.toString();
         }
     }
 }

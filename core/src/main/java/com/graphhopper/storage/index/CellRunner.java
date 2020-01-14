@@ -1,7 +1,6 @@
 package com.graphhopper.storage.index;
 
 import com.graphhopper.storage.NodeAccess;
-import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
 
@@ -11,6 +10,7 @@ abstract class CellRunner {
     final LinkedList<EdgeIteratorState> edgesOnCell = new LinkedList<>();
     final Graph graph;
     final NodeAccess nodeAccess;
+    final VisitedManager localVisitedManager;
     final VisitedManagerDual globalVisitedManager;
     final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState startEdge;
@@ -27,6 +27,7 @@ abstract class CellRunner {
                       final EdgeIteratorState startEdge, final EdgeIteratorState endEdge) {
         this.graph = graph;
         this.nodeAccess = graph.getNodeAccess();
+        this.localVisitedManager = new VisitedManager(graph);
         this.globalVisitedManager = globalVisitedManager;
         this.vectorAngleCalculator = vectorAngleCalculator;
 
@@ -74,6 +75,7 @@ abstract class CellRunner {
             i++;
         }
         while (endNotReached);
+        System.out.println(extractNodesFromVisitedEdges());
     }
 
     private void addStartAndEndNodeOfCell() {
@@ -99,6 +101,7 @@ abstract class CellRunner {
     }
 
     private void settleEdge(EdgeIteratorState edge) {
+        localVisitedManager.settleEdge(edge);
         markGloballyVisited(edge);
         edgesOnCell.add(edge);
     }
@@ -117,10 +120,10 @@ abstract class CellRunner {
         final int lastEdgeAdjNode = lastEdge.getAdjNode();
         final int lastEdgeBaseNode = lastEdge.getBaseNode();
         final int ignoreBackwardsEdge = hasEdgeEndPointsWithEqualCoordinates(lastEdge) ? lastEdgeBaseNode : SortedNeighbors.DONT_IGNORE_NODE;
-        final SortedNeighbors sortedNeighbors = new SortedNeighbors(vectorAngleCalculator, graph, lastEdgeAdjNode, lastNonZeroLengthEdge.detach(true), ignoreBackwardsEdge);
+        final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastEdge);
         final EdgeIteratorState mostOrientedEdge = sortedNeighbors.getMostOrientedEdge();
 
-        System.out.println(sortedNeighbors);
+//        System.out.println(sortedNeighbors);
 
         if (!hasEdgeEndPointsWithEqualCoordinates(mostOrientedEdge)) {
             this.lastNonZeroLengthEdge = mostOrientedEdge;

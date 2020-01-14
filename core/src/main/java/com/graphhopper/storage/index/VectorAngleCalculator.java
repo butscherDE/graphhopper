@@ -25,10 +25,19 @@ public abstract class VectorAngleCalculator {
     }
 
     private double getAngleAfterErrorHandling(final EdgeIteratorState lastEdgeReversed, final EdgeIteratorState candidateEdge) {
-        final Vector2D lastEdgeVector = createVectorCorrespondingToEdge(lastEdgeReversed);
+//        final Vector2D lastEdgeVector = createVectorCorrespondingToEdge(lastEdgeReversed);
+        final Vector2D lastEdgeVector = createHorizontalRightVector(candidateEdge);
         final Vector2D candidateEdgeVector = createVectorCorrespondingToEdge(candidateEdge);
 
         return getAngle(lastEdgeVector, candidateEdgeVector);
+    }
+
+    private Vector2D createHorizontalRightVector(final EdgeIteratorState candidateEdge) {
+        final int baseNode = candidateEdge.getBaseNode();
+        final Coordinate candidateEdgeBaseNodeCoordinate = new Coordinate(nodeAccess.getLongitude(baseNode), nodeAccess.getLatitude(baseNode));
+        final Coordinate coordinateToTheRightOfPrevious = new Coordinate(nodeAccess.getLongitude(baseNode) + 1, nodeAccess.getLatitude(baseNode));
+
+        return new Vector2D(candidateEdgeBaseNodeCoordinate, coordinateToTheRightOfPrevious);
     }
 
     private double getAngle(Vector2D lastEdgeVector, Vector2D candidateEdgeVector) {
