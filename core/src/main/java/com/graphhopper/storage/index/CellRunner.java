@@ -3,6 +3,7 @@ package com.graphhopper.storage.index;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
+import com.graphhopper.util.StopWatch;
 
 import java.util.*;
 
@@ -58,24 +59,25 @@ abstract class CellRunner {
         boolean endNotReached;
         int i = 0;
         do {
-            if (extractNodesFromVisitedEdges().get(extractNodesFromVisitedEdges().size() - 1) == 3309699) {
-                int j = 0;
-            }
+//            final StopWatch sw = new StopWatch("Processed " + edgesOnCell.getLast()).start();
             endNotReached = processNextNeighborOnCell();
-//            System.out.println(i);
-//            System.out.println(extractNodesFromVisitedEdges());
-            if (i == 10000) {
-//                System.out.println(i);
-                if (RepititionFinder.isRepitition(extractNodesFromVisitedEdges(), 10)) {
-                    System.out.println(i + ": " + this.getClass().getSimpleName());
-                    System.out.println(extractNodesFromVisitedEdges());
-                    System.exit(-1);
-                }
-            }
+//            System.out.println(sw.stop());
+            checkRepetition(i);
             i++;
         }
         while (endNotReached);
         System.out.println(extractNodesFromVisitedEdges());
+    }
+
+    private void checkRepetition(int i) {
+        if (i == 10000) {
+//                System.out.println(i);
+            if (RepititionFinder.isRepitition(extractNodesFromVisitedEdges(), 10)) {
+                System.out.println(i + ": " + this.getClass().getSimpleName());
+                System.out.println(extractNodesFromVisitedEdges());
+                System.exit(-1);
+            }
+        }
     }
 
     private void addStartAndEndNodeOfCell() {

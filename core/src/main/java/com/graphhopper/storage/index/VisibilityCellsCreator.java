@@ -5,8 +5,6 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.StopWatch;
-import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
-import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
 
 import java.util.*;
 
@@ -20,7 +18,7 @@ class VisibilityCellsCreator {
     private final Graph graph;
     private final NodeAccess nodeAccess;
     private final EdgeIterator allEdges;
-    private final VisitedManagerDual visitedManagerDual;
+    private final VisitedManagerDual globalVisitedManager;
 
     final List<VisibilityCell> allFoundCells;
 
@@ -30,7 +28,7 @@ class VisibilityCellsCreator {
         this.nodeAccess = nodeAccess;
         this.allEdges = graph.getAllEdges();
         this.allFoundCells = new ArrayList<>(graph.getNodes());
-        this.visitedManagerDual = new VisitedManagerDual(graph);
+        this.globalVisitedManager = new VisitedManagerDual(graph);
     }
 
     public List<VisibilityCell> create() {
@@ -53,38 +51,25 @@ class VisibilityCellsCreator {
         int i = 0;
         while (allEdges.next()) {
             System.out.println("###################################################################" + i++);
-            if (i < 91507 + 1) {
+            if (i < 620000 + 1) {
                 continue;
             }
             System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
+            System.out.println("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size());
             StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
 
-            final int baseNode = allEdges.getBaseNode();
-            final int adjNode = allEdges.getAdjNode();
-            final double baseNodeLatitude = nodeAccess.getLatitude(baseNode);
-            final double baseNodeLongitude = nodeAccess.getLongitude(baseNode);
-            final double adjNodeLatitude = nodeAccess.getLatitude(adjNode);
-            final double adjNodeLongitude = nodeAccess.getLongitude(adjNode);
-            if (baseNodeLatitude == adjNodeLatitude && baseNodeLongitude == adjNodeLongitude) {
+            if (continueOnLengthZeroEdge()) {
                 continue;
             }
 
 
             final EdgeIteratorState currentEdge = allEdges.detach(false);
-            try {
-                if (!visibilityCellOnTheLeftFound(currentEdge)) {
-                    addVisibilityCellToResults(new CellRunnerLeft(graph, visitedManagerDual, currentEdge).extractVisibilityCell());
-                }
-            } catch (IllegalStateException e) {
-
+            if (!visibilityCellOnTheLeftFound(currentEdge)) {
+                addVisibilityCellToResults(new CellRunnerLeft(graph, globalVisitedManager, currentEdge).extractVisibilityCell());
             }
 
-            try {
-                if (!visibilityCellOnTheRightFound(currentEdge)) {
-                    addVisibilityCellToResults(new CellRunnerRight(graph, visitedManagerDual, currentEdge).extractVisibilityCell());
-                }
-            } catch (IllegalStateException e) {
-
+            if (!visibilityCellOnTheRightFound(currentEdge)) {
+                addVisibilityCellToResults(new CellRunnerRight(graph, globalVisitedManager, currentEdge).extractVisibilityCell());
             }
 
             System.out.println(sw1.stop());
@@ -92,16 +77,37 @@ class VisibilityCellsCreator {
         System.out.println("finished");
     }
 
+    private boolean continueOnLengthZeroEdge() {
+        if (isCurrentEdgeLengthZero()) {
+            globalVisitedManager.settleEdgeLeft(allEdges);
+            globalVisitedManager.settleEdgeRight(allEdges);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isCurrentEdgeLengthZero() {
+        final int baseNode = allEdges.getBaseNode();
+        final int adjNode = allEdges.getAdjNode();
+
+        final double baseNodeLatitude = nodeAccess.getLatitude(baseNode);
+        final double baseNodeLongitude = nodeAccess.getLongitude(baseNode);
+        final double adjNodeLatitude = nodeAccess.getLatitude(adjNode);
+        final double adjNodeLongitude = nodeAccess.getLongitude(adjNode);
+
+        return baseNodeLatitude == adjNodeLatitude && baseNodeLongitude == adjNodeLongitude;
+    }
+
     private void addVisibilityCellToResults(VisibilityCell visibilityCell) {
         allFoundCells.add(visibilityCell);
     }
 
     private Boolean visibilityCellOnTheLeftFound(final EdgeIteratorState currentEdge) {
-        return visitedManagerDual.isEdgeSettledLeft(VisitedManager.forceNodeIdsAscending(currentEdge));
+        return globalVisitedManager.isEdgeSettledLeft(VisitedManager.forceNodeIdsAscending(currentEdge));
     }
 
     private Boolean visibilityCellOnTheRightFound(final EdgeIteratorState currentEdge) {
-        return visitedManagerDual.isEdgeSettledRight(VisitedManager.forceNodeIdsAscending(currentEdge));
+        return globalVisitedManager.isEdgeSettledRight(VisitedManager.forceNodeIdsAscending(currentEdge));
     }
 
 }
