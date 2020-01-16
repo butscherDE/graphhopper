@@ -60,12 +60,7 @@ public class SortedNeighbors {
         boolean isImpasse = true;
 
         if (hasEdgeEqualCoordinates(edge)) {
-            final List<EdgeIteratorState> neighbors = getNeighbors(edge.getAdjNode());
-//            if (isImpassThatLeadsBackToEqualCoordinateNode(neighbors)) {
-//                return true;
-//            }
-
-            isImpasse &= !hasANeighborNonZeroLengthEdge(edge, neighbors);
+            isImpasse &= !hasANeighborNonZeroLengthEdge(edge);
         } else {
             isImpasse &=  false;
         }
@@ -73,21 +68,26 @@ public class SortedNeighbors {
         return isImpasse;
     }
 
-    private boolean hasANeighborNonZeroLengthEdge(EdgeIteratorState edge, List<EdgeIteratorState> neighbors) {
-        boolean hasNeighborNonZeroEdge = false;
+    private boolean hasANeighborNonZeroLengthEdge(EdgeIteratorState edge) {
+        final List<EdgeIteratorState> neighbors = getNeighbors(edge.getAdjNode());
+
+        boolean hasAnyNeighborNonZeroEdge = false;
         for (EdgeIteratorState neighbor : neighbors) {
-            final boolean hasEqualCoords = hasEdgeEqualCoordinates(neighbor);
-            if (hasEqualCoords && !areEdgesEqual(edge, neighbor)) {
-                hasNeighborNonZeroEdge |= isImpasseSubNode(neighbor);
-            } else if (!hasEqualCoords){
-                hasNeighborNonZeroEdge |= true;
-            }
+            hasAnyNeighborNonZeroEdge |= hasNeighborNonZeroLengthEdge(edge, neighbor);
         }
-        return hasNeighborNonZeroEdge;
+        return hasAnyNeighborNonZeroEdge;
     }
 
-    private boolean isImpassThatLeadsBackToEqualCoordinateNode(List<EdgeIteratorState> neighbors) {
-        return neighbors.size() == 1;
+    private boolean hasNeighborNonZeroLengthEdge(final EdgeIteratorState neighborPredecessor, final EdgeIteratorState neighbor) {
+        final boolean hasEqualCoords = hasEdgeEqualCoordinates(neighbor);
+
+        if (hasEqualCoords && !areEdgesEqual(neighborPredecessor, neighbor)) {
+            return isImpasseSubNode(neighbor);
+        } else if (!hasEqualCoords){
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private boolean areEdgesEqual(final EdgeIteratorState edge1, final EdgeIteratorState edge2) {
