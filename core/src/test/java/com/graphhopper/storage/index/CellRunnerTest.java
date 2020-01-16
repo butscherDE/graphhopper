@@ -448,10 +448,12 @@ public class CellRunnerTest {
 
     @Test
     public void issueOnEdgeGermanyLeft() {
-        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -3.0, -4.0, -3.0, -2.0, -1.0}, new double[]{1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
+        final double[] expectedLatitudes = {-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0, -1.0, -1.0, 0.0};
+        final double[] expectedLongitudes = {0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+        final Polygon expectedCellShape = new Polygon(expectedLatitudes, expectedLongitudes);
         final PolygonRoutingTestGraph customTestGraph = issueOnEdgeGermanyTestGraph();
 
-        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1, 2);
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
         final CellRunner cr = new CellRunnerLeft(cti.graph, cti.visitedManagerDual, cti.startingEdge);
 
         final VisibilityCell vc = cr.extractVisibilityCell();
@@ -461,11 +463,13 @@ public class CellRunnerTest {
 
     @Test
     public void issueOnEdgeGermanyRight() {
-        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -3.0, -4.0, -3.0, -2.0, -1.0}, new double[]{1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
+        final double[] expectedLatitudes = {0.0, -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0, -1.0, -1.0};
+        final double[] expectedLongitudes = {0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0};
+        final Polygon expectedCellShape = new Polygon(expectedLatitudes, expectedLongitudes);
         final PolygonRoutingTestGraph customTestGraph = issueOnEdgeGermanyTestGraph();
 
-        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1, 2);
-        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.visitedManagerDual, cti.startingEdge);
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 1);
+        final CellRunner cr = new CellRunnerRight(cti.graph, cti.visitedManagerDual, cti.startingEdge);
 
         final VisibilityCell vc = cr.extractVisibilityCell();
 

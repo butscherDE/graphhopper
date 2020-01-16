@@ -64,11 +64,12 @@ abstract class CellRunner {
             i++;
         }
         while (endNotReached);
+
+        System.out.println(extractNodesFromVisitedEdges());
     }
 
     private void checkRepetition(int i) {
         if (i == 10000) {
-//                System.out.println(i);
             if (RepititionFinder.isRepitition(extractNodesFromVisitedEdges(), 10)) {
                 System.out.println(i + ": " + this.getClass().getSimpleName());
                 System.out.println(extractNodesFromVisitedEdges());
