@@ -81,4 +81,8 @@ public class VisibilityCell {
     public boolean contains(final double lat, final double lon) {
         return this.cellShape.contains(lat, lon);
     }
+
+    public int size() {
+        return cellShape.size();
+    }
 }

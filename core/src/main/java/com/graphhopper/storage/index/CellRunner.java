@@ -59,14 +59,11 @@ abstract class CellRunner {
         boolean endNotReached;
         int i = 0;
         do {
-//            final StopWatch sw = new StopWatch("Processed " + edgesOnCell.getLast()).start();
             endNotReached = processNextNeighborOnCell();
-//            System.out.println(sw.stop());
             checkRepetition(i);
             i++;
         }
         while (endNotReached);
-        System.out.println(extractNodesFromVisitedEdges());
     }
 
     private void checkRepetition(int i) {

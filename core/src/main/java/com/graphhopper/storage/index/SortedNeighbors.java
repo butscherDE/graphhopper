@@ -1,5 +1,6 @@
 package com.graphhopper.storage.index;
 
+import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
@@ -11,30 +12,15 @@ public class SortedNeighbors {
     private final Graph graph;
     private final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState baseEdge;
-//    private final EdgeIteratorState compareEdge;
 
     private final Map<Integer, SortedNeighbors> subIterators = new HashMap<>();
 
     private final List<EdgeIteratorState> sortedEdges;
 
-
-//    public SortedNeighbors(final Graph graph, final int baseNode, final int ignore, final VectorAngleCalculator vectorAngleCalculator, final EdgeIteratorState baseEdge,
-//                           final EdgeIteratorState compareEdge) {
-//        this.graph = graph;
-//        this.vectorAngleCalculator = vectorAngleCalculator;
-//        this.baseEdge = baseEdge;
-//        this.compareEdge = compareEdge;
-//
-//        List<EdgeIteratorState> sortedEdges = sort(baseNode, ignore);
-//        this.sortedEdges = rearrangeSuchThatMostOrientedEdgeComesLast(sortedEdges);
-//    }
-
     public SortedNeighbors(Graph graph, final int baseNode, final int ignore, VectorAngleCalculator vectorAngleCalculator, EdgeIteratorState baseEdge) {
-//        this(graph, baseNode, ignore, vectorAngleCalculator, baseEdge, baseEdge);
         this.graph = graph;
         this.vectorAngleCalculator = vectorAngleCalculator;
         this.baseEdge = baseEdge;
-//        this.compareEdge = compareEdge;
 
         List<EdgeIteratorState> sortedEdges = sort(baseNode, ignore);
         this.sortedEdges = rearrangeSuchThatMostOrientedEdgeComesLast(sortedEdges);
@@ -60,10 +46,96 @@ public class SortedNeighbors {
 
     private void addAllNeighborsMaybeIncludingCompareEdge(int ignore, EdgeIterator neighborIterator, List<ComparableEdge> comparableEdges) {
         while(neighborIterator.next()) {
-            if (neighborIterator.getAdjNode() != ignore) {
+            if (isNodeToIgnore(ignore, neighborIterator) && !isImpasseSubNode(neighborIterator)) {
                 comparableEdges.add(new ComparableEdge(neighborIterator.detach(false)));
             }
         }
+    }
+
+    private boolean isNodeToIgnore(int ignore, EdgeIterator neighborIterator) {
+        return neighborIterator.getAdjNode() != ignore;
+    }
+
+    private boolean isImpasseSubNode(final EdgeIteratorState edge) {
+        boolean isImpasse = true;
+
+        if (hasEdgeEqualCoordinates(edge)) {
+            final List<EdgeIteratorState> neighbors = getNeighbors(edge.getAdjNode());
+//            if (isImpassThatLeadsBackToEqualCoordinateNode(neighbors)) {
+//                return true;
+//            }
+
+            isImpasse &= !hasANeighborNonZeroLengthEdge(edge, neighbors);
+        } else {
+            isImpasse &=  false;
+        }
+
+        return isImpasse;
+    }
+
+    private boolean hasANeighborNonZeroLengthEdge(EdgeIteratorState edge, List<EdgeIteratorState> neighbors) {
+        boolean hasNeighborNonZeroEdge = false;
+        for (EdgeIteratorState neighbor : neighbors) {
+            final boolean hasEqualCoords = hasEdgeEqualCoordinates(neighbor);
+            if (hasEqualCoords && !areEdgesEqual(edge, neighbor)) {
+                hasNeighborNonZeroEdge |= isImpasseSubNode(neighbor);
+            } else if (!hasEqualCoords){
+                hasNeighborNonZeroEdge |= true;
+            }
+        }
+        return hasNeighborNonZeroEdge;
+    }
+
+    private boolean isImpassThatLeadsBackToEqualCoordinateNode(List<EdgeIteratorState> neighbors) {
+        return neighbors.size() == 1;
+    }
+
+    private boolean areEdgesEqual(final EdgeIteratorState edge1, final EdgeIteratorState edge2) {
+        final int edge1BaseNode = edge1.getBaseNode();
+        final int edge1AdjNode = edge1.getAdjNode();
+        final int edge2BaseNode = edge2.getBaseNode();
+        final int edge2AdjNode = edge2.getAdjNode();
+
+        return (edge1BaseNode == edge2BaseNode && edge1AdjNode == edge2AdjNode) || (edge1BaseNode == edge2AdjNode && edge1AdjNode == edge2BaseNode);
+    }
+
+    private boolean hasEdgeEqualCoordinates(final EdgeIteratorState edge) {
+        final int baseNode = edge.getBaseNode();
+        final int adjNode = edge.getAdjNode();
+
+        final boolean latitudeIsEqual = isLatitudeIsEqual(baseNode, adjNode);
+        final boolean longitudeIsEqual = isLongitudeEqual(baseNode, adjNode);
+
+        return latitudeIsEqual && longitudeIsEqual;
+    }
+
+    private boolean isLatitudeIsEqual(int baseNode, int adjNode) {
+        final NodeAccess nodeAccess = graph.getNodeAccess();
+
+        final double baseNodeLatitude = nodeAccess.getLatitude(baseNode);
+        final double adjNodeLatitude = nodeAccess.getLatitude(adjNode);
+
+        return baseNodeLatitude == adjNodeLatitude;
+    }
+
+    private boolean isLongitudeEqual(int baseNode, int adjNode) {
+        final NodeAccess nodeAccess = graph.getNodeAccess();
+
+        final double baseNodeLongitude = nodeAccess.getLongitude(baseNode);
+        final double adjNodeLongitude = nodeAccess.getLongitude(adjNode);
+
+        return baseNodeLongitude == adjNodeLongitude;
+    }
+
+    private List<EdgeIteratorState> getNeighbors(final int node) {
+        final EdgeIterator neighbors = graph.createEdgeExplorer().setBaseNode(node);
+        List<EdgeIteratorState> neighborEdges = new LinkedList<>();
+
+        while (neighbors.next()) {
+            neighborEdges.add(neighbors.detach(false));
+        }
+
+        return neighborEdges;
     }
 
     private void addBaseEdgeIfNotAlready(List<ComparableEdge> comparableEdges) {

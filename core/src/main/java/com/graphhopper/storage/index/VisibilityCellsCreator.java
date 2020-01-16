@@ -5,8 +5,11 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.StopWatch;
+import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
+import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * "Left" and "Right" are always imagined as walking from baseNode to adjacent node and then turn left or right.
@@ -38,7 +41,7 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(3309699, 3309701, 3309711, 3309702, 3309709, 3309711));
+//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(1308555, 2161331, 6318267, 3182139, 5712100, 7895450, 8987113));
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
@@ -49,15 +52,21 @@ class VisibilityCellsCreator {
 //        }
 
         int i = 0;
+        StopWatch sw1 = null;
         while (allEdges.next()) {
-            System.out.println("###################################################################" + i++);
-            if (i < 620000 + 1) {
-                continue;
+            if (i % 1000 == 0) {
+                System.out.println("###################################################################" + i);
+                System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
+                final VisibilityCellConsumer vcCoordinateCounter = new VisibilityCellConsumer();
+                allFoundCells.forEach(vcCoordinateCounter);
+                System.out.println("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size() + " num VC-coordinates: " + vcCoordinateCounter.getCount());
+                sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
             }
-            System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
-            System.out.println("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size());
-            StopWatch sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
 
+//            if (i < 559000) {
+//                i++;
+//                continue;
+//            }
             if (continueOnLengthZeroEdge()) {
                 continue;
             }
@@ -72,7 +81,10 @@ class VisibilityCellsCreator {
                 addVisibilityCellToResults(new CellRunnerRight(graph, globalVisitedManager, currentEdge).extractVisibilityCell());
             }
 
-            System.out.println(sw1.stop());
+            if (i % 999 == 0) {
+                System.out.println(sw1.stop());
+            }
+            i++;
         }
         System.out.println("finished");
     }
@@ -110,4 +122,16 @@ class VisibilityCellsCreator {
         return globalVisitedManager.isEdgeSettledRight(VisitedManager.forceNodeIdsAscending(currentEdge));
     }
 
+    private static class VisibilityCellConsumer implements Consumer<VisibilityCell> {
+        int c = 0;
+
+        @Override
+        public void accept(VisibilityCell visibilityCell) {
+            c += visibilityCell.size();
+        }
+
+        public int getCount() {
+            return c;
+        }
+    }
 }

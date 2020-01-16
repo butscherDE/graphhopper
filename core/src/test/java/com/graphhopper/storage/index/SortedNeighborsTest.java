@@ -191,6 +191,58 @@ public class SortedNeighborsTest {
         return new PolygonRoutingTestGraph(nodes, edges);
     }
 
+    @Test
+    public void equalCoordinateImpasse() {
+        final PolygonRoutingTestGraph graphMocker = equalCoordinateImpasseTestGraph();
+
+        final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
+
+        final int[] expectedOrder = new int[] {0};
+
+        assertOrdering(expectedOrder, sortedNeighbors);
+    }
+
+    private PolygonRoutingTestGraph equalCoordinateImpasseTestGraph() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 1)
+        };
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
+    @Test
+    public void equalCoordinateNeighborPathImpasse() {
+        final PolygonRoutingTestGraph graphMocker = equalCoordinateNeighborPathImpasseTestGraph();
+
+        final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
+
+        final int[] expectedOrder = new int[] {0};
+
+        assertOrdering(expectedOrder, sortedNeighbors);
+    }
+
+    private PolygonRoutingTestGraph equalCoordinateNeighborPathImpasseTestGraph() {
+        final Node[] nodes = new Node[] {
+                new Node(0, 0, 0),
+                new Node(1, 0, 1),
+                new Node(2, 0, 1),
+                new Node(3, 0, 1),
+                new Node(4, 0, 1)
+        };
+        final Edge[] edges = new Edge[] {
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(2, 3, 1, true),
+                new Edge(3, 4, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
     private SortedNeighbors getSortedNeighbors(final PolygonRoutingTestGraph graphMocker, final int baseNode, final int adjNode) {
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(graphMocker.nodeAccess);
 

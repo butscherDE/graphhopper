@@ -3,9 +3,9 @@ package com.graphhopper.storage.index;
 import com.graphhopper.routing.template.util.Edge;
 import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
+import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.Polygon;
-import com.graphhopper.storage.Graph;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -195,7 +195,7 @@ public class CellRunnerTest {
         assertEquals(expectedCellShape, vc.cellShape);
     }
 
-//    @Test
+    //    @Test
     public void duplicateStartEdge() {
         GRAPH_MOCKER.graph.edge(17, 26, 1, true);
 
@@ -367,7 +367,7 @@ public class CellRunnerTest {
 
     @Test
     public void collinearEdgeWhereNextNodeHintShallNotBeTaken() {
-        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -2.0, -3.0, -2.0, -1.0,  0.0}, new double[]{1.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0});
+        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -2.0, -3.0, -2.0, -1.0, 0.0}, new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0});
         final PolygonRoutingTestGraph customTestGraph = collinearEdgeWhereNextNodeHintShallNotBeTakenGraph();
 
         final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 0, 2);
@@ -403,7 +403,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{-1.0, -3.0, -4.0, -2.0, -1.0, 0.0}, new double[]{1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
         final PolygonRoutingTestGraph customTestGraph = collinearEdgeWithNoOtherNeighborsThanBackwardsTestGraph();
 
-        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1,2);
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1, 2);
         final CellRunner cr = new CellRunnerLeft(cti.graph, cti.visitedManagerDual, cti.startingEdge);
 
         final VisibilityCell vc = cr.extractVisibilityCell();
@@ -416,7 +416,7 @@ public class CellRunnerTest {
         final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -3.0, -4.0, -3.0, -2.0, -1.0}, new double[]{1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
         final PolygonRoutingTestGraph customTestGraph = collinearEdgeWithNoOtherNeighborsThanBackwardsTestGraph();
 
-        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1,2);
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1, 2);
         final CellRunner cr = new CellRunnerRight(cti.graph, cti.visitedManagerDual, cti.startingEdge);
 
         final VisibilityCell vc = cr.extractVisibilityCell();
@@ -442,6 +442,53 @@ public class CellRunnerTest {
                 new Edge(4, 5, 1, true),
                 new Edge(4, 6, 1, true),
                 new Edge(5, 6, 1, true)
+        };
+        return new PolygonRoutingTestGraph(nodes, edges);
+    }
+
+    @Test
+    public void issueOnEdgeGermanyLeft() {
+        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -3.0, -4.0, -3.0, -2.0, -1.0}, new double[]{1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
+        final PolygonRoutingTestGraph customTestGraph = issueOnEdgeGermanyTestGraph();
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1, 2);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.visitedManagerDual, cti.startingEdge);
+
+        final VisibilityCell vc = cr.extractVisibilityCell();
+
+        assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    @Test
+    public void issueOnEdgeGermanyRight() {
+        final Polygon expectedCellShape = new Polygon(new double[]{0.0, -1.0, -3.0, -4.0, -3.0, -2.0, -1.0}, new double[]{1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
+        final PolygonRoutingTestGraph customTestGraph = issueOnEdgeGermanyTestGraph();
+
+        final CellRunnerTestInputs cti = new CellRunnerTestInputs(customTestGraph, 1, 2);
+        final CellRunner cr = new CellRunnerLeft(cti.graph, cti.visitedManagerDual, cti.startingEdge);
+
+        final VisibilityCell vc = cr.extractVisibilityCell();
+
+        assertEquals(expectedCellShape, vc.cellShape);
+    }
+
+    private PolygonRoutingTestGraph issueOnEdgeGermanyTestGraph() {
+        final Node[] nodes = new Node[]{
+                new Node(0, 0, 0),
+                new Node(1, -1, 0),
+                new Node(2, -2, 0),
+                new Node(3, -2, 1),
+                new Node(4, -1, 1),
+                new Node(5, -2, 0),
+                new Node(6, -2, -1)
+        };
+        final Edge[] edges = new Edge[]{
+                new Edge(0, 1, 1, true),
+                new Edge(1, 2, 1, true),
+                new Edge(1, 4, 1, true),
+                new Edge(2, 3, 1, true),
+                new Edge(2, 5, 1, true),
+                new Edge(2, 6, 1, true)
         };
         return new PolygonRoutingTestGraph(nodes, edges);
     }
