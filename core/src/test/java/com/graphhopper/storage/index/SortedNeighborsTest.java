@@ -247,7 +247,7 @@ public class SortedNeighborsTest {
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(graphMocker.nodeAccess);
 
         final EdgeIteratorState lastEdgeReversed = graphMocker.getEdge(baseNode, adjNode);
-        return new SortedNeighbors(graphMocker.graph, lastEdgeReversed.getBaseNode(), SortedNeighbors.DONT_IGNORE_NODE, vac, lastEdgeReversed);
+        return new SortedNeighbors(graphMocker.graph, lastEdgeReversed.getBaseNode(), SortedNeighbors.DO_NOT_IGNORE_NODE, vac, lastEdgeReversed);
     }
 
     private void assertOrdering(int[] expectedOrder, SortedNeighbors sortedNeighbors) {

@@ -1,10 +1,15 @@
 package com.graphhopper.storage.index;
 
-import com.graphhopper.storage.*;
+import com.graphhopper.storage.Directory;
+import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.Polygon;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class GridIndex extends LocationIndexTree {
@@ -29,9 +34,9 @@ public class GridIndex extends LocationIndexTree {
         final Set<VisibilityCell> intersectingVisibilityCells = new CopyOnWriteArraySet<>();
         final GridCell[][] relevantGridCells = getGridCellsOverlapping(polygon);
 
-        for (int i = 0; i < relevantGridCells.length; i++) {
+        for (GridCell[] relevantGridCell : relevantGridCells) {
             for (int j = 0; j < relevantGridCells[0].length; j++) {
-                addAllIntersectingVisiblityCellsOfGridCell(intersectingVisibilityCells, relevantGridCells[i][j], polygon);
+                addAllIntersectingVisibilityCellsOfGridCell(intersectingVisibilityCells, relevantGridCell[j], polygon);
             }
         }
 
@@ -44,7 +49,7 @@ public class GridIndex extends LocationIndexTree {
         return getGridCellsThatOverlapPolygonBoundingBox(polygonMinBoundingBox);
     }
 
-    private void addAllIntersectingVisiblityCellsOfGridCell(Collection<VisibilityCell> overlappingVisibilityCells, GridCell gridCell, final Polygon polygon) {
+    private void addAllIntersectingVisibilityCellsOfGridCell(Collection<VisibilityCell> overlappingVisibilityCells, GridCell gridCell, final Polygon polygon) {
         for (VisibilityCell visibilityCell : gridCell.visibilityCells) {
             if (visibilityCell.intersects(polygon)) {
                 addVisibilityCellToResults(overlappingVisibilityCells, visibilityCell);
@@ -121,9 +126,9 @@ public class GridIndex extends LocationIndexTree {
     private void addThisToAllOverlappingGridCells(VisibilityCell visibilityCell) {
         final GridCell[][] relevantGridCells = getGridCellsOverlapping(visibilityCell.cellShape);
 
-        for (int i = 0; i < relevantGridCells.length; i++) {
+        for (GridCell[] relevantGridCell : relevantGridCells) {
             for (int j = 0; j < relevantGridCells[0].length; j++) {
-                addIfGridCellOverlapsVisibilityCell(visibilityCell, relevantGridCells[i][j]);
+                addIfGridCellOverlapsVisibilityCell(visibilityCell, relevantGridCell[j]);
             }
         }
     }
@@ -155,8 +160,7 @@ public class GridIndex extends LocationIndexTree {
     }
 
 
-    private void addIfGridCellOverlapsVisibilityCell(VisibilityCell visibilityCell, GridCell index) {
-        final GridCell gridCell = index;
+    private void addIfGridCellOverlapsVisibilityCell(VisibilityCell visibilityCell, GridCell gridCell) {
         if (visibilityCell.isOverlapping(gridCell)) {
             addVisibilityCellToResults(gridCell.visibilityCells, visibilityCell);
         }

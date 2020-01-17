@@ -1,9 +1,10 @@
 package com.graphhopper.storage.index;
 
-import java.util.HashMap;
-import java.util.Map;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeIteratorState;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class VisitedManager {
     final Map<Edge, Boolean> edgeIdVisited;
@@ -14,9 +15,7 @@ public class VisitedManager {
 
     public void settleEdge(EdgeIteratorState edge) {
         final Edge wrappedEdge = new Edge(edge);
-        if (edgeIdVisited.get(wrappedEdge) == null) {
-            edgeIdVisited.put(wrappedEdge, true);
-        }
+        edgeIdVisited.putIfAbsent(wrappedEdge, true);
     }
 
     public boolean isEdgeSettled(EdgeIteratorState edge) {
@@ -29,12 +28,12 @@ public class VisitedManager {
         return edge.getBaseNode() < edge.getAdjNode() ? edge : edge.detach(true);
     }
 
-    private class Edge {
+    private static class Edge {
         private final int hashCode;
         private final int baseNode;
         private final int adjNode;
 
-        public Edge(EdgeIteratorState edge) {
+        Edge(EdgeIteratorState edge) {
             this.hashCode = setHashCode(edge);
             this.baseNode = edge.getBaseNode();
             this.adjNode = edge.getAdjNode();

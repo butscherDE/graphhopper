@@ -5,12 +5,11 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.StopWatch;
-import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
-import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -25,7 +24,7 @@ class VisibilityCellsCreator {
     private final EdgeIterator allEdges;
     private final VisitedManagerDual globalVisitedManager;
 
-    final List<VisibilityCell> allFoundCells;
+    private final List<VisibilityCell> allFoundCells;
 
     public VisibilityCellsCreator(final Graph graph, final NodeAccess nodeAccess) {
         this.graph = graph;
@@ -131,7 +130,7 @@ class VisibilityCellsCreator {
             c += visibilityCell.size();
         }
 
-        public int getCount() {
+        int getCount() {
             return c;
         }
     }

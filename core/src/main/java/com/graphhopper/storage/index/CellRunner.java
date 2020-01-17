@@ -1,31 +1,26 @@
 package com.graphhopper.storage.index;
 
+import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.storage.Graph;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 abstract class CellRunner {
     final LinkedList<EdgeIteratorState> edgesOnCell = new LinkedList<>();
-    final Graph graph;
+    private final Graph graph;
     final NodeAccess nodeAccess;
-    final VisitedManager localVisitedManager;
+    private final VisitedManager localVisitedManager;
     final VisitedManagerDual globalVisitedManager;
-    final VectorAngleCalculator vectorAngleCalculator;
+    private final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState startEdge;
-    private final EdgeIteratorState endEdge;
 
-    EdgeIteratorState lastNonZeroLengthEdge;
+    private EdgeIteratorState lastNonZeroLengthEdge;
 
 
-    public CellRunner(final Graph graph, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
-                      final EdgeIteratorState startEdge) {
-        this(graph, globalVisitedManager, vectorAngleCalculator, startEdge, startEdge);
-    }
-
-    public CellRunner(final Graph graph, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
-                      final EdgeIteratorState startEdge, final EdgeIteratorState endEdge) {
+    CellRunner(final Graph graph, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
+               final EdgeIteratorState startEdge) {
         this.graph = graph;
         this.nodeAccess = graph.getNodeAccess();
         this.localVisitedManager = new VisitedManager(graph);
@@ -33,9 +28,7 @@ abstract class CellRunner {
         this.vectorAngleCalculator = vectorAngleCalculator;
 
         this.startEdge = VisitedManager.forceNodeIdsAscending(startEdge);
-        this.endEdge = VisitedManager.forceNodeIdsAscending(endEdge);
         this.lastNonZeroLengthEdge = this.startEdge;
-
     }
 
     public VisibilityCell extractVisibilityCell() {
@@ -84,9 +77,7 @@ abstract class CellRunner {
     private boolean processNextNeighborOnCell() {
         final EdgeIteratorState leftOrRightMostNeighbor = getMostLeftOrRightOrientedEdge();
 
-        boolean cellRunHasNotEnded = settleAllFoundEdgesAndSetWhenRunHasStopped(leftOrRightMostNeighbor);
-
-        return cellRunHasNotEnded;
+        return settleAllFoundEdgesAndSetWhenRunHasStopped(leftOrRightMostNeighbor);
     }
 
     private boolean settleAllFoundEdgesAndSetWhenRunHasStopped(EdgeIteratorState edge) {
@@ -105,19 +96,17 @@ abstract class CellRunner {
     }
 
     private boolean lastEdgeNotReached(final EdgeIteratorState lastEdge) {
-        final boolean edgeIdEqual = true;
         final boolean baseNodeEqual = lastEdge.getBaseNode() == startEdge.getBaseNode();
         final boolean adjNodeEqual = lastEdge.getAdjNode() == startEdge.getAdjNode();
         final boolean sameDirection = baseNodeEqual && adjNodeEqual;
-        final boolean edgeEqual = edgeIdEqual && sameDirection;
-        return !edgeEqual;
+        return !sameDirection;
     }
 
     private EdgeIteratorState getMostLeftOrRightOrientedEdge() {
         final EdgeIteratorState lastEdge = edgesOnCell.getLast();
         final int lastEdgeBaseNode = lastEdge.getBaseNode();
         final int lastEdgeAdjNode = lastEdge.getAdjNode();
-        final int ignoreBackwardsEdge = hasEdgeEndPointsWithEqualCoordinates(lastEdge) ? lastEdgeBaseNode : SortedNeighbors.DONT_IGNORE_NODE;
+        final int ignoreBackwardsEdge = hasEdgeEndPointsWithEqualCoordinates(lastEdge) ? lastEdgeBaseNode : SortedNeighbors.DO_NOT_IGNORE_NODE;
         final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastNonZeroLengthEdge.detach(true));
         final EdgeIteratorState mostOrientedEdge = sortedNeighbors.getMostOrientedEdge();
 

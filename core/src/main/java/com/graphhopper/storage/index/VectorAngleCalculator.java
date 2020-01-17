@@ -10,7 +10,7 @@ public abstract class VectorAngleCalculator {
 
     private final NodeAccess nodeAccess;
 
-    public VectorAngleCalculator(NodeAccess nodeAccess) {
+    VectorAngleCalculator(NodeAccess nodeAccess) {
         this.nodeAccess = nodeAccess;
     }
 
@@ -42,9 +42,8 @@ public abstract class VectorAngleCalculator {
     private double getAngle(Vector2D lastEdgeVector, Vector2D candidateEdgeVector) {
         final double angleTo = lastEdgeVector.angleTo(candidateEdgeVector);
         final double angleToContinuousInterval = transformAngleToContinuousInterval(angleTo);
-        final double angleToZeroIfVeryCloseTo2Pi = getAngleAsZeroIfCloseToTwoPi(angleToContinuousInterval);
 
-        return angleToZeroIfVeryCloseTo2Pi;
+        return getAngleAsZeroIfCloseToTwoPi(angleToContinuousInterval);
     }
 
     private double getAngleAsZeroIfCloseToTwoPi(double angleToContinuousInterval) {

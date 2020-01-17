@@ -1,11 +1,11 @@
 package com.graphhopper.storage.index;
 
-import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
+import com.graphhopper.util.EdgeIteratorState;
 
 public class VisitedManagerDual {
     final VisitedManager visitedLeft;
-    final VisitedManager visitedRight;
+    private final VisitedManager visitedRight;
 
     public VisitedManagerDual(final Graph graph) {
         this.visitedLeft = new VisitedManager(graph);

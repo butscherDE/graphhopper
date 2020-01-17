@@ -1,14 +1,14 @@
 package com.graphhopper.storage.index;
 
+import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.storage.Graph;
 
 import java.util.*;
 
 public class SortedNeighbors {
-    public final static int DONT_IGNORE_NODE = -1;
+    public final static int DO_NOT_IGNORE_NODE = -1;
     private final Graph graph;
     private final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState baseEdge;
@@ -57,12 +57,12 @@ public class SortedNeighbors {
     }
 
     private boolean isImpasseSubNode(final EdgeIteratorState edge) {
-        boolean isImpasse = true;
+        boolean isImpasse;
 
         if (hasEdgeEqualCoordinates(edge)) {
-            isImpasse &= !hasANeighborNonZeroLengthEdge(edge);
+            isImpasse = !hasANeighborNonZeroLengthEdge(edge);
         } else {
-            isImpasse &=  false;
+            isImpasse = false;
         }
 
         return isImpasse;
@@ -79,14 +79,12 @@ public class SortedNeighbors {
     }
 
     private boolean hasNeighborNonZeroLengthEdge(final EdgeIteratorState neighborPredecessor, final EdgeIteratorState neighbor) {
-        final boolean hasEqualCoords = hasEdgeEqualCoordinates(neighbor);
+        final boolean hasEqualCoordinates = hasEdgeEqualCoordinates(neighbor);
 
-        if (hasEqualCoords && !areEdgesEqual(neighborPredecessor, neighbor)) {
+        if (hasEqualCoordinates && !areEdgesEqual(neighborPredecessor, neighbor)) {
             return isImpasseSubNode(neighbor);
-        } else if (!hasEqualCoords){
-            return true;
         } else {
-            return false;
+            return !hasEqualCoordinates;
         }
     }
 
@@ -196,7 +194,7 @@ public class SortedNeighbors {
     private class ComparableEdge implements Comparable<ComparableEdge> {
         final EdgeIteratorState edge;
 
-        public ComparableEdge(EdgeIteratorState edge) {
+        ComparableEdge(EdgeIteratorState edge) {
             this.edge = edge;
         }
 

@@ -62,8 +62,7 @@ public class VisibilityCell {
     }
 
     private boolean returnEqualsExtractingTheOtherPolygon(VisibilityCell o) {
-        final VisibilityCell oAsVisibilityCell = o;
-        return this.cellShape.equals(oAsVisibilityCell.cellShape);
+        return this.cellShape.equals(o.cellShape);
     }
 
     private boolean returnEqualsIfOtherIsAlreadyPolygon(Object o) {

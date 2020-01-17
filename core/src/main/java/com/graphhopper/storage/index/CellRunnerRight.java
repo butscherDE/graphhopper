@@ -1,17 +1,12 @@
 package com.graphhopper.storage.index;
 
-import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
+import com.graphhopper.util.EdgeIteratorState;
 
 class CellRunnerRight extends CellRunner {
 
     public CellRunnerRight(final Graph graph, final VisitedManagerDual visitedManagerDual, final EdgeIteratorState startEdge) {
         super(graph, visitedManagerDual, new VectorAngleCalculatorRight(graph.getNodeAccess()), startEdge);
-    }
-
-    public CellRunnerRight(final Graph graph, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator, final EdgeIteratorState startEdge,
-                          final EdgeIteratorState endEdge) {
-        super(graph, globalVisitedManager, vectorAngleCalculator, startEdge, endEdge);
     }
 
     @Override
