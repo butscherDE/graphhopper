@@ -23,6 +23,8 @@ import java.util.List;
 import static com.graphhopper.util.Parameters.Routing.MAX_VISITED_NODES;
 
 public class PolygonRoutingTestGraph {
+    public static PolygonRoutingTestGraph DEFAULT_INSTANCE = new PolygonRoutingTestGraph();
+
     private final TurnCostExtension turnCostExtension;
     private final Node[] nodes;
     private final Edge[] edges;
@@ -39,7 +41,7 @@ public class PolygonRoutingTestGraph {
     public Weighting weighting;
     public AlgorithmOptions algorithmOptions;
 
-    public PolygonRoutingTestGraph() {
+    private PolygonRoutingTestGraph() {
         this(getDefaultNodeList(), getDefaultEdgeList());
     }
 

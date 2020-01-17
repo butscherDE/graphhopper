@@ -6,6 +6,7 @@ import com.graphhopper.routing.RoutingAlgorithmFactorySimple;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.storage.Graph;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -15,28 +16,28 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class LOTNodeExtractorTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
-    private LOTNodeExtractor extractor;
+    private final static PolygonRoutingTestGraph graphMocker = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
+    private static LOTNodeExtractor extractor;
 
-    @Before
-    public void createDefaultTestCase() {
+    @BeforeClass
+    public static void createDefaultTestCase() {
         final Graph graph = graphMocker.graph;
         final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
-        final AlgorithmOptions algorithmOptions = this.graphMocker.algorithmOptions;
+        final AlgorithmOptions algorithmOptions = graphMocker.algorithmOptions;
         List<Integer> viaPoints = createViaPoints();
         List<Integer> entryExitPoints = createEntryExitPoints();
 
-        this.extractor =  LOTNodeExtractor.createExtractedData(graph, routingAlgorithmFactory, algorithmOptions, viaPoints, entryExitPoints);
+        extractor =  LOTNodeExtractor.createExtractedData(graph, routingAlgorithmFactory, algorithmOptions, viaPoints, entryExitPoints);
     }
 
-    private List<Integer> createViaPoints() {
+    private static List<Integer> createViaPoints() {
         final List<Integer> viaPoints = new ArrayList<Integer>();
         viaPoints.add(0);
         viaPoints.add(2);
         return viaPoints;
     }
 
-    private List<Integer> createEntryExitPoints() {
+    private static List<Integer> createEntryExitPoints() {
         final List<Integer> entryExitPoints = new ArrayList<>();
         entryExitPoints.add(28);
         entryExitPoints.add(29);

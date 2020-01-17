@@ -15,7 +15,7 @@ import static org.junit.Assert.assertFalse;
 // TODO Test with empty subpaths
 public class RouteCandidateTest {
     private final GHRequest ghRequest = new GHRequest(0, 0, 10, 10).setPolygon(new Polygon(new double[]{5, 10, 10, 5}, new double[]{5, 5, 10, 10})).setVehicle("car");
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
+    private final static PolygonRoutingTestGraph graphMocker = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
 
     @Test
     public void testCorrectDistanceMetricsSmaller() {

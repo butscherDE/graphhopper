@@ -18,7 +18,7 @@ import static com.graphhopper.util.Parameters.Routing.*;
 import static org.junit.Assert.assertEquals;
 
 public class PolygonThroughRoutingTemplateTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
+    private final static PolygonRoutingTestGraph graphMocker = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
 
     @Test
     public void quickStartingTest() {
