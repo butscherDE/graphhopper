@@ -31,11 +31,13 @@ public class VisitedManager {
 
     private class Edge {
         private final int hashCode;
-        private final EdgeIteratorState edge;
+        private final int baseNode;
+        private final int adjNode;
 
         public Edge(EdgeIteratorState edge) {
-            hashCode = setHashCode(edge);
-            this.edge = edge;
+            this.hashCode = setHashCode(edge);
+            this.baseNode = edge.getBaseNode();
+            this.adjNode = edge.getAdjNode();
         }
 
         private int setHashCode(EdgeIteratorState edge) {
@@ -61,7 +63,7 @@ public class VisitedManager {
         public boolean equals(Object o) {
             if (o instanceof Edge) {
                 final Edge oEdge = (Edge) o;
-                return edge.getBaseNode() == oEdge.edge.getBaseNode() && edge.getAdjNode() == oEdge.edge.getAdjNode();
+                return baseNode == oEdge.baseNode && adjNode == oEdge.adjNode;
             } else {
                 return false;
             }
