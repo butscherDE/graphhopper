@@ -17,10 +17,10 @@
  */
 package com.graphhopper.util;
 
-import static java.lang.Math.*;
-
 import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.GHPoint;
+
+import static java.lang.Math.*;
 
 /**
  * @author Peter Karich
@@ -136,7 +136,7 @@ public class DistanceCalcEarth implements DistanceCalc {
             return calcNormalizedDist(a_lat_deg, r_lon_deg, r_lat_deg, r_lon_deg);
 
         if (delta_lon == 0)
-            // special case: vertical edge        
+            // special case: vertical edge
             return calcNormalizedDist(r_lat_deg, a_lon_deg, r_lat_deg, r_lon_deg);
 
         double norm = delta_lon * delta_lon + delta_lat * delta_lat;
@@ -181,7 +181,7 @@ public class DistanceCalcEarth implements DistanceCalc {
             return new GHPoint(a_lat_deg, r_lon_deg);
 
         if (delta_lon == 0)
-            // special case: vertical edge        
+            // special case: vertical edge
             return new GHPoint(r_lat_deg, a_lon_deg);
 
         double norm = delta_lon * delta_lon + delta_lat * delta_lat;
@@ -234,7 +234,7 @@ public class DistanceCalcEarth implements DistanceCalc {
 
         // This formula is taken from: http://williams.best.vwh.net/avform.htm#LL (http://www.movable-type.co.uk/scripts/latlong.html -> https://github.com/chrisveness/geodesy MIT)
         // θ=heading,δ=distance,φ1=latInRadians
-        // lat2 = asin( sin φ1 ⋅ cos δ + cos φ1 ⋅ sin δ ⋅ cos θ )     
+        // lat2 = asin( sin φ1 ⋅ cos δ + cos φ1 ⋅ sin δ ⋅ cos θ )
         // lon2 = λ1 + atan2( sin θ ⋅ sin δ ⋅ cos φ1, cos δ − sin φ1 ⋅ sin φ2 )
         double projectedLat = Math.asin(Math.sin(latInRadians) * Math.cos(angularDistance)
                 + Math.cos(latInRadians) * Math.sin(angularDistance) * Math.cos(headingInRadians));

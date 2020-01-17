@@ -1,7 +1,6 @@
 package com.graphhopper.util.shapes.intersection;
 
 import org.locationtech.jts.algorithm.Orientation;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
 
 import java.util.List;
