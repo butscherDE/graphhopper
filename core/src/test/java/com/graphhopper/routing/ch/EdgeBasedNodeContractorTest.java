@@ -36,7 +36,6 @@ import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
 import com.graphhopper.util.PMap;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -760,11 +759,11 @@ public class EdgeBasedNodeContractorTest {
 
     @Test
     public void testContractNode_witnessPathsAreFound() {
-        //         2 ----- 7 - 10 
+        //         2 ----- 7 - 10
         //       / |       |
         // 0 - 1   3 - 4   |
-        //     |   |      /     
-        //     5 - 9 ---- 
+        //     |   |      /
+        //     5 - 9 ----
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, false);
         graph.edge(2, 3, 5, false);
@@ -787,7 +786,7 @@ public class EdgeBasedNodeContractorTest {
         // this test runs repeatedly because it might pass/fail by chance (because path lengths are equal)
 
         // 0 -> 1 -> 5
-        //      v    v 
+        //      v    v
         //      2 -> 3 -> 4 -> 5
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, false);
@@ -811,9 +810,9 @@ public class EdgeBasedNodeContractorTest {
     public void testContractNode_noUnnecessaryShortcut_differentWitnessesForDifferentOutEdges() {
         //         /--> 2 ---\
         //        /           \
-        // 0 --> 1 ---> 3 ---> 5 --> 6 
+        // 0 --> 1 ---> 3 ---> 5 --> 6
         //        \           /
-        //         \--> 4 ---/   
+        //         \--> 4 ---/
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, false);
         graph.edge(1, 3, 1, false);
@@ -826,7 +825,7 @@ public class EdgeBasedNodeContractorTest {
         setMaxLevelOnAllNodes();
         contractNodes(3);
 
-        // We do not need a shortcut here! we can only access node 1 from node 0 and at node 5 we can either go to 
+        // We do not need a shortcut here! we can only access node 1 from node 0 and at node 5 we can either go to
         // node 2,4 or 6. To get to node 6 we can either take the northern witness via 2 or the southern one via 4.
         // to get to node 2 we need to take the witness via node 4 and vice versa. the interesting part here is that
         // we use a different witness depending on the target edge and even more that the witness paths itself yield
@@ -842,9 +841,9 @@ public class EdgeBasedNodeContractorTest {
 
         //         /--- 2 ->-\
         //        /           \
-        // 0 --> 1 ---> 3 ---> 5 --> 6 
+        // 0 --> 1 ---> 3 ---> 5 --> 6
         //        \           /
-        //         \--- 4 ->-/   
+        //         \--- 4 ->-/
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, true); // bidirectional
         graph.edge(1, 3, 1, false);
@@ -860,9 +859,9 @@ public class EdgeBasedNodeContractorTest {
         // We do not need a shortcut here! node 1 can be reached from nodes 0, 2 and 4 and from the target node 5 we can
         // only reach node 6. so coming into node 1 from node 0 we can either go north or south via nodes 2/4 to reach
         // the edge 5->6. If we come from node 2 we can take the southern witness via 4 and vice versa.
-        // 
-        // This is an example of an unnecessary shortcut introduced by the turn replacement algorithm, because the 
-        // out turn replacement difference for the potential witnesses would be infinite at node 1. 
+        //
+        // This is an example of an unnecessary shortcut introduced by the turn replacement algorithm, because the
+        // out turn replacement difference for the potential witnesses would be infinite at node 1.
         // Note that this happens basically whenever there is a bidirectional edge (and u-turns are forbidden) !
         checkShortcuts();
     }
@@ -893,7 +892,7 @@ public class EdgeBasedNodeContractorTest {
 
     private void runTestWithBidirectionalEdgeAtFromNode(int nodeToContract, boolean edge1to2bidirectional, Shortcut... expectedShortcuts) {
         // 0 -> 1 <-> 5
-        //      v     v 
+        //      v     v
         //      2 --> 3 -> 4
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, edge1to2bidirectional);
@@ -943,8 +942,8 @@ public class EdgeBasedNodeContractorTest {
         // when we contract node 2 we should not stop searching for witnesses when edge 2->3 is settled, because then we miss
         // the witness path via 5 that is found later, but still has less weight because of the turn costs at node 3
         // 0 -> 1 -> 2 -> 3 -> 4
-        //       \       /         
-        //        -- 5 ->   
+        //       \       /
+        //        -- 5 ->
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, false);
         graph.edge(2, 3, 1, false);
@@ -962,8 +961,8 @@ public class EdgeBasedNodeContractorTest {
     @Test
     public void testNodeContraction_letShortcutsWitnessEachOther_twoIn() {
         // coming from (0->1) it is best to go via node 2 to reach (5->6)
-        // when contracting node 3 adding the shortcut 2->3->4 is therefore enough and we do not need an 
-        // additional shortcut 1->3->4. while this seems obvious it requires that the 1->3->4 witness search is 
+        // when contracting node 3 adding the shortcut 2->3->4 is therefore enough and we do not need an
+        // additional shortcut 1->3->4. while this seems obvious it requires that the 1->3->4 witness search is
         // somehow 'aware' of the fact that the shortcut 2->3->4 will be introduced anyway.
 
         // 0 -> 1 -> 2 -> 3 -> 4 -> 5
@@ -987,11 +986,11 @@ public class EdgeBasedNodeContractorTest {
     @Test
     public void testNodeContraction_letShortcutsWitnessEachOther_twoOut() {
         // coming from (0->1) it is best to go via node 3 to reach (4->5)
-        // when contracting node 2 adding the shortcut 1->2->3 is therefore enough and we do not need an 
+        // when contracting node 2 adding the shortcut 1->2->3 is therefore enough and we do not need an
         // additional shortcut 1->2->4.
 
         // 0 -> 1 -> 2 -> 3 -> 4 -> 5
-        //           |        / 
+        //           |        /
         //           ------->
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, false);
@@ -1030,12 +1029,12 @@ public class EdgeBasedNodeContractorTest {
     public void testNodeContraction_duplicateEdge_severalLoops() {
         // 5 -- 4 -- 3 -- 1
         // |\   |
-        // | \  /        
-        // -- 2 
+        // | \  /
+        // -- 2
         graph.edge(1, 3, 47, true);
         graph.edge(2, 4, 19, true);
         EdgeIteratorState e2 = graph.edge(2, 5, 38, true);
-        EdgeIteratorState e3 = graph.edge(2, 5, 57, true); // note there is a duplicate edge here (with different weight) 
+        EdgeIteratorState e3 = graph.edge(2, 5, 57, true); // note there is a duplicate edge here (with different weight)
         graph.edge(3, 4, 10, true);
         EdgeIteratorState e5 = graph.edge(4, 5, 56, true);
 
@@ -1277,7 +1276,7 @@ public class EdgeBasedNodeContractorTest {
     public void testNodeContraction_zeroWeightLoop_manyLoops() {
         //                  /| many
         // 0 -> 1 -> 2 -> 3 --
-        //                | 
+        //                |
         //                4
         graph.edge(3, 3, 0, false);
         graph.edge(0, 1, 1, false);
@@ -1301,7 +1300,7 @@ public class EdgeBasedNodeContractorTest {
     public void testNodeContraction_zeroWeightLoop_twoLoopsAndEdge_withTurnRestriction() {
         //                  /|
         // 0 -> 1 -> 2 -> 3 --
-        //                | 
+        //                |
         //                4
         graph.edge(0, 1, 1, false);
         graph.edge(1, 2, 1, false);

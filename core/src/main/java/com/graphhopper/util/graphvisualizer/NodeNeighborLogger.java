@@ -5,7 +5,8 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Receives nodes and add the node and the neighbors to its data structure to enable to visualize the so built subgraph

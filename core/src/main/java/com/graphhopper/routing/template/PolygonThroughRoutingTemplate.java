@@ -2,7 +2,8 @@ package com.graphhopper.routing.template;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.routing.template.polygonRoutingUtil.*;
+import com.graphhopper.routing.template.polygonRoutingUtil.PathSkeletonGraph;
+import com.graphhopper.routing.template.polygonRoutingUtil.RegionOfInterestRoutingGraph;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.util.shapes.Polygon;

@@ -25,7 +25,6 @@ import com.graphhopper.routing.util.HintsMap;
 import com.graphhopper.routing.util.TestAlgoCollector.AlgoHelperEntry;
 import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.Weighting;
-import com.graphhopper.storage.CHGraph;
 import com.graphhopper.storage.Directory;
 import com.graphhopper.storage.GraphBuilder;
 import com.graphhopper.storage.GraphHopperStorage;

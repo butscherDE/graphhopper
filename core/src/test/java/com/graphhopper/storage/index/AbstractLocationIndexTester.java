@@ -18,7 +18,6 @@
 package com.graphhopper.storage.index;
 
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
-import com.graphhopper.routing.profiles.DecimalEncodedValue;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.storage.*;
 import com.graphhopper.util.DistanceCalc;
@@ -94,14 +93,14 @@ public abstract class AbstractLocationIndexTester {
 
     public void initSimpleGraph(Graph g) {
         //  6 |       4
-        //  5 |           
+        //  5 |
         //    |     6
         //  4 |              5
         //  3 |
-        //  2 |    1  
+        //  2 |    1
         //  1 |          3
-        //  0 |    2      
-        // -1 | 0   
+        //  0 |    2
+        // -1 | 0
         // ---|-------------------
         //    |-2 -1 0 1 2 3 4
         //
@@ -152,7 +151,7 @@ public abstract class AbstractLocationIndexTester {
 
         idx = createIndex(g, -1);
         // if we would use less array entries then some points gets the same key so avoid that for this test
-        // e.g. for 16 we get "expected 6 but was 9" i.e 6 was overwritten by node j9 which is a bit closer to the grid center        
+        // e.g. for 16 we get "expected 6 but was 9" i.e 6 was overwritten by node j9 which is a bit closer to the grid center
         // go through every point of the graph if all points are reachable
         NodeAccess na = g.getNodeAccess();
         for (int i = 0; i < locs; i++) {
@@ -250,20 +249,20 @@ public abstract class AbstractLocationIndexTester {
         Graph graph = AbstractLocationIndexTester.this.createGHStorage(encodingManager);
         // length does not matter here but lat,lon and outgoing edges do!
 
-//        
+//
 //   lat             /--------\
 //    5   o-        p--------\ q
 //          \  /-----\-----n | |
-//    4       k    /--l--    m/                 
-//           / \  j      \   |              
-//    3     |   g  \  h---i  /             
-//          |       \    /  /             
+//    4       k    /--l--    m/
+//           / \  j      \   |
+//    3     |   g  \  h---i  /
+//          |       \    /  /
 //    2     e---------f--  /
 //                   /  \-d
-//    1        /--b--      \               
+//    1        /--b--      \
 //            |    \--------c
-//    0       a                  
-//        
+//    0       a
+//
 //   lon: 0   1   2   3   4   5
         int a0 = 0;
         NodeAccess na = graph.getNodeAccess();

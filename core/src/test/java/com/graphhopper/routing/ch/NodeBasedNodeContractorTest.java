@@ -31,7 +31,6 @@ import com.graphhopper.storage.GraphBuilder;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.RAMDirectory;
 import com.graphhopper.storage.index.LocationIndexTree;
-import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
@@ -174,7 +173,7 @@ public class NodeBasedNodeContractorTest {
     public void testFindShortcuts_Roundabout() {
         // 1 -- 3 -- 4 ---> 5 ---> 6 -- 7
         //            \           /
-        //             <--- 8 <--- 
+        //             <--- 8 <---
         final EdgeIteratorState iter1to3 = graph.edge(1, 3, 1, true);
         final EdgeIteratorState iter3to4 = graph.edge(3, 4, 1, true);
         final EdgeIteratorState iter4to5 = graph.edge(4, 5, 1, false);

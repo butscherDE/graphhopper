@@ -28,7 +28,10 @@ import com.graphhopper.routing.util.MotorcycleFlagEncoder;
 import com.graphhopper.routing.weighting.ShortestWeighting;
 import com.graphhopper.routing.weighting.TurnWeighting;
 import com.graphhopper.routing.weighting.Weighting;
-import com.graphhopper.storage.*;
+import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.GraphBuilder;
+import com.graphhopper.storage.GraphHopperStorage;
+import com.graphhopper.storage.TurnCostExtension;
 import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
@@ -478,7 +481,7 @@ public class CHQueryWithTurnCostsTest {
         setLevelEqualToNodeIdForAllNodes();
 
         // node 3 is the bridge node where both forward and backward searches meet. since there is a turn restriction
-        // at node 3 we cannot go from 0 to 2 directly, but we need to take the loop at 3 first. when the backward 
+        // at node 3 we cannot go from 0 to 2 directly, but we need to take the loop at 3 first. when the backward
         // search arrives at 3 it checks if 3 could be reached by the forward search and therefore its crucial that
         // the ('forward') loop at 3 is recognized as an incoming edge at node 3
         testPathCalculation(0, 1, 4, IntArrayList.from(0, 3, 3, 2, 1));

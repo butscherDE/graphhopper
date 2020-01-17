@@ -4,8 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class SwingGraphGUI {
 	public static final Color BACKGROUND = Color.WHITE;

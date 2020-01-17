@@ -5,7 +5,6 @@ import com.graphhopper.routing.RoutingAlgorithmFactory;
 import com.graphhopper.routing.RoutingAlgorithmFactorySimple;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.storage.Graph;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

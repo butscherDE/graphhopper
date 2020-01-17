@@ -8,10 +8,11 @@ import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.StopWatch;
-import javafx.util.Pair;
-import org.locationtech.jts.util.Stopwatch;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Takes a set of polygon entry exit points as well as a set of via routing points and extracts the local optimal touch nodes for each via point.

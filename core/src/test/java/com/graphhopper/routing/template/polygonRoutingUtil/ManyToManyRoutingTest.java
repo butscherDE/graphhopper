@@ -7,7 +7,6 @@ import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.template.util.QueryGraphCreator;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.index.QueryResult;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

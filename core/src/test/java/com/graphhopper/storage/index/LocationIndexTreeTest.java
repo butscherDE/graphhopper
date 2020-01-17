@@ -30,7 +30,10 @@ import com.graphhopper.util.shapes.BBox;
 import com.graphhopper.util.shapes.GHPoint;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -128,7 +131,7 @@ public class LocationIndexTreeTest extends AbstractLocationIndexTester {
         assertEquals(4, inMemIndex.getEntriesOf(0).size());
         assertEquals(10, inMemIndex.getEntriesOf(1).size());
         assertEquals(0, inMemIndex.getEntriesOf(2).size());
-        // [LEAF 0 {} {0, 2}, LEAF 2 {} {0, 1}, LEAF 1 {} {2}, LEAF 3 {} {1}, LEAF 8 {} {0}, LEAF 10 {} {0}, LEAF 9 {} {0}, LEAF 4 {} {2}, LEAF 6 {} {0, 1, 2, 3}, LEAF 5 {} {0, 2, 3}, LEAF 7 {} {1, 2, 3}, LEAF 13 {} {1}]        
+        // [LEAF 0 {} {0, 2}, LEAF 2 {} {0, 1}, LEAF 1 {} {2}, LEAF 3 {} {1}, LEAF 8 {} {0}, LEAF 10 {} {0}, LEAF 9 {} {0}, LEAF 4 {} {2}, LEAF 6 {} {0, 1, 2, 3}, LEAF 5 {} {0, 2, 3}, LEAF 7 {} {1, 2, 3}, LEAF 13 {} {1}]
         // System.out.println(inMemIndex.getLayer(2));
 
         index.dataAccess.create(10);
@@ -158,7 +161,7 @@ public class LocationIndexTreeTest extends AbstractLocationIndexTester {
 //        set.clear();
 //        set.add(4);
 //        assertEquals(set, index.findNetworkEntries(-0.7, 1.5));
-//        
+//
 //        set.clear();
 //        set.add(4);
 //        assertEquals(set, index.findNetworkEntries(-0.5, 0.5));
@@ -520,7 +523,7 @@ public class LocationIndexTreeTest extends AbstractLocationIndexTester {
         graph.edge(6, 7, 1, true);
 
         // as last edges: create cross boundary edges
-        // See #667 where the recommendation is to adjust the import and introduce two pillar nodes 
+        // See #667 where the recommendation is to adjust the import and introduce two pillar nodes
         // where the connection is cross boundary and would be okay if ignored as real length is 0
         graph.edge(1, 2, 1, true).setWayGeometry(Helper.createPointList(0, 180, 0, -180));
         // but this unit test succeeds even without this adjusted import:

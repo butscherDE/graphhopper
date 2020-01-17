@@ -4,7 +4,7 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.routing.*;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
-import com.graphhopper.routing.util.*;
+import com.graphhopper.routing.util.AllEdgesIterator;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.Polygon;

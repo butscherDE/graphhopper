@@ -19,8 +19,6 @@ package com.graphhopper.storage;
 
 import com.graphhopper.util.EdgeIterator;
 
-import java.util.LinkedList;
-
 /**
  * This class is used to create the shortest-path-tree from linked entities.
  * <p>

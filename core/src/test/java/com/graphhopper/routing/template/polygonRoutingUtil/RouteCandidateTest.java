@@ -6,8 +6,6 @@ import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.util.shapes.Polygon;
 import org.junit.Test;
 
-import javax.management.Query;
-
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

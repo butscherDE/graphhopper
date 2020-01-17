@@ -18,7 +18,6 @@
 package com.graphhopper.routing;
 
 import com.carrotsearch.hppc.IntArrayList;
-import com.graphhopper.routing.ch.NodeBasedNodeContractorTest;
 import com.graphhopper.routing.ch.PrepareContractionHierarchies;
 import com.graphhopper.routing.ch.PrepareEncoder;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
@@ -26,7 +25,10 @@ import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.FastestWeighting;
 import com.graphhopper.routing.weighting.ShortestWeighting;
 import com.graphhopper.routing.weighting.Weighting;
-import com.graphhopper.storage.*;
+import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.GraphExtension;
+import com.graphhopper.storage.GraphHopperStorage;
+import com.graphhopper.storage.RAMDirectory;
 import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
@@ -68,7 +70,7 @@ public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
 
     @Test
     public void testPathRecursiveUnpacking() {
-        // use an encoder where it is possible to store 2 weights per edge        
+        // use an encoder where it is possible to store 2 weights per edge
         FlagEncoder encoder = new Bike2WeightFlagEncoder();
         EncodingManager em = EncodingManager.create(encoder);
         ShortestWeighting weighting = new ShortestWeighting(encoder);
@@ -129,7 +131,7 @@ public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
 
         initDirectedAndDiffSpeed(ghStorage, carFE);
 
-        // do CH preparation for car        
+        // do CH preparation for car
         createFactory(ghStorage, opts);
 
         // use base graph for solving normal Dijkstra

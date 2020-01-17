@@ -1,7 +1,6 @@
 package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.routing.Path;
-import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;

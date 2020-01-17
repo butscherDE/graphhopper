@@ -19,7 +19,6 @@ package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderRelation;
 import com.graphhopper.reader.ReaderWay;
-import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.PMap;
 
 import java.util.TreeMap;
@@ -58,7 +57,7 @@ public class MountainBikeFlagEncoder extends BikeCommonFlagEncoder {
         setTrackTypeSpeed("grade2", 16); // now unpaved ...
         setTrackTypeSpeed("grade3", 12);
         setTrackTypeSpeed("grade4", 8);
-        setTrackTypeSpeed("grade5", 6); // like sand/grass     
+        setTrackTypeSpeed("grade5", 6); // like sand/grass
 
         setSurfaceSpeed("paved", 18);
         setSurfaceSpeed("asphalt", 18);

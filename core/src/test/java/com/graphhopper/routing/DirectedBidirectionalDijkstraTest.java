@@ -12,7 +12,6 @@ import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -24,7 +23,6 @@ import java.util.Random;
 import static com.graphhopper.util.EdgeIterator.ANY_EDGE;
 import static com.graphhopper.util.EdgeIterator.NO_EDGE;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * This test makes sure that {@link DijkstraBidirectionRef#calcPath(int from, int to, int fromOutEdge, int toInEdge)}, i.e.
