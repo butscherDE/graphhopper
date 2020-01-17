@@ -16,29 +16,30 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ManyToManyRoutingTest {
-    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
-    private ManyToManyRouting manyToManyRouting;
+    private final static PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(),
+                                                                                           PolygonRoutingTestGraph.getDefaultEdgeList());
+    private static ManyToManyRouting manyToManyRouting;
 
     @BeforeClass
-    public void setUp() {
+    public static void setUp() {
         final List<Integer> sourceDestinations = prepareSourceDestination();
         final RegionOfInterestRoutingGraph nodesToConsiderForRouting = new OneToManyRoutingTest().prepareInteriorGraph();
         final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
-        final AlgorithmOptions algorithmOptions = this.graphMocker.algorithmOptions;
-        final List<QueryResult> queryResults = this.createQueryResults(this.graphMocker.graph, sourceDestinations);
+        final AlgorithmOptions algorithmOptions = graphMocker.algorithmOptions;
+        final List<QueryResult> queryResults = createQueryResults(graphMocker.graph, sourceDestinations);
 
-        this.manyToManyRouting = new ManyToManyRouting(nodesToConsiderForRouting, sourceDestinations, this.graphMocker.graph, queryResults, routingAlgorithmFactory,
+        manyToManyRouting = new ManyToManyRouting(nodesToConsiderForRouting, sourceDestinations, graphMocker.graph, queryResults, routingAlgorithmFactory,
                                                        algorithmOptions);
-        this.manyToManyRouting.findPathBetweenAllNodePairs();
+        manyToManyRouting.findPathBetweenAllNodePairs();
     }
 
-    private List<QueryResult> createQueryResults(final Graph graph, final List<Integer> nodesToLookup) {
+    private static List<QueryResult> createQueryResults(final Graph graph, final List<Integer> nodesToLookup) {
         final QueryGraphCreator queryGraphCreator = new QueryGraphCreator(graph, nodesToLookup);
 
         return queryGraphCreator.getQueryResults();
     }
 
-    private List<Integer> prepareSourceDestination() {
+    private static List<Integer> prepareSourceDestination() {
         return new ArrayList<>(Arrays.asList(new Integer[] {28, 29, 30, 32, 40}));
     }
 

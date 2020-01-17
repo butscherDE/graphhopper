@@ -12,7 +12,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class NodesInPolygonFindingVisitorTest {
-    final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
+    private final PolygonRoutingTestGraph graphMocker = new PolygonRoutingTestGraph(PolygonRoutingTestGraph.getDefaultNodeList(), PolygonRoutingTestGraph.getDefaultEdgeList());
 
     @Test
     public void testCase() {
@@ -21,7 +21,7 @@ public class NodesInPolygonFindingVisitorTest {
 
         final List<Integer> nodesInPolygon = extractNodesInPolygon(polygon);
 
-        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[] {4, 9, 10, 49})), nodesInPolygon);
+        assertEquals(new ArrayList<>(Arrays.asList(4, 9, 10, 49, 200, 201, 202)), nodesInPolygon);
     }
 
     private List<Integer> extractNodesInPolygon(Polygon polygon) {

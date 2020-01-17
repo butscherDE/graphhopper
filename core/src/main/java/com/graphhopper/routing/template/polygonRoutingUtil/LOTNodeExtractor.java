@@ -24,7 +24,7 @@ public class LOTNodeExtractor {
     private final List<Integer> viaPoints;
     private final List<Integer> entryExitPoints;
     private final Map<Integer, List<Integer>> viaPointToLOTNodes;
-    private final Map<Pair<Integer, Integer>, Path> viaPointToEntryExitPointPath;
+    private final Map<NodeIdPair, Path> viaPointToEntryExitPointPath;
 
     private LOTNodeExtractor(final Graph graph, final RoutingAlgorithmFactory routingAlgorithmFactory, final AlgorithmOptions algorithmOptions,
                              final List<Integer> viaPoints, final List<Integer> entryExitPoints) {
@@ -103,7 +103,7 @@ public class LOTNodeExtractor {
 
     private void savePathBetween(final int startNodeId, final int endNodeId) {
         final Path path = this.calcPathBetween(startNodeId, endNodeId);
-        this.viaPointToEntryExitPointPath.put(new Pair<>(startNodeId, endNodeId), path);
+        this.viaPointToEntryExitPointPath.put(new NodeIdPair(startNodeId, endNodeId), path);
     }
 
     private Path calcPathBetween(final int startNodeId, final int endNodeId) {
@@ -138,11 +138,11 @@ public class LOTNodeExtractor {
     private boolean hasPossibleLotNodeShorterDistanceNeighbor(final int viaPoint, final int possibleLotNode) {
         final EdgeIterator neighborIterator = this.edgeExplorer.setBaseNode(possibleLotNode);
         boolean betterNeighborFound = false;
-        final double distanceOfThisPossibleLotNode = this.viaPointToEntryExitPointPath.get(new Pair<>(viaPoint, possibleLotNode)).getDistance();
+        final double distanceOfThisPossibleLotNode = this.viaPointToEntryExitPointPath.get(new NodeIdPair(viaPoint, possibleLotNode)).getDistance();
 
         while (neighborIterator.next()) {
             final int neighbor = neighborIterator.getAdjNode();
-            final Path othersShortestPath = this.viaPointToEntryExitPointPath.get(new Pair<>(viaPoint, neighbor));
+            final Path othersShortestPath = this.viaPointToEntryExitPointPath.get(new NodeIdPair(viaPoint, neighbor));
 
             if (othersShortestPath != null) {
                 final double otherDistance = othersShortestPath.getDistance();
@@ -158,7 +158,7 @@ public class LOTNodeExtractor {
     }
 
     public Path getLotNodePathFor(final int viaPoint, final int lotNode) {
-        return this.viaPointToEntryExitPointPath.get(new Pair<>(viaPoint, lotNode));
+        return this.viaPointToEntryExitPointPath.get(new NodeIdPair(viaPoint, lotNode));
     }
 
     public int size() {
