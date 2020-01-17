@@ -8,8 +8,6 @@ import com.graphhopper.util.EdgeIteratorState;
 public class VisitedManager {
     final Map<Edge, Boolean> edgeIdVisited;
 
-
-
     public VisitedManager(final Graph graph) {
         this.edgeIdVisited = new HashMap<>(graph.getEdges());
     }

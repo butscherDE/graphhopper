@@ -111,7 +111,7 @@ public class GridIndex extends LocationIndexTree {
     }
 
     private void addAllVisibilityCellsOfGraphToIndex() {
-        final List<VisibilityCell> visibilityCells = new VisibilityCellsCreator(this, graph, nodeAccess).create();
+        final List<VisibilityCell> visibilityCells = new VisibilityCellsCreator(graph, nodeAccess).create();
 
         for (VisibilityCell visibilityCell : visibilityCells) {
             addThisToAllOverlappingGridCells(visibilityCell);

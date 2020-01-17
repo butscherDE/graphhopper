@@ -3,7 +3,6 @@ package com.graphhopper.storage.index;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.storage.Graph;
-import com.graphhopper.util.StopWatch;
 
 import java.util.*;
 
@@ -18,6 +17,7 @@ abstract class CellRunner {
     private final EdgeIteratorState endEdge;
 
     EdgeIteratorState lastNonZeroLengthEdge;
+
 
     public CellRunner(final Graph graph, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
                       final EdgeIteratorState startEdge) {
@@ -64,12 +64,10 @@ abstract class CellRunner {
             i++;
         }
         while (endNotReached);
-
-        System.out.println(extractNodesFromVisitedEdges());
     }
 
     private void checkRepetition(int i) {
-        if (i == 10000) {
+        if (i == 1000) {
             if (RepititionFinder.isRepitition(extractNodesFromVisitedEdges(), 10)) {
                 System.out.println(i + ": " + this.getClass().getSimpleName());
                 System.out.println(extractNodesFromVisitedEdges());

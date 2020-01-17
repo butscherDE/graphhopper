@@ -7,6 +7,8 @@ import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.StopWatch;
 import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
 import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -17,7 +19,7 @@ import java.util.function.Consumer;
  * General schema: For each edge in the allEdgesIterator: Check if it was used in a left run, if not run left. Check if it was used in a right run if not run right
  */
 class VisibilityCellsCreator {
-    private final GridIndex gridIndex;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Graph graph;
     private final NodeAccess nodeAccess;
     private final EdgeIterator allEdges;
@@ -25,8 +27,7 @@ class VisibilityCellsCreator {
 
     final List<VisibilityCell> allFoundCells;
 
-    public VisibilityCellsCreator(final GridIndex gridIndex, final Graph graph, final NodeAccess nodeAccess) {
-        this.gridIndex = gridIndex;
+    public VisibilityCellsCreator(final Graph graph, final NodeAccess nodeAccess) {
         this.graph = graph;
         this.nodeAccess = nodeAccess;
         this.allEdges = graph.getAllEdges();
@@ -55,11 +56,11 @@ class VisibilityCellsCreator {
         StopWatch sw1 = null;
         while (allEdges.next()) {
             if (i % 1000 == 0) {
-                System.out.println("###################################################################" + i);
-                System.out.println(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
+                logger.info("###################################################################" + i);
+                logger.info(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
                 final VisibilityCellConsumer vcCoordinateCounter = new VisibilityCellConsumer();
                 allFoundCells.forEach(vcCoordinateCounter);
-                System.out.println("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size() + " num VC-coordinates: " + vcCoordinateCounter.getCount());
+                logger.info("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size() + " num VC-coordinates: " + vcCoordinateCounter.getCount());
                 sw1 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
             }
 
@@ -81,8 +82,8 @@ class VisibilityCellsCreator {
                 addVisibilityCellToResults(new CellRunnerRight(graph, globalVisitedManager, currentEdge).extractVisibilityCell());
             }
 
-            if (i % 999 == 0) {
-                System.out.println(sw1.stop());
+            if (i % 1000 == 999) {
+                logger.info(sw1.stop().toString());
             }
             i++;
         }
