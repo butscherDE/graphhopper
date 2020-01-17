@@ -32,29 +32,27 @@ abstract class CellRunner {
     }
 
     public VisibilityCell extractVisibilityCell() {
-        try {
-            runAroundCellAndLogNodes();
-        } catch (StackOverflowError e) {
-            e.printStackTrace();
-            System.out.println(this.getClass().getSimpleName());
-            System.out.println(extractNodesFromVisitedEdges());
-            System.exit(-1);
-        }
+        runAroundCellAndLogNodes();
         return createVisibilityCell();
     }
 
     private void runAroundCellAndLogNodes() {
+        failOnLengthZeroStartEdge();
+
+        addStartAndEndNodeOfCell();
+        run();
+    }
+
+    private void failOnLengthZeroStartEdge() {
         if (hasEdgeEndPointsWithEqualCoordinates(startEdge)) {
             throw new IllegalArgumentException("Cannot start run on an edge with equal coordinates on both end nodes");
         }
+    }
 
-        addStartAndEndNodeOfCell();
+    private void run() {
         boolean endNotReached;
-        int i = 0;
         do {
             endNotReached = processNextNeighborOnCell();
-            checkRepetition(i);
-            i++;
         }
         while (endNotReached);
     }
@@ -104,17 +102,29 @@ abstract class CellRunner {
 
     private EdgeIteratorState getMostLeftOrRightOrientedEdge() {
         final EdgeIteratorState lastEdge = edgesOnCell.getLast();
-        final int lastEdgeBaseNode = lastEdge.getBaseNode();
-        final int lastEdgeAdjNode = lastEdge.getAdjNode();
-        final int ignoreBackwardsEdge = hasEdgeEndPointsWithEqualCoordinates(lastEdge) ? lastEdgeBaseNode : SortedNeighbors.DO_NOT_IGNORE_NODE;
-        final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastNonZeroLengthEdge.detach(true));
-        final EdgeIteratorState mostOrientedEdge = sortedNeighbors.getMostOrientedEdge();
+        final int ignoreBackwardsEdge = getIgnoreBackwardsEdge(lastEdge);
+        final EdgeIteratorState mostOrientedEdge = getMostOrientedEdgeFromSortedNeighbors(lastEdge, ignoreBackwardsEdge);
 
+        updateLastNonZeroLengthEdge(mostOrientedEdge);
+
+        return mostOrientedEdge;
+    }
+
+    private int getIgnoreBackwardsEdge(EdgeIteratorState lastEdge) {
+        final int lastEdgeBaseNode = lastEdge.getBaseNode();
+        return hasEdgeEndPointsWithEqualCoordinates(lastEdge) ? lastEdgeBaseNode : SortedNeighbors.DO_NOT_IGNORE_NODE;
+    }
+
+    private EdgeIteratorState getMostOrientedEdgeFromSortedNeighbors(EdgeIteratorState lastEdge, int ignoreBackwardsEdge) {
+        final int lastEdgeAdjNode = lastEdge.getAdjNode();
+        final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastNonZeroLengthEdge.detach(true));
+        return sortedNeighbors.getMostOrientedEdge();
+    }
+
+    private void updateLastNonZeroLengthEdge(EdgeIteratorState mostOrientedEdge) {
         if (!hasEdgeEndPointsWithEqualCoordinates(mostOrientedEdge)) {
             this.lastNonZeroLengthEdge = mostOrientedEdge;
         }
-
-        return mostOrientedEdge;
     }
 
     private boolean hasEdgeEndPointsWithEqualCoordinates(EdgeIteratorState edge) {
