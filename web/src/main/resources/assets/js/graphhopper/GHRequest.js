@@ -34,6 +34,7 @@ var GHRequest = function (host, api_key) {
     this.from = this.route.first();
     this.to = this.route.last();
     this.features = {};
+    this.polygonThrough = true;
 
     this.do_zoom = true;
     this.useMiles = false;
@@ -204,6 +205,7 @@ GHRequest.prototype.createPointParams = function (useRawInput) {
         else
             str += "polygon=" + encodeURIComponent(polygon.toString());
     }
+    str += "&polygonThrough=" + this.polygonThrough;
 
 
     return (str);
