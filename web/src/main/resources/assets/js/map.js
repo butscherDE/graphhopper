@@ -89,13 +89,13 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
         callback: setStartCoord,
         index: 0
     };
-        var _polyItem = {
-            text: "Add Polygon Coordinate",
-            icon: './img/marker-small-purple.png',
-            callback: setPolygonCoord,
-            disabled: true,
-            index: 3
-        };
+    var _polyItem = {
+        text: "Add Polygon Coordinate",
+        icon: './img/marker-small-purple.png',
+        callback: setPolygonCoord,
+        disabled: true,
+        index: 3
+    };
 
     var _intItem = {
         text: translate.tr('set_intermediate'),
