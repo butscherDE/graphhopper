@@ -412,7 +412,8 @@ function setPolygonCoord(e) {
 
 function polygonThrough(e) {
     ghRequest.polygonThrough = !ghRequest.polygonThrough;
-    alert(ghRequest.polygonThrough);
+
+    routeIfAllResolved();
 }
 
 function deleteCoord(e) {
