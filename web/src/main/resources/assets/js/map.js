@@ -49,7 +49,7 @@ function adjustMapSize() {
     // somehow this does not work: map.invalidateSize();
 }
 
-function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, selectLayer, useMiles) {
+function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, selectLayer, useMiles) {
     adjustMapSize();
     // console.log("init map at " + JSON.stringify(bounds));
 
@@ -96,6 +96,13 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
         disabled: true,
         index: 3
     };
+    var _polygonThrough = {
+        text: "Polygon through",
+        icon: './img/marker-small-purple.png',
+        callback: polygonThrough,
+        disabled: false,
+        index: 4
+    }
 
     var _intItem = {
         text: translate.tr('set_intermediate'),
@@ -114,6 +121,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
     menuIntermediate = map.contextmenu.insertItem(_intItem, _intItem.index);
     menuEnd = map.contextmenu.insertItem(_endItem, _endItem.index);
     menuPoly = map.contextmenu.insertItem(_polyItem, _polyItem.index);
+    menuPolyThrough = map.contextmenu.insertItem(_polygonThrough, _polygonThrough.index);
 
     var zoomControl = new L.Control.Zoom({
         position: 'topleft',

@@ -162,7 +162,7 @@ $(document).ready(function (e) {
                 }
                 metaVersionInfo = messages.extractMetaVersionInfo(json);
 
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, urlParams.layer,
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, urlParams.layer,
                 urlParams.use_miles);
 
                 // execute query
@@ -180,7 +180,7 @@ $(document).ready(function (e) {
                     "maxLat": 90
                 };
                 nominatim.setBounds(bounds);
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, urlParams.layer, urlParams.use_miles);
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, urlParams.layer, urlParams.use_miles);
             });
 
     var language_code = urlParams.locale && urlParams.locale.split('-', 1)[0];
@@ -408,6 +408,10 @@ function setPolygonCoord(e) {
     ghRequest.polygon.set(e.latlng.wrap(), index, true);
 
     routeIfAllResolved();
+}
+
+function polygonThrough(e) {
+    alert("works!");
 }
 
 function deleteCoord(e) {
