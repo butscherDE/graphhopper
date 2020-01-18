@@ -162,7 +162,7 @@ $(document).ready(function (e) {
                 }
                 metaVersionInfo = messages.extractMetaVersionInfo(json);
 
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, urlParams.layer,
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, getPolygonMarker, urlParams.layer,
                 urlParams.use_miles);
 
                 // execute query
@@ -180,7 +180,7 @@ $(document).ready(function (e) {
                     "maxLat": 90
                 };
                 nominatim.setBounds(bounds);
-                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, urlParams.layer, urlParams.use_miles);
+                mapLayer.initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, getPolygonMarker, urlParams.layer, urlParams.use_miles);
             });
 
     var language_code = urlParams.locale && urlParams.locale.split('-', 1)[0];
@@ -246,7 +246,6 @@ function initFromParams(params, doQuery) {
     });
 
     if (Array.isArray(params.polygon)) {
-        console.log(params.polygon);
         for (var i = 0; i < params.polygon.length; i++) {
             ghRequest.polygon.set(params.polygon[i], i, true);
         }
@@ -330,10 +329,8 @@ function checkInput() {
         routeLatLng(ghRequest, false);
     };
 
-    // console.log("## new checkInput");
     for (var i = 0; i < len; i++) {
         var div = $('#locationpoints > div.pointDiv').eq(i);
-        // console.log(div.length + ", index:" + i + ", len:" + len);
         if (div.length === 0) {
             $('#locationpoints > div.pointAdd').before(translate.nanoTemplate(template, {id: i}));
             div = $('#locationpoints > div.pointDiv').eq(i);
@@ -410,10 +407,29 @@ function setPolygonCoord(e) {
     routeIfAllResolved();
 }
 
-function polygonThrough(e) {
+function polygonThrough(e, marker) {
     ghRequest.polygonThrough = !ghRequest.polygonThrough;
+    if (ghRequest.polygonThrough === true) {
+        marker.icon = './img/marker-small-green.png';
+    } else {
+        marker.icon = './img/marker-small-red.png';
+    }
+    console.log(marker);
+
+    // marker
+    // marker.setIcon('./img/marker-small-green.png');
 
     routeIfAllResolved();
+}
+
+function getPolygonMarker() {
+    console.log(ghRequest.polygonThrough)
+
+    if (ghRequest.polygonThrough === true) {
+        return './img/marker-small-green.png';
+    } else {
+        return './img/marker-small-red.png';
+    }
 }
 
 function deleteCoord(e) {
@@ -440,15 +456,11 @@ function setEndCoord(e) {
 }
 
 function enablePolygonCoordsIfPossible() {
-    console.log(ghRequest);
-
     if (isStartAndEndpointSet())
         enablePolygonContextMenuOption();
 }
 
 function isStartAndEndpointSet() {
-    console.log(isStartSet());
-    console.log(isEndSet());
     return isStartSet() && isEndSet();
 }
 
@@ -570,7 +582,6 @@ function routeLatLng(request, doQuery) {
     if (!doQuery && History.enabled) {
         // 2. important workaround for encoding problems in history.js
         var params = urlTools.parseUrl(urlForHistory);
-        console.log(params);
         params.do_zoom = doZoom;
         // force a new request even if we have the same parameters
         params.mathRandom = Math.random();
@@ -712,7 +723,6 @@ function routeLatLng(request, doQuery) {
                     name: "route",
                 }
             };
-                 console.log(geojsonPolygon)
 
              mapLayer.addDataToPolygonLayer(geojsonPolygon);
 
@@ -819,7 +829,6 @@ function generatePolyFlags(polyIndex, latlng, request){
                             // inconsistent leaflet API: event.target.getLatLng vs. mouseEvent.latlng?
                             var latlng = e.target.getLatLng();
                             autocomplete.hide();
-                            console.log(polyIndex)
                             request.polygon.getIndex(polyIndex).setCoord(latlng.lat, latlng.lng);
                             //resolveIndex(polyIndex);
                             // do not wait for resolving and avoid zooming when dragging

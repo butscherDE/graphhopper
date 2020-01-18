@@ -6,9 +6,10 @@ var routingLayer;
 var polygonLayer;
 var map;
 var menuStart;
-var polyItem;
+var menuPolyItem;
 var menuIntermediate;
 var menuEnd;
+var menuPolyThrough;
 var elevationControl = null;
 var fullscreenControl = null;
 
@@ -49,7 +50,7 @@ function adjustMapSize() {
     // somehow this does not work: map.invalidateSize();
 }
 
-function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, selectLayer, useMiles) {
+function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPolygonCoord, polygonThrough, getPolygonMarker, selectLayer, useMiles) {
     adjustMapSize();
     // console.log("init map at " + JSON.stringify(bounds));
 
@@ -96,10 +97,15 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
         disabled: true,
         index: 3
     };
+
     var _polygonThrough = {
         text: "Polygon through",
-        icon: './img/marker-small-purple.png',
-        callback: polygonThrough,
+        icon: getPolygonMarker(),
+        callback: function(e) {
+            polygonThrough(e, _polygonThrough);
+            map.contextmenu.removeItem(4);
+            map.contextmenu.insertItem(_polygonThrough, _polygonThrough.index);
+        },
         disabled: false,
         index: 4
     }
@@ -120,7 +126,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
     menuStart = map.contextmenu.insertItem(_startItem, _startItem.index);
     menuIntermediate = map.contextmenu.insertItem(_intItem, _intItem.index);
     menuEnd = map.contextmenu.insertItem(_endItem, _endItem.index);
-    menuPoly = map.contextmenu.insertItem(_polyItem, _polyItem.index);
+    menuPolyItem = map.contextmenu.insertItem(_polyItem, _polyItem.index);
     menuPolyThrough = map.contextmenu.insertItem(_polygonThrough, _polygonThrough.index);
 
     var zoomControl = new L.Control.Zoom({
@@ -282,7 +288,7 @@ module.exports.setDisabledForMapsContextMenu = function (entry, value) {
     if (entry === 'intermediate')
         map.contextmenu.setDisabled(menuIntermediate, value);
     if (entry === 'polygon')
-        map.contextmenu.setDisabled(menuPoly, value);
+        map.contextmenu.setDisabled(menuPolyItem, value);
 };
 
 module.exports.fitMapToBounds = function (bounds) {
