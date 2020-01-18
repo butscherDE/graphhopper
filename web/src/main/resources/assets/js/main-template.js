@@ -410,9 +410,11 @@ function setPolygonCoord(e) {
 function polygonThrough(e, marker) {
     ghRequest.polygonThrough = !ghRequest.polygonThrough;
     if (ghRequest.polygonThrough === true) {
-        marker.icon = './img/marker-small-green.png';
+        marker.text = 'Polygon Through Routing';
+        marker.icon = './img/marker-small-polyThrough.png';
     } else {
-        marker.icon = './img/marker-small-red.png';
+        marker.text = 'Polygon Around Routing';
+        marker.icon = './img/marker-small-polyAround.png';
     }
     console.log(marker);
 
@@ -426,9 +428,9 @@ function getPolygonMarker() {
     console.log(ghRequest.polygonThrough)
 
     if (ghRequest.polygonThrough === true) {
-        return './img/marker-small-green.png';
+        return './img/marker-small-polyThrough.png';
     } else {
-        return './img/marker-small-red.png';
+        return './img/marker-small-polyAround.png';
     }
 }
 

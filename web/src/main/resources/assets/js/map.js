@@ -99,7 +99,7 @@ function initMap(bounds, setStartCoord, setIntermediateCoord, setEndCoord, setPo
     };
 
     var _polygonThrough = {
-        text: "Polygon through",
+        text: "Polygon Through Routing",
         icon: getPolygonMarker(),
         callback: function(e) {
             polygonThrough(e, _polygonThrough);
