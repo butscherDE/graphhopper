@@ -8,9 +8,7 @@ import com.graphhopper.storage.Graph;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,7 +22,7 @@ public class LOTNodeExtractorTest {
         final RoutingAlgorithmFactory routingAlgorithmFactory = new RoutingAlgorithmFactorySimple();
         final AlgorithmOptions algorithmOptions = graphMocker.algorithmOptions;
         List<Integer> viaPoints = createViaPoints();
-        List<Integer> entryExitPoints = createEntryExitPoints();
+        Set<Integer> entryExitPoints = createEntryExitPoints();
 
         extractor =  LOTNodeExtractor.createExtractedData(graph, routingAlgorithmFactory, algorithmOptions, viaPoints, entryExitPoints);
     }
@@ -36,8 +34,8 @@ public class LOTNodeExtractorTest {
         return viaPoints;
     }
 
-    private static List<Integer> createEntryExitPoints() {
-        final List<Integer> entryExitPoints = new ArrayList<>();
+    private static Set<Integer> createEntryExitPoints() {
+        final Set<Integer> entryExitPoints = new LinkedHashSet<>();
         entryExitPoints.add(28);
         entryExitPoints.add(29);
         entryExitPoints.add(30);

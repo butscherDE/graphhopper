@@ -20,7 +20,7 @@ public class PolygonAroundRoutingTemplate extends PolygonRoutingTemplate{
     }
 
     PathSkeletonGraph getPathSkeletonEdgeFilter() {
-        final Polygon regionOfInterest = this.getGhRequest().getPolygon();
+        final Polygon regionOfInterest = getGhRequest().getPolygon();
 
         final GridIndex locationIndexAsGrid = (GridIndex) locationIndex;
         final List<VisibilityCell> visibilityCells = locationIndexAsGrid.getIntersectingVisibilityCells(regionOfInterest);

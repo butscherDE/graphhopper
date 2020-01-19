@@ -14,7 +14,9 @@ import com.graphhopper.util.shapes.GHPoint;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private final GHRequest ghRequest;
@@ -29,7 +31,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     private final FlagEncoder flagEncoder;
     private LOTNodeExtractor lotNodes;
     PathSkeletonGraph pathSkeletonEdgeFilter;
-    private List<Integer> polygonEntryExitPoints;
+    private Set<Integer> polygonEntryExitPoints;
 
     PolygonRoutingTemplate(GHRequest ghRequest, GHResponse ghRsp, LocationIndex locationIndex, EncodingManager encodingManager) {
         super(ghRequest, ghRsp, locationIndex, encodingManager);
@@ -131,7 +133,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         final StopWatch swFindEntryExitPoints = findPolygonEntryExitPointsAndMeasureTime();
         final List<Integer> viaPointNodeIds = extractNodeIdsFromQueryResults();
         final StopWatch swLOTNodes = findLotNodesAndMeasureTime(viaPointNodeIds);
-        final List<QueryResult> queryResults = createQueryResults(polygonEntryExitPoints, flagEncoder);
+        final List<QueryResult> queryResults = createQueryResults(lotNodes.getAllLotNodes(), flagEncoder);
         final StopWatch swPathSkeleton = findPathSkeletonAndMeasureTime(queryResults);
 
         System.out.println("Candidate Routes found\n" +
@@ -151,7 +153,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         final StopWatch swPathSkeleton = new StopWatch("Generate path skeleton");
         swPathSkeleton.start();
 
-        this.pathSkeletonRouter = new ManyToManyRouting(pathSkeletonEdgeFilter, polygonEntryExitPoints, this.graph, queryResults, this.algoFactory, this.algorithmOptions);
+        this.pathSkeletonRouter = new ManyToManyRouting(pathSkeletonEdgeFilter, lotNodes.getAllLotNodes(), this.graph, queryResults, this.algoFactory, this.algorithmOptions);
         this.pathSkeletonRouter.findPathBetweenAllNodePairs();
 
         swPathSkeleton.stop();
@@ -253,26 +255,27 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         return routeCandidate;
     }
 
-    private List<Integer> findPolygonEntryExitPoints(final PathSkeletonGraph pathSkeletonEdgeFilter) {
-        final List<Integer> entryExitPoints = new ArrayList<>();
-        final EdgeExplorer edgeExplorer = this.graph.createEdgeExplorer();
-
-        addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(pathSkeletonEdgeFilter, entryExitPoints, edgeExplorer);
+    private Set<Integer> findPolygonEntryExitPoints(final PathSkeletonGraph pathSkeletonEdgeFilter) {
+        final Set<Integer> entryExitPoints = addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(pathSkeletonEdgeFilter);
 
         return entryExitPoints;
     }
 
-    private void addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(PathSkeletonGraph pathSkeletonEdgeFilter, List<Integer> entryExitPoints, EdgeExplorer edgeExplorer) {
+    private Set<Integer> addAllNodesNotInPolygonButDirectlyAccessibleFromThereToEntryExitPoints(PathSkeletonGraph pathSkeletonEdgeFilter) {
+        final Set<Integer> entryExitPoints = new LinkedHashSet<>();
+
         for (int node : pathSkeletonEdgeFilter) {
-            final EdgeIterator edgeIterator = edgeExplorer.setBaseNode(node);
+            final EdgeIterator edgeIterator = graph.createEdgeExplorer().setBaseNode(node);
 
             while (edgeIterator.next()) {
                 addToEntryExitIfNotExistentAndNotInPolygon(pathSkeletonEdgeFilter, entryExitPoints, edgeIterator);
             }
         }
+
+        return entryExitPoints;
     }
 
-    private void addToEntryExitIfNotExistentAndNotInPolygon(PathSkeletonGraph pathSkeletonEdgeFilter, List<Integer> entryExitPoints, EdgeIterator edgeIterator) {
+    private void addToEntryExitIfNotExistentAndNotInPolygon(PathSkeletonGraph pathSkeletonEdgeFilter, Set<Integer> entryExitPoints, EdgeIterator edgeIterator) {
         final int adjacentNode = edgeIterator.getAdjNode();
         if (!pathSkeletonEdgeFilter.contains(adjacentNode)) {
             entryExitPoints.add(adjacentNode);

@@ -9,10 +9,8 @@ import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.StopWatch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Takes a set of polygon entry exit points as well as a set of via routing points and extracts the local optimal touch nodes for each via point.
@@ -23,12 +21,12 @@ public class LOTNodeExtractor {
     private final AlgorithmOptions algorithmOptions;
     private final EdgeExplorer edgeExplorer;
     private final List<Integer> viaPoints;
-    private final List<Integer> entryExitPoints;
+    private final Set<Integer> entryExitPoints;
     private final Map<Integer, List<Integer>> viaPointToLOTNodes;
     private final Map<NodeIdPair, Path> viaPointToEntryExitPointPath;
 
     private LOTNodeExtractor(final Graph graph, final RoutingAlgorithmFactory routingAlgorithmFactory, final AlgorithmOptions algorithmOptions,
-                             final List<Integer> viaPoints, final List<Integer> entryExitPoints) {
+                             final List<Integer> viaPoints, final Set<Integer> entryExitPoints) {
         this.graph = graph;
         this.routingAlgorithmFactory = routingAlgorithmFactory;
         this.algorithmOptions = algorithmOptions;
@@ -42,7 +40,7 @@ public class LOTNodeExtractor {
     }
 
     public static LOTNodeExtractor createExtractedData(final Graph graph, final RoutingAlgorithmFactory routingAlgorithmFactory, final AlgorithmOptions algorithmOptions,
-                                                       final List<Integer> viaPoints, final List<Integer> entryExitPoints) {
+                                                       final List<Integer> viaPoints, final Set<Integer> entryExitPoints) {
         return new LOTNodeExtractor(graph, routingAlgorithmFactory, algorithmOptions, viaPoints, entryExitPoints);
     }
 
@@ -125,7 +123,7 @@ public class LOTNodeExtractor {
     }
 
     private List<Integer> createLotNodesFor(final int viaPoint) {
-        final List<Integer> lotNodes = new ArrayList<>(entryExitPoints.size());
+        final List<Integer> lotNodes = new LinkedList<>();
 
         for (final int possibleLotNode : this.entryExitPoints) {
             if (!hasPossibleLotNodeShorterDistanceNeighbor(viaPoint, possibleLotNode)) {
@@ -156,6 +154,18 @@ public class LOTNodeExtractor {
 
     public List<Integer> getLotNodesFor(final int viaPoint) {
         return this.viaPointToLOTNodes.get(viaPoint);
+    }
+
+    public List<Integer> getAllLotNodes() {
+        final List<Integer> lotNodes = new LinkedList<>();
+
+        final Iterator nodeSetIterator = viaPointToLOTNodes.entrySet().iterator();
+        while (nodeSetIterator.hasNext()) {
+            final Map.Entry<Integer, List<Integer>> pair = (Map.Entry<Integer, List<Integer>>) nodeSetIterator.next();
+            lotNodes.addAll(pair.getValue());
+        }
+
+        return lotNodes;
     }
 
     public Path getLotNodePathFor(final int viaPoint, final int lotNode) {
