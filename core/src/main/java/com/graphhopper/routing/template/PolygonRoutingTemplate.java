@@ -92,7 +92,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
 
     private void printAllCandidatesInSortedOrder() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("All non pruned route Candidates: ");
+        sb.append("All non pruned route Candidates: \n");
 
         for (int i = 0; i < this.routeCandidates.size(); i++) {
             sb.append(this.routeCandidates.get(i).toString());
@@ -133,19 +133,19 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         final StopWatch swFindEntryExitPoints = findPolygonEntryExitPointsAndMeasureTime();
         final List<Integer> viaPointNodeIds = extractNodeIdsFromQueryResults();
         final StopWatch swLOTNodes = findLotNodesAndMeasureTime(viaPointNodeIds);
-        final List<QueryResult> queryResults = createQueryResults(lotNodes.getAllLotNodes(), flagEncoder);
+        final List<QueryResult> queryResults = createQueryResults();
         final StopWatch swPathSkeleton = findPathSkeletonAndMeasureTime(queryResults);
 
         System.out.println("Candidate Routes found\n" +
                            "Nodes in polygon : " + pathSkeletonEdgeFilter.size() + " in " + swFindNodesInPolygon.getSeconds() + "\n" +
                            "Entry/Exit points: " + polygonEntryExitPoints.size() + " in " + swFindEntryExitPoints.getSeconds() + "\n" +
-                           "LOT Nodes        : " + lotNodes.size() + " in " + swLOTNodes.getSeconds() + "\n" +
+                           "LOT Nodes        : " + lotNodes.getAllLotNodes().size() + " in " + swLOTNodes.getSeconds() + "\n" +
                            "Path Skeleton    : " + "in " + swPathSkeleton.getSeconds());
 
         for (int i = 0; i < viaPointNodeIds.size() - 1; i++) {
             final int viaPointNodeId = viaPointNodeIds.get(i);
             final int nextViaPointNodeId = viaPointNodeIds.get(i + 1);
-            buildRouteCandidatesForCurrentPoint(viaPointNodeId, nextViaPointNodeId, lotNodes.getLotNodesFor(viaPointNodeId));
+            buildRouteCandidatesForCurrentPoint(viaPointNodeId, nextViaPointNodeId);
         }
     }
 
@@ -204,7 +204,8 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         }
     }
 
-    private List<QueryResult> createQueryResults(final List<Integer> nodes, final FlagEncoder flagEncoder) {
+    private List<QueryResult> createQueryResults() {
+        final List<Integer> nodes = lotNodes.getAllLotNodes();
         final List<GHPoint> points = nodeIdsToGhPoints(nodes);
 
         return this.lookup(points, flagEncoder);
@@ -233,9 +234,12 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         return nodeIds;
     }
 
-    private void buildRouteCandidatesForCurrentPoint(final int currentViaPoint, final int nextViaPoint, List<Integer> currentPointsLOTNodes) {
-        for (final int LOTNodeL : currentPointsLOTNodes) {
-            for (final int LOTNodeLPrime : currentPointsLOTNodes) {
+    private void buildRouteCandidatesForCurrentPoint(final int currentViaPoint, final int nextViaPoint) {
+        final List<Integer> currentPointLotNodes = lotNodes.getLotNodesFor(currentViaPoint);
+        final List<Integer> nextPointLotNodes = lotNodes.getLotNodesFor(nextViaPoint);
+
+        for (final int LOTNodeL : currentPointLotNodes) {
+            for (final int LOTNodeLPrime : nextPointLotNodes) {
                 if (LOTNodeL != LOTNodeLPrime) {
                     this.routeCandidates.add(buildCandidatePath(currentViaPoint, nextViaPoint, LOTNodeL, LOTNodeLPrime));
                 }
