@@ -12,8 +12,6 @@ public class SortedNeighbors {
     private final Graph graph;
     private final VectorAngleCalculator vectorAngleCalculator;
 
-    private final Map<Integer, SortedNeighbors> subIterators = new HashMap<>();
-
     private final List<ComparableEdge> sortedEdges;
 
     public SortedNeighbors(final Graph graph, final int baseNode, final int ignore, final VectorAngleCalculator vectorAngleCalculator) {
@@ -197,29 +195,13 @@ public class SortedNeighbors {
 
         @Override
         public int compareTo(ComparableEdge o) {
-            final double angleThis = getAngle(edge);
-            final double angleOther = getAngle(o.edge);
+            final double angleThis = vectorAngleCalculator.getAngleOfVectorsOriented(edge);
+            final double angleOther = vectorAngleCalculator.getAngleOfVectorsOriented(o.edge);
             final double angleDifference = angleThis - angleOther;
             final int angleResult = angleDifference > 0 ? 1 : angleDifference == 0 ? 0 : -1;
             final int idDifference = edge.getEdge() - o.edge.getEdge();
 
             return angleResult != 0 ? angleResult : idDifference;
-        }
-
-        private Double getAngle(final EdgeIteratorState edge) {
-            Double angle = vectorAngleCalculator.getAngleOfVectorsOriented(edge);
-
-            if (angle == -Double.MAX_VALUE) {
-                final int baseNode = edge.getBaseNode();
-                final int adjNode = edge.getAdjNode();
-                if (subIterators.get(adjNode) == null) {
-                    subIterators.put(adjNode, new SortedNeighbors(graph, adjNode, baseNode, vectorAngleCalculator));
-                }
-
-                angle = getAngle(subIterators.get(adjNode).getMostOrientedEdge(edge));
-            }
-
-            return angle;
         }
 
         @Override

@@ -50,23 +50,23 @@ class VisibilityCellsCreator {
 //        nnd.dump();
 //        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
 //        gui.visualizeGraph();
-//        try {
-//            Thread.sleep(10_000_000);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            Thread.sleep(10_000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         int i = 0;
         StopWatch swAll = new StopWatch("VisibilityCells created").start();
         StopWatch sw1000 = null;
         while (allEdges.next()) {
             if (i % 1000 == 0) {
-//                logger.info("###################################################################" + i);
-//                logger.info(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
-//                final VisibilityCellConsumer vcCoordinateCounter = new VisibilityCellConsumer();
-//                allFoundCells.forEach(vcCoordinateCounter);
-//                logger.info("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size() + " num VC-coordinates: " + vcCoordinateCounter.getCount());
-//                sw1000 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
+                logger.info("###################################################################" + i);
+                logger.info(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
+                final VisibilityCellConsumer vcCoordinateCounter = new VisibilityCellConsumer();
+                allFoundCells.forEach(vcCoordinateCounter);
+                logger.info("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size() + " num VC-coordinates: " + vcCoordinateCounter.getCount());
+                sw1000 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
             }
 
 //            if (i < 559000) {
@@ -88,7 +88,7 @@ class VisibilityCellsCreator {
             }
 
             if (i % 1000 == 999) {
-//                logger.info(sw1000.stop().toString());
+                logger.info(sw1000.stop().toString());
             }
             i++;
         }
