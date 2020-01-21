@@ -18,10 +18,10 @@ public class SortedNeighborsTest {
     public void orderingWithoutCollinearEdges() {
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(GRAPH_MOCKER, 57, 52);
 
-        final int[] expectedOrder = new int[] {52, 51, 56, 55, 54, 53};
+        final int[] expectedOrder = new int[]{56, 55, 54, 53, 52, 51};
 
         assertOrdering(expectedOrder, sortedNeighbors);
-        assertEquals(53, sortedNeighbors.getMostOrientedEdge().getAdjNode());
+        assertEquals(53, sortedNeighbors.getMostOrientedEdge(GRAPH_MOCKER.getEdge(57, 52)).getAdjNode());
     }
 
     @Test
@@ -35,11 +35,11 @@ public class SortedNeighborsTest {
     }
 
     private PolygonRoutingTestGraph getMultiEdgeTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
                 new Edge(0, 1, 1, true)
         };
@@ -52,7 +52,7 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 2, 0);
 
-        final int[] expectedOrder = new int[] {0, 1, 3};
+        final int[] expectedOrder = new int[]{3,0,1};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }
@@ -63,19 +63,19 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 2, 1);
 
-        final int[] expectedOrder = new int[] {1, 3, 0};
+        final int[] expectedOrder = new int[]{3, 0, 1};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }
 
     private PolygonRoutingTestGraph getCollinearInEdgesTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 2),
                 new Node(3, 0, 3)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 2, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(2, 3, 1, true)
@@ -89,19 +89,20 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
 
-        final int[] expectedOrder = new int[] {0, 2, 3};
+        final int[] expectedOrder = new int[]{2, 3, 0};
 
         assertOrdering(expectedOrder, sortedNeighbors);
+        assertEquals(3, sortedNeighbors.getMostOrientedEdge(graphMocker.getEdge(1, 0)).getAdjNode());
     }
 
     private PolygonRoutingTestGraph getCollinearOutEdgesTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 2),
                 new Node(3, 0, 3)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(1, 3, 1, true)
@@ -115,19 +116,19 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
 
-        final int[] expectedOrder = new int[] {0, 2, 3};
+        final int[] expectedOrder = new int[]{2, 3, 0};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }
 
     private PolygonRoutingTestGraph getMultipleNeighborsWithSameCoordinatesTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 2),
                 new Node(3, 0, 2)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(1, 3, 1, true)
@@ -141,19 +142,19 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
 
-        final int[] expectedOrder = new int[] {0, 2};
+        final int[] expectedOrder = new int[]{3, 0};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }
 
     private PolygonRoutingTestGraph getEqualCoordinateNeighborTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 1),
                 new Node(3, 0, 2)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(2, 3, 1, true)
@@ -167,13 +168,13 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
 
-        final int[] expectedOrder = new int[] {0, 2};
+        final int[] expectedOrder = new int[]{5, 0};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }
 
     private PolygonRoutingTestGraph getEqualCoordinateNeighborPathTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 1),
@@ -181,7 +182,7 @@ public class SortedNeighborsTest {
                 new Node(4, 0, 1),
                 new Node(5, 0, 2)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(2, 3, 1, true),
@@ -197,18 +198,18 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
 
-        final int[] expectedOrder = new int[] {0};
+        final int[] expectedOrder = new int[]{0};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }
 
     private PolygonRoutingTestGraph equalCoordinateImpasseTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 1)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
                 new Edge(1, 2, 1, true)
         };
@@ -221,20 +222,20 @@ public class SortedNeighborsTest {
 
         final SortedNeighbors sortedNeighbors = getSortedNeighbors(graphMocker, 1, 0);
 
-        final int[] expectedOrder = new int[] {0};
+        final int[] expectedOrder = new int[]{0};
 
         assertOrdering(expectedOrder, sortedNeighbors);
     }
 
     private PolygonRoutingTestGraph equalCoordinateNeighborPathImpasseTestGraph() {
-        final Node[] nodes = new Node[] {
+        final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 1),
                 new Node(3, 0, 1),
                 new Node(4, 0, 1)
         };
-        final Edge[] edges = new Edge[] {
+        final Edge[] edges = new Edge[]{
                 new Edge(0, 1, 1, true),
                 new Edge(1, 2, 1, true),
                 new Edge(2, 3, 1, true),
@@ -247,7 +248,7 @@ public class SortedNeighborsTest {
         final VectorAngleCalculator vac = new VectorAngleCalculatorLeft(graphMocker.nodeAccess);
 
         final EdgeIteratorState lastEdgeReversed = graphMocker.getEdge(baseNode, adjNode);
-        return new SortedNeighbors(graphMocker.graph, lastEdgeReversed.getBaseNode(), SortedNeighbors.DO_NOT_IGNORE_NODE, vac, lastEdgeReversed);
+        return new SortedNeighbors(graphMocker.graph, lastEdgeReversed.getBaseNode(), SortedNeighbors.DO_NOT_IGNORE_NODE, vac);
     }
 
     private void assertOrdering(int[] expectedOrder, SortedNeighbors sortedNeighbors) {

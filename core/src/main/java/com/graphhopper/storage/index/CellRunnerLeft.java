@@ -4,11 +4,12 @@ import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeIteratorState;
 
 import java.util.Collections;
+import java.util.Map;
 
 class CellRunnerLeft extends CellRunner {
 
-    public CellRunnerLeft(final Graph graph, final VisitedManagerDual globalVisitedManager, final EdgeIteratorState startEdge) {
-        super(graph, globalVisitedManager, new VectorAngleCalculatorLeft(graph.getNodeAccess()), startEdge);
+    public CellRunnerLeft(final Graph graph, final VisitedManagerDual globalVisitedManager, final EdgeIteratorState startEdge, final Map<Integer, SortedNeighbors> sortedNeighborsMap) {
+        super(graph, globalVisitedManager, new VectorAngleCalculatorLeft(graph.getNodeAccess()), startEdge, sortedNeighborsMap);
     }
 
     @Override

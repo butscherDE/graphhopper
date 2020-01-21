@@ -6,6 +6,7 @@ import com.graphhopper.util.EdgeIteratorState;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 abstract class CellRunner {
     final LinkedList<EdgeIteratorState> edgesOnCell = new LinkedList<>();
@@ -15,12 +16,13 @@ abstract class CellRunner {
     final VisitedManagerDual globalVisitedManager;
     private final VectorAngleCalculator vectorAngleCalculator;
     private final EdgeIteratorState startEdge;
+    private final Map<Integer, SortedNeighbors> sortedNeighborsMap;
 
     private EdgeIteratorState lastNonZeroLengthEdge;
 
 
     CellRunner(final Graph graph, final VisitedManagerDual globalVisitedManager, final VectorAngleCalculator vectorAngleCalculator,
-               final EdgeIteratorState startEdge) {
+               final EdgeIteratorState startEdge, Map<Integer, SortedNeighbors> sortedNeighborsMap) {
         this.graph = graph;
         this.nodeAccess = graph.getNodeAccess();
         this.localVisitedManager = new VisitedManager(graph);
@@ -28,6 +30,7 @@ abstract class CellRunner {
         this.vectorAngleCalculator = vectorAngleCalculator;
 
         this.startEdge = VisitedManager.forceNodeIdsAscending(startEdge);
+        this.sortedNeighborsMap = sortedNeighborsMap;
         this.lastNonZeroLengthEdge = this.startEdge;
     }
 
@@ -117,8 +120,8 @@ abstract class CellRunner {
 
     private EdgeIteratorState getMostOrientedEdgeFromSortedNeighbors(EdgeIteratorState lastEdge, int ignoreBackwardsEdge) {
         final int lastEdgeAdjNode = lastEdge.getAdjNode();
-        final SortedNeighbors sortedNeighbors = new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator, lastNonZeroLengthEdge.detach(true));
-        return sortedNeighbors.getMostOrientedEdge();
+        final SortedNeighbors sortedNeighbors = sortedNeighborsMap.get(lastEdgeAdjNode); //new SortedNeighbors(graph, lastEdgeAdjNode, ignoreBackwardsEdge, vectorAngleCalculator);
+        return sortedNeighbors.getMostOrientedEdge(lastNonZeroLengthEdge.detach(true));
     }
 
     private void updateLastNonZeroLengthEdge(EdgeIteratorState mostOrientedEdge) {

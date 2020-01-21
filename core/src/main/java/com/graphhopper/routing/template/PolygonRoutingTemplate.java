@@ -139,7 +139,7 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         System.out.println("Candidate Routes found\n" +
                            "Nodes in polygon : " + pathSkeletonEdgeFilter.size() + " in " + swFindNodesInPolygon.getSeconds() + "\n" +
                            "Entry/Exit points: " + polygonEntryExitPoints.size() + " in " + swFindEntryExitPoints.getSeconds() + "\n" +
-                           "LOT Nodes        : " + lotNodes.getAllLotNodes().size() + " in " + swLOTNodes.getSeconds() + "\n" +
+                           "LOT Nodes        : " + lotNodes.size() + " in " + swLOTNodes.getSeconds() + "\n" +
                            "Path Skeleton    : " + "in " + swPathSkeleton.getSeconds());
 
         for (int i = 0; i < viaPointNodeIds.size() - 1; i++) {

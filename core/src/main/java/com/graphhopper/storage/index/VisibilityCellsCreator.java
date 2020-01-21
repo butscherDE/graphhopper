@@ -8,8 +8,7 @@ import com.graphhopper.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -23,6 +22,8 @@ class VisibilityCellsCreator {
     private final NodeAccess nodeAccess;
     private final EdgeIterator allEdges;
     private final VisitedManagerDual globalVisitedManager;
+    private final Map<Integer, SortedNeighbors> sortedNeighborListLeft;
+    private final Map<Integer, SortedNeighbors> sortedNeighborListRight;
 
     private final List<VisibilityCell> allFoundCells;
 
@@ -32,6 +33,10 @@ class VisibilityCellsCreator {
         this.allEdges = graph.getAllEdges();
         this.allFoundCells = new ArrayList<>(graph.getNodes());
         this.globalVisitedManager = new VisitedManagerDual(graph);
+
+        final NeighborPreSorter neighborPreSorter = new NeighborPreSorter(graph);
+        this.sortedNeighborListLeft = neighborPreSorter.getAllSortedNeighborsLeft();
+        this.sortedNeighborListRight = neighborPreSorter.getAllSortedNeighborsRight();
     }
 
     public List<VisibilityCell> create() {
@@ -75,11 +80,11 @@ class VisibilityCellsCreator {
 
             final EdgeIteratorState currentEdge = allEdges.detach(false);
             if (!visibilityCellOnTheLeftFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerLeft(graph, globalVisitedManager, currentEdge).extractVisibilityCell());
+                addVisibilityCellToResults(new CellRunnerLeft(graph, globalVisitedManager, currentEdge, sortedNeighborListLeft).extractVisibilityCell());
             }
 
             if (!visibilityCellOnTheRightFound(currentEdge)) {
-                addVisibilityCellToResults(new CellRunnerRight(graph, globalVisitedManager, currentEdge).extractVisibilityCell());
+                addVisibilityCellToResults(new CellRunnerRight(graph, globalVisitedManager, currentEdge, sortedNeighborListRight).extractVisibilityCell());
             }
 
             if (i % 1000 == 999) {

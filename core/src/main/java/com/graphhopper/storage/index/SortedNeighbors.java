@@ -11,27 +11,24 @@ public class SortedNeighbors {
     public final static int DO_NOT_IGNORE_NODE = -1;
     private final Graph graph;
     private final VectorAngleCalculator vectorAngleCalculator;
-    private final EdgeIteratorState baseEdge;
 
     private final Map<Integer, SortedNeighbors> subIterators = new HashMap<>();
 
-    private final List<EdgeIteratorState> sortedEdges;
+    private final List<ComparableEdge> sortedEdges;
 
-    public SortedNeighbors(Graph graph, final int baseNode, final int ignore, VectorAngleCalculator vectorAngleCalculator, EdgeIteratorState baseEdge) {
+    public SortedNeighbors(final Graph graph, final int baseNode, final int ignore, final VectorAngleCalculator vectorAngleCalculator) {
         this.graph = graph;
         this.vectorAngleCalculator = vectorAngleCalculator;
-        this.baseEdge = baseEdge;
 
-        List<EdgeIteratorState> sortedEdges = sort(baseNode, ignore);
-        this.sortedEdges = rearrangeSuchThatMostOrientedEdgeComesLast(sortedEdges);
+        this.sortedEdges = sort(baseNode, ignore);
     }
 
-    private List<EdgeIteratorState> sort(final int baseNode, final int ignore) {
+    private List<ComparableEdge> sort(final int baseNode, final int ignore) {
         final List<ComparableEdge> comparableEdges = getAllNeighbors(baseNode, ignore);
 
         Collections.sort(comparableEdges);
 
-        return unpackEdgesFromWrapperObjects(comparableEdges);
+        return comparableEdges;
     }
 
     private List<ComparableEdge> getAllNeighbors(int baseNode, final int ignore) {
@@ -39,7 +36,6 @@ public class SortedNeighbors {
         final List<ComparableEdge> comparableEdges = new ArrayList<>();
 
         addAllNeighborsMaybeIncludingCompareEdge(ignore, neighborIterator, comparableEdges);
-        addBaseEdgeIfNotAlready(comparableEdges);
 
         return comparableEdges;
     }
@@ -47,7 +43,11 @@ public class SortedNeighbors {
     private void addAllNeighborsMaybeIncludingCompareEdge(int ignore, EdgeIterator neighborIterator, List<ComparableEdge> comparableEdges) {
         while(neighborIterator.next()) {
             if (isNodeToIgnore(ignore, neighborIterator) && !isImpasseSubNode(neighborIterator)) {
-                comparableEdges.add(new ComparableEdge(neighborIterator.detach(false)));
+                if (!hasEdgeEqualCoordinates(neighborIterator)) {
+                    comparableEdges.add(new ComparableEdge(neighborIterator.detach(false)));
+                } else {
+                    comparableEdges.addAll(getAllNeighbors(neighborIterator.getAdjNode(), neighborIterator.getBaseNode()));
+                }
             }
         }
     }
@@ -82,7 +82,7 @@ public class SortedNeighbors {
         final boolean hasEqualCoordinates = hasEdgeEqualCoordinates(neighbor);
 
         if (hasEqualCoordinates && !areEdgesEqual(neighborPredecessor, neighbor)) {
-            return isImpasseSubNode(neighbor);
+            return !isImpasseSubNode(neighbor);
         } else {
             return !hasEqualCoordinates;
         }
@@ -136,50 +136,47 @@ public class SortedNeighbors {
         return neighborEdges;
     }
 
-    private void addBaseEdgeIfNotAlready(List<ComparableEdge> comparableEdges) {
-        final ComparableEdge compareEdge = new ComparableEdge(this.baseEdge);
-        if (!comparableEdges.contains(compareEdge)) {
-            comparableEdges.add(compareEdge);
+    private int indexIfEdgeWasAdded(final EdgeIteratorState lastEdge) {
+        final ComparableEdge lastEdgeComparable = new ComparableEdge(lastEdge);
+        final Iterator<ComparableEdge> allNeighborEdges = sortedEdges.iterator();
+
+        int i = findIndex(lastEdgeComparable, allNeighborEdges);
+
+        return i;
+    }
+
+    private int findIndex(ComparableEdge lastEdgeComparable, Iterator<ComparableEdge> allNeighborEdges) {
+        boolean lastEdgeIsGreater = true;
+        int i = 0;
+        while (allNeighborEdges.hasNext() && lastEdgeIsGreater) {
+            lastEdgeIsGreater = isLastEdgeGreater(lastEdgeComparable, allNeighborEdges);
+
+            i = incrementIndex(lastEdgeIsGreater, i);
         }
+        return i;
     }
 
-    private List<EdgeIteratorState> unpackEdgesFromWrapperObjects(List<ComparableEdge> comparableEdges) {
-        List<EdgeIteratorState> sortedEdges = new ArrayList<>(comparableEdges.size());
-
-        for (ComparableEdge comparableEdge : comparableEdges) {
-            sortedEdges.add(comparableEdge.edge);
-        }
-
-        return sortedEdges;
+    private boolean isLastEdgeGreater(ComparableEdge lastEdgeComparable, Iterator<ComparableEdge> allNeighborEdges) {
+        final ComparableEdge currentEdge = allNeighborEdges.next();
+        return lastEdgeComparable.compareTo(currentEdge) > 0;
     }
 
-    private List<EdgeIteratorState> rearrangeSuchThatMostOrientedEdgeComesLast(final List<EdgeIteratorState> sortedEdges) {
-        final int baseEdgeIndex = indexOfBaseEdge(sortedEdges);
-
-        final List<EdgeIteratorState> rearrangedSortedEdges = new ArrayList<>(sortedEdges.size());
-        rearrangedSortedEdges.addAll(sortedEdges.subList(baseEdgeIndex, sortedEdges.size()));
-        rearrangedSortedEdges.addAll(sortedEdges.subList(0, baseEdgeIndex));
-
-        return rearrangedSortedEdges;
+    private int incrementIndex(boolean lastEdgeIsGreater, int i) {
+        i = lastEdgeIsGreater ? i + 1 : i;
+        return i;
     }
 
-    private int indexOfBaseEdge(List<EdgeIteratorState> sortedEdges) {
-        for (int i = 0; i < sortedEdges.size(); i++) {
-            final EdgeIteratorState edge = sortedEdges.get(i);
-            if ((edge.getBaseNode() == baseEdge.getBaseNode() && edge.getAdjNode() == baseEdge.getAdjNode() && edge.getEdge() == baseEdge.getEdge())) {
-                return i;
-            }
-        }
+    public EdgeIteratorState getMostOrientedEdge(final EdgeIteratorState lastEdge) {
+        final int addIndex = indexIfEdgeWasAdded(lastEdge);
+        int addIndexPredecessor = addIndex - 1;
+        int indexOfEndOfList = sortedEdges.size() - 1;
+        int indexOfPredecessorOfLastEdge = addIndexPredecessor < 0 ? indexOfEndOfList : addIndexPredecessor;
 
-        throw new IllegalArgumentException("List does not contain the base edge");
-    }
-
-    public EdgeIteratorState getMostOrientedEdge() {
-        return sortedEdges.get(sortedEdges.size() - 1);
+        return sortedEdges.get(indexOfPredecessorOfLastEdge).edge;
     }
 
     public EdgeIteratorState get(final int index) {
-        return sortedEdges.get(index);
+        return sortedEdges.get(index).edge;
     }
 
     public int size() {
@@ -216,10 +213,10 @@ public class SortedNeighbors {
                 final int baseNode = edge.getBaseNode();
                 final int adjNode = edge.getAdjNode();
                 if (subIterators.get(adjNode) == null) {
-                    subIterators.put(adjNode, new SortedNeighbors(graph, adjNode, baseNode, vectorAngleCalculator, baseEdge));
+                    subIterators.put(adjNode, new SortedNeighbors(graph, adjNode, baseNode, vectorAngleCalculator));
                 }
 
-                angle = getAngle(subIterators.get(adjNode).getMostOrientedEdge());
+                angle = getAngle(subIterators.get(adjNode).getMostOrientedEdge(edge));
             }
 
             return angle;
