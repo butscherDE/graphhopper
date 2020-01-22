@@ -46,33 +46,8 @@ class VisibilityCellsCreator {
     }
 
     private void startRunsOnEachEdgeInTheGraph() {
-//        final NodesAndNeighborDump nnd = new NodesAndNeighborDump(graph, Arrays.asList(1308555, 2161331, 6318267, 3182139, 5712100, 7895450, 8987113));
-//        nnd.dump();
-//        SwingGraphGUI gui = new SwingGraphGUI(nnd.getNodes(), nnd.getEdges());
-//        gui.visualizeGraph();
-        try {
-            Thread.sleep(10_000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        int i = 0;
         StopWatch swAll = new StopWatch("VisibilityCells created").start();
-        StopWatch sw1000 = null;
         while (allEdges.next()) {
-            if (i % 1000 == 0) {
-                logger.info("###################################################################" + i);
-                logger.info(allEdges.getEdge() + ":" + allEdges.getBaseNode() + ":" + allEdges.getAdjNode());
-                final VisibilityCellConsumer vcCoordinateCounter = new VisibilityCellConsumer();
-                allFoundCells.forEach(vcCoordinateCounter);
-                logger.info("Num edges visited: " + globalVisitedManager.visitedLeft.edgeIdVisited.size() + " num VC-coordinates: " + vcCoordinateCounter.getCount());
-                sw1000 = new StopWatch("run on one edge " + allEdges.getEdge() + ", " + i + "/" + graph.getEdges()).start();
-            }
-
-//            if (i < 559000) {
-//                i++;
-//                continue;
-//            }
             if (continueOnLengthZeroEdge()) {
                 continue;
             }
@@ -86,13 +61,7 @@ class VisibilityCellsCreator {
             if (!visibilityCellOnTheRightFound(currentEdge)) {
                 addVisibilityCellToResults(new CellRunnerRight(graph, globalVisitedManager, currentEdge, sortedNeighborListRight).extractVisibilityCell());
             }
-
-            if (i % 1000 == 999) {
-                logger.info(sw1000.stop().toString());
-            }
-            i++;
         }
-//        System.out.println("finished");
         logger.info(swAll.stop().toString());
     }
 
@@ -127,18 +96,5 @@ class VisibilityCellsCreator {
 
     private Boolean visibilityCellOnTheRightFound(final EdgeIteratorState currentEdge) {
         return globalVisitedManager.isEdgeSettledRight(VisitedManager.forceNodeIdsAscending(currentEdge));
-    }
-
-    private static class VisibilityCellConsumer implements Consumer<VisibilityCell> {
-        int c = 0;
-
-        @Override
-        public void accept(VisibilityCell visibilityCell) {
-            c += visibilityCell.size();
-        }
-
-        int getCount() {
-            return c;
-        }
     }
 }

@@ -14,25 +14,28 @@ public abstract class VectorAngleCalculator {
         this.nodeAccess = nodeAccess;
     }
 
-    public abstract double getAngleOfVectorsOriented(final EdgeIteratorState candidateEdge);
+    public double getAngleOfVectorsOriented(final EdgeIteratorState candidateEdge) {
+        return getAngleOfVectorsOriented(candidateEdge.getBaseNode(), candidateEdge.getAdjNode());
+    }
 
-    double getAngle(final EdgeIteratorState candidateEdge) {
+    public abstract double getAngleOfVectorsOriented(final int baseNode, final int adjNode);
+
+    double getAngle(final int baseNode, final int adjNode) {
         try {
-            return getAngleAfterErrorHandling(candidateEdge);
+            return getAngleAfterErrorHandling(baseNode, adjNode);
         } catch (IllegalArgumentException e) {
             return ANGLE_WHEN_COORDINATES_ARE_EQUAL;
         }
     }
 
-    private double getAngleAfterErrorHandling(final EdgeIteratorState candidateEdge) {
-        final Vector2D lastEdgeVector = createHorizontalRightVector(candidateEdge);
-        final Vector2D candidateEdgeVector = createVectorCorrespondingToEdge(candidateEdge);
+    private double getAngleAfterErrorHandling(final int baseNode, final int adjNode) {
+        final Vector2D lastEdgeVector = createHorizontalRightVector(baseNode);
+        final Vector2D candidateEdgeVector = createVectorCorrespondingToEdge(baseNode, adjNode);
 
         return getAngle(lastEdgeVector, candidateEdgeVector);
     }
 
-    private Vector2D createHorizontalRightVector(final EdgeIteratorState candidateEdge) {
-        final int baseNode = candidateEdge.getBaseNode();
+    private Vector2D createHorizontalRightVector(final int baseNode) {
         final Coordinate candidateEdgeBaseNodeCoordinate = new Coordinate(nodeAccess.getLongitude(baseNode), nodeAccess.getLatitude(baseNode));
         final Coordinate coordinateToTheRightOfPrevious = new Coordinate(nodeAccess.getLongitude(baseNode) + 1, nodeAccess.getLatitude(baseNode));
 
@@ -51,8 +54,8 @@ public abstract class VectorAngleCalculator {
         return differenceToTwoPi < 0.000000000000001 ? 0 : angleToContinuousInterval;
     }
 
-    private Vector2D createVectorCorrespondingToEdge(EdgeIteratorState candidateEdge) {
-        return createVectorByNodeIds(candidateEdge.getBaseNode(), candidateEdge.getAdjNode());
+    private Vector2D createVectorCorrespondingToEdge(final int baseNode, final int adjNode) {
+        return createVectorByNodeIds(baseNode, adjNode);
     }
 
     private Vector2D createVectorByNodeIds(final int baseNode, final int adjNode) {

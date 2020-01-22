@@ -33,6 +33,7 @@ public class NeighborPreSorter {
         final Set<Integer> allNodes = getAllNodes();
 
 //        testMemKill(allNodes);
+//        testMemKill2(allNodes);
 //        System.out.println("#!#!#!");
 //        try {
 //            Thread.sleep(10_000);
@@ -55,6 +56,22 @@ public class NeighborPreSorter {
 //        }
 //    }
 
+//    private List<Integer> id = new LinkedList<>();
+//    private List<Integer> base = new LinkedList<>();
+//    private List<Integer> adj = new LinkedList<>();
+//    private void testMemKill2(final Set<Integer> allNodes) {
+//        for (Integer allNode : allNodes) {
+//            final EdgeIterator neighbors = graph.createEdgeExplorer().setBaseNode(allNode);
+//            while(neighbors.next()) {
+//                final EdgeIteratorState edge = neighbors.detach(false);
+//
+//                id.add(edge.getEdge());
+//                base.add(edge.getBaseNode());
+//                adj.add(edge.getAdjNode());
+//            }
+//        }
+//    }
+
     private Set<Integer> getAllNodes() {
         final Set<Integer> allNodes = new LinkedHashSet<>();
 
@@ -67,30 +84,11 @@ public class NeighborPreSorter {
     }
 
     private void addSortedNeighbors(final Set<Integer> allNodes) {
-        int i = 0;
         for (Integer node : allNodes) {
             final SortedNeighbors sortedNeighborsLeft = new SortedNeighbors(graph, node, SortedNeighbors.DO_NOT_IGNORE_NODE, new VectorAngleCalculatorLeft(graph.getNodeAccess()));
             allSortedNeighborsLeft.put(node, sortedNeighborsLeft);
             final SortedNeighbors sortedNeighborsRight = new SortedNeighbors(graph, node, SortedNeighbors.DO_NOT_IGNORE_NODE, new VectorAngleCalculatorRight(graph.getNodeAccess()));
             allSortedNeighborsRight.put(node, sortedNeighborsRight);
-
-            if (i % 1_000_000 == 0) {
-                System.out.println(i + ": " + i / (double) allNodes.size() + " % processed, global size: " + estimateSize());
-            }
-            i++;
         }
-    }
-
-    private int estimateSize() {
-        int globalSize = 0;
-
-        for (Map.Entry<Integer, SortedNeighbors> entry : allSortedNeighborsLeft.entrySet()) {
-            globalSize += entry.getValue().size();
-        }
-        for (Map.Entry<Integer, SortedNeighbors> entry : allSortedNeighborsRight.entrySet()) {
-            globalSize += entry.getValue().size();
-        }
-
-        return globalSize;
     }
 }

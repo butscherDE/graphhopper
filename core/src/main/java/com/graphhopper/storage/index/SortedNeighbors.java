@@ -170,11 +170,13 @@ public class SortedNeighbors {
         int indexOfEndOfList = sortedEdges.size() - 1;
         int indexOfPredecessorOfLastEdge = addIndexPredecessor < 0 ? indexOfEndOfList : addIndexPredecessor;
 
-        return sortedEdges.get(indexOfPredecessorOfLastEdge).edge;
+        return get(indexOfPredecessorOfLastEdge);
     }
 
     public EdgeIteratorState get(final int index) {
-        return sortedEdges.get(index).edge;
+        final ComparableEdge comparableEdge = sortedEdges.get(index);
+        final EdgeIteratorState edge = graph.getEdgeIteratorState(comparableEdge.id, comparableEdge.adjNode);
+        return edge;
     }
 
     public int size() {
@@ -187,19 +189,23 @@ public class SortedNeighbors {
     }
 
     private class ComparableEdge implements Comparable<ComparableEdge> {
-        final EdgeIteratorState edge;
+        private final int id;
+        private final int baseNode;
+        private final int adjNode;
 
         ComparableEdge(EdgeIteratorState edge) {
-            this.edge = edge;
+            this.id = edge.getEdge();
+            this.baseNode = edge.getBaseNode();
+            this.adjNode = edge.getAdjNode();
         }
 
         @Override
         public int compareTo(ComparableEdge o) {
-            final double angleThis = vectorAngleCalculator.getAngleOfVectorsOriented(edge);
-            final double angleOther = vectorAngleCalculator.getAngleOfVectorsOriented(o.edge);
+            final double angleThis = vectorAngleCalculator.getAngleOfVectorsOriented(baseNode, adjNode);
+            final double angleOther = vectorAngleCalculator.getAngleOfVectorsOriented(o.baseNode, o.adjNode);
             final double angleDifference = angleThis - angleOther;
             final int angleResult = angleDifference > 0 ? 1 : angleDifference == 0 ? 0 : -1;
-            final int idDifference = edge.getEdge() - o.edge.getEdge();
+            final int idDifference = id - o.id;
 
             return angleResult != 0 ? angleResult : idDifference;
         }
@@ -208,7 +214,7 @@ public class SortedNeighbors {
         public boolean equals(final Object o) {
             if (o instanceof ComparableEdge) {
                 final ComparableEdge ce = (ComparableEdge) o;
-                return edge.getEdge() == ce.edge.getEdge() && edge.getBaseNode() == ce.edge.getBaseNode();
+                return id == ce.id && adjNode == ce.adjNode;
             } else {
                 return false;
             }

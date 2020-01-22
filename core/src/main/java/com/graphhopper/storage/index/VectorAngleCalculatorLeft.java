@@ -9,7 +9,7 @@ public class VectorAngleCalculatorLeft extends VectorAngleCalculator {
     }
 
     @Override
-    public double getAngleOfVectorsOriented(EdgeIteratorState candidateEdge) {
-        return getAngle(candidateEdge);
+    public double getAngleOfVectorsOriented(final int baseNode, final int adjNode) {
+        return getAngle(baseNode, adjNode);
     }
 }
