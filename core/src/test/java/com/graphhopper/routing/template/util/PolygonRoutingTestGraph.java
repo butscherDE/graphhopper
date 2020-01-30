@@ -1,6 +1,7 @@
 package com.graphhopper.routing.template.util;
 
 import com.graphhopper.routing.AlgorithmOptions;
+import com.graphhopper.routing.ch.CHAlgoFactoryDecorator;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.FastestWeighting;
 import com.graphhopper.routing.weighting.Weighting;
@@ -18,6 +19,7 @@ import com.graphhopper.util.shapes.Polygon;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.graphhopper.util.Parameters.Routing.MAX_VISITED_NODES;
@@ -32,6 +34,7 @@ public class PolygonRoutingTestGraph {
     public EncodingManager encodingManager;
     public FlagEncoder flagEncoder;
     public GraphHopperStorage graph;
+    public GraphHopperStorage graphWithCh;
     public Polygon polygon;
     public LocationIndex locationIndex;
     public NodeAccess nodeAccess;
@@ -52,15 +55,16 @@ public class PolygonRoutingTestGraph {
         this.turnCostExtension = new TurnCostExtension();
         this.distanceCalculator = new DistanceCalc2D();
         this.createEncodingManager();
-        this.createTestGraph();
         this.createTestPolygon();
-//        this.createLocationIndex();
-        this.getNodeAccess();
         this.setTraversalMode();
         this.setAlgorithmName();
         this.buildHintsMap();
         this.setWeighting();
         this.setAlgorithmOptions();
+        this.createTestGraph();
+        this.createPolygonTestGraphWithCh();
+        this.createLocationIndex();
+        this.getNodeAccess();
     }
 
     private GraphHopperStorage createPolygonTestGraph() {
@@ -68,14 +72,35 @@ public class PolygonRoutingTestGraph {
         this.graph.create(1000);
 
         // Exterior this.graph including to Entry / Exit nodes
-        buildEdges();
-        buildNodes();
+        buildEdges(this.graph);
+        buildNodes(this.graph);
 
         return graph;
     }
 
-    private void buildNodes() {
-        setDistanceToEuclidean();
+    private GraphHopperStorage createPolygonTestGraphWithCh() {
+        final List<Weighting> nodeWeighting = Arrays.asList(new FastestWeighting(this.flagEncoder));
+        this.graphWithCh = new GraphHopperStorage(nodeWeighting, new RAMDirectory(), this.encodingManager, false, turnCostExtension);
+        this.graphWithCh.create(1000);
+
+        // Exterior this.graph including to Entry / Exit nodes
+        buildEdges(this.graphWithCh);
+        buildNodes(this.graphWithCh);
+
+        this.graphWithCh.freeze();
+
+        final CHAlgoFactoryDecorator chAlgoFactoryDecorator = new CHAlgoFactoryDecorator();
+        chAlgoFactoryDecorator.setEnabled(true);
+        chAlgoFactoryDecorator.addNodeBasedWeighting(weighting);
+        chAlgoFactoryDecorator.createPreparations(this.graphWithCh);
+        chAlgoFactoryDecorator.prepare(this.graphWithCh.getProperties());
+
+
+        return graph;
+    }
+
+    private void buildNodes(final Graph graph) {
+        setDistanceToEuclidean(graph);
     }
 
     public static Node[] getDefaultNodeList() {
@@ -156,7 +181,7 @@ public class PolygonRoutingTestGraph {
                           new Node(202, 19, 31)};
     }
 
-    private void setDistanceToEuclidean() {
+    private void setDistanceToEuclidean(final Graph graph) {
         for (Node node : nodes) {
             node.updateDistance(graph);
         }
@@ -326,9 +351,9 @@ public class PolygonRoutingTestGraph {
         };
     }
 
-    private void buildEdges() {
+    private void buildEdges(final Graph graph) {
         for (Edge edge : edges) {
-            this.graph.edge(edge.baseNode, edge.adjNode, edge.distance, edge.bothDirections);
+            graph.edge(edge.baseNode, edge.adjNode, edge.distance, edge.bothDirections);
         }
     }
 
