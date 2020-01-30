@@ -119,7 +119,7 @@ public final class GraphHopperStorage implements GraphStorage, Graph {
 
         List<Weighting> existing = new ArrayList<>();
         for (CHGraphImpl cg : chGraphs) {
-            if (cg.getWeighting() == weighting)
+            if (cg.getWeighting().equals(weighting))
                 return cg;
             existing.add(cg.getWeighting());
         }
