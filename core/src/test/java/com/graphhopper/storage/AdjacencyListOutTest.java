@@ -48,4 +48,20 @@ public class AdjacencyListOutTest {
         }
         assertFalse(actualAdj.hasNext());
     }
+
+    @Test
+    public void uniDirectionalNeighborsOf1() {
+        final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph.getAllEdges());
+        final List<EdgeIteratorState> expectedAdj = Arrays.asList(graphMocker.getEdge(1, 2));
+        final List<EdgeIteratorState> actualAdj = adjList.getNeighbors(1);
+
+        assertEquals(expectedAdj.size(), actualAdj.size());
+        for (int i = 0; i < expectedAdj.size(); i++) {
+            final int expectedAdjNode = expectedAdj.get(i).getAdjNode();
+            final int actualAdjNode = actualAdj.get(i).getAdjNode();
+
+            assertEquals(String.valueOf(i), expectedAdjNode, actualAdjNode);
+        }
+    }
 }

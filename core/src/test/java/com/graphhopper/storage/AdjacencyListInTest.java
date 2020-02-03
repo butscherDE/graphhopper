@@ -1,5 +1,7 @@
 package com.graphhopper.storage;
 
+import com.graphhopper.routing.template.util.Edge;
+import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.util.EdgeIteratorState;
 import org.junit.Test;
@@ -17,9 +19,9 @@ public class AdjacencyListInTest {
 
     @Test
     public void adjacencyListOf0() {
-        final List<EdgeIteratorState> expectedAdj = Arrays.asList(GRAPH_MOCKER.getEdge(0,1),
-                GRAPH_MOCKER.getEdge(0,7),
-                GRAPH_MOCKER.getEdge(0,19));
+        final List<EdgeIteratorState> expectedAdj = Arrays.asList(GRAPH_MOCKER.getEdge(0, 1),
+                GRAPH_MOCKER.getEdge(0, 7),
+                GRAPH_MOCKER.getEdge(0, 19));
 
         final List<EdgeIteratorState> actualAdj = ADJLIST.getNeighbors(0);
 
@@ -34,9 +36,9 @@ public class AdjacencyListInTest {
 
     @Test
     public void adjacencyIteratorOf0() {
-        final List<EdgeIteratorState> expectedAdj = Arrays.asList(GRAPH_MOCKER.getEdge(0,1),
-                GRAPH_MOCKER.getEdge(0,7),
-                GRAPH_MOCKER.getEdge(0,19));
+        final List<EdgeIteratorState> expectedAdj = Arrays.asList(GRAPH_MOCKER.getEdge(0, 1),
+                GRAPH_MOCKER.getEdge(0, 7),
+                GRAPH_MOCKER.getEdge(0, 19));
 
         final Iterator<EdgeIteratorState> actualAdj = ADJLIST.getIterator(0);
 
@@ -47,5 +49,21 @@ public class AdjacencyListInTest {
             assertEquals(String.valueOf(i), expectedAdjNode, actualAdjNode);
         }
         assertFalse(actualAdj.hasNext());
+    }
+
+    @Test
+    public void uniDirectionalNeighborsOf1() {
+        final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph.getAllEdges());
+        final List<EdgeIteratorState> expectedAdj = Arrays.asList(graphMocker.getEdge(0, 1));
+        final List<EdgeIteratorState> actualAdj = adjList.getNeighbors(1);
+
+        assertEquals(expectedAdj.size(), actualAdj.size());
+        for (int i = 0; i < expectedAdj.size(); i++) {
+            final int expectedAdjNode = expectedAdj.get(i).getAdjNode();
+            final int actualAdjNode = actualAdj.get(i).getAdjNode();
+
+            assertEquals(String.valueOf(i), expectedAdjNode, actualAdjNode);
+        }
     }
 }
