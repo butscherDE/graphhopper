@@ -1,6 +1,7 @@
 package com.graphhopper.util.graphvisualizer;
 
 import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIterator;
 
@@ -8,12 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NodesAndNeighborDump {
-    final Graph graph;
+    final GraphHopperStorage graph;
 
     final List<Node> nodes = new ArrayList<>();
     final List<Edge> edges = new ArrayList<>();
 
-    public NodesAndNeighborDump(Graph graph, List<Integer> nodes) {
+    public NodesAndNeighborDump(GraphHopperStorage graph, List<Integer> nodes) {
         this.graph = graph;
 
         for (Integer node : nodes) {
@@ -23,7 +24,8 @@ public class NodesAndNeighborDump {
 
     private void addNode(Integer node) {
         final NodeAccess nodeAccess = graph.getNodeAccess();
-        final Node newNode = new Node(node, nodeAccess.getLat(node), nodeAccess.getLon(node));
+        final int level = Node.getLevel(node, graph);
+        final Node newNode = new Node(node, nodeAccess.getLat(node), nodeAccess.getLon(node), level);
 
         if (!nodes.contains(newNode)) {
             this.nodes.add(newNode);

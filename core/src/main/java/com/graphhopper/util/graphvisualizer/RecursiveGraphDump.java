@@ -1,6 +1,7 @@
 package com.graphhopper.util.graphvisualizer;
 
 import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
@@ -11,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class RecursiveGraphDump {
-    final Graph graph;
+    final GraphHopperStorage graph;
     final NodeAccess nodeAccess;
 
     public final List<Node> nodes = new ArrayList<>();
@@ -20,7 +21,7 @@ public class RecursiveGraphDump {
     private EdgeIteratorState edge;
     private SwingGraphGUI gui;
 
-    public RecursiveGraphDump(Graph graph) {
+    public RecursiveGraphDump(GraphHopperStorage graph) {
         this.graph = graph;
         this.nodeAccess = this.graph.getNodeAccess();
     }
@@ -63,7 +64,8 @@ public class RecursiveGraphDump {
         final int nodeId = neighborIterator.getAdjNode();
         final double latitude = nodeAccess.getLat(nodeId);
         final double longitude = nodeAccess.getLon(nodeId);
-        final Node newNode = new Node(nodeId, latitude, longitude);
+        int level = Node.getLevel(nodeId, graph);
+        final Node newNode = new Node(nodeId, latitude, longitude, level);
 
         if (!nodes.contains(newNode)) {
             nodes.add(newNode);
@@ -114,7 +116,7 @@ public class RecursiveGraphDump {
     }
 
     public void removeNodeAndCorrespondingEdges(final int node) {
-        this.nodes.remove(new Node(node, -1, -1));
+        this.nodes.remove(new Node(node, -1, -1, -1));
         for (int i = this.edges.size() - 1; i >= 0; i--) {
             final Edge edge = this.edges.get(i);
             if (edge.baseNode == node || edge.adjNode == node) {

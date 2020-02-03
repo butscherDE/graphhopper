@@ -1,6 +1,7 @@
 package com.graphhopper.util.graphvisualizer;
 
 import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIterator;
@@ -12,6 +13,7 @@ import java.util.List;
  * Receives nodes and add the node and the neighbors to its data structure to enable to visualize the so built subgraph
  */
 public class NodeNeighborLogger {
+    private final GraphHopperStorage graph;
     private final EdgeExplorer edgeExplorer;
     private final NodeAccess nodeAccess;
 
@@ -20,7 +22,9 @@ public class NodeNeighborLogger {
 
     private SwingGraphGUI gui;
 
-    public NodeNeighborLogger(Graph superGraph) {
+    public NodeNeighborLogger(GraphHopperStorage superGraph) {
+        this.graph = superGraph;
+
         this.edgeExplorer = superGraph.createEdgeExplorer();
         this.nodeAccess = superGraph.getNodeAccess();
     }
@@ -33,7 +37,8 @@ public class NodeNeighborLogger {
     private void addNodeWithCoordinates(int node) {
         final double latitude = nodeAccess.getLatitude(node);
         final double longitude = nodeAccess.getLongitude(node);
-        final Node newNode = new Node(node, latitude, longitude);
+        final int level = Node.getLevel(node, graph);
+        final Node newNode = new Node(node, latitude, longitude, level);
         if (!nodes.contains(newNode)) {
             nodes.add(newNode);
         }
@@ -67,7 +72,7 @@ public class NodeNeighborLogger {
 
     public void remove(final Integer deleteNode) {
         for (int i = nodes.size() - 1; i >= 0; i--) {
-            if (nodes.get(i).equals(new Node(deleteNode, -1, -1))) {
+            if (nodes.get(i).equals(new Node(deleteNode, -1, -1, -1))) {
                 nodes.remove(i);
             }
         }

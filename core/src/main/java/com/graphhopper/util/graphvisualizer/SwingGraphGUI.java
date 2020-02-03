@@ -71,6 +71,7 @@ public class SwingGraphGUI {
 
 				final Map<Integer, Node> nodesIndex = drawNodes();
 				drawEdges(nodesIndex);
+				drawNodes();
 
 			}
 		};
@@ -88,7 +89,7 @@ public class SwingGraphGUI {
 			final double x = (node.longitude - minMax[0]) * scaledCoordinates.scale + scaledCoordinates.padX;
 			final double y = (node.latitude - minMax[2]) * scaledCoordinates.scale + scaledCoordinates.padY;
 			g2d.fill(new Ellipse2D.Double(x - NODE_SIZE / 2, y - NODE_SIZE / 2, NODE_SIZE, NODE_SIZE));
-			g2d.drawString(Integer.toString(node.id), (float) x, (float) y);
+			g2d.drawString(node.id + ":" + node.level, (float) x, (float) y);
 		}
 		return nodesIndex;
 	}
