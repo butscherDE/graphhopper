@@ -79,7 +79,7 @@ public class PolygonRoutingTestGraph {
     }
 
     private GraphHopperStorage createPolygonTestGraphWithCh() {
-        final List<Weighting> nodeWeighting = Arrays.asList(new FastestWeighting(this.flagEncoder));
+        final List<Weighting> nodeWeighting = Arrays.asList((Weighting)new FastestWeighting(this.flagEncoder));
         this.graphWithCh = new GraphHopperStorage(nodeWeighting, new RAMDirectory(), this.encodingManager, false, turnCostExtension);
         this.graphWithCh.create(1000);
 

@@ -23,7 +23,7 @@ public class AdjacencyListOut extends AdjacencyList {
 
     private void addAdjacencyListIfNotPresent(int baseNode) {
         if (adjacency.get(baseNode) == null) {
-            adjacency.put(baseNode, new ArrayList<>());
+            adjacency.put(baseNode, new ArrayList<EdgeIteratorState>());
         }
     }
 
