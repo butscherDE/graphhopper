@@ -2,7 +2,6 @@ package com.graphhopper.routing;
 
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.CHGraph;
-import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
 import java.util.*;
@@ -12,15 +11,17 @@ public class TargetSetReverseUpwardPathsExplorer {
     private final Set<Integer> targets;
     private LinkedHashSet<Integer> nodesToExplore;
     private LinkedHashSet<Integer> nodesFoundToExploreNext;
-    private Map<Integer, Boolean> nodesVisited = new HashMap<>();
-    private OnlyNonVisitedNeighborsEdgeFilter backwardsEdgeFilter = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
-    private CHDownwardsEdgeFilter downwardsEdgeFilter = new CHDownwardsEdgeFilter();
+    private final Map<Integer, Boolean> nodesVisited = new HashMap<>();
+    private final OnlyNonVisitedNeighborsEdgeFilter nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
+    private final CHDownwardsEdgeFilter downwardsEdgeFilter = new CHDownwardsEdgeFilter();
+    private final CombinedEdgeFilter downwardsEdgeNonVisited = new CombinedEdgeFilter(nonVisited, downwardsEdgeFilter);
     private List<EdgeIteratorState> markedEdges;
     private Map<Integer, Boolean> newNodesVisited;
 
 
     public TargetSetReverseUpwardPathsExplorer(CHGraph graph, Set<Integer> targets) {
         this.graph = graph;
+        this.graph.prepareAdjacencyLists();
         this.targets = targets;
     }
 
@@ -50,28 +51,13 @@ public class TargetSetReverseUpwardPathsExplorer {
     private void exploreNeighborhood(Integer node) {
         newNodesVisited.put(node, true);
 
-        final List<Integer> neighbors = getAllNeighbors(node);
+        final Iterator<EdgeIteratorState> neighborExplorer = graph.getIngoingEdges(node);
+        while (neighborExplorer.hasNext()) {
+            final EdgeIteratorState incidentEdge = neighborExplorer.next();
 
-        findEdgesToNodeFromAllNeighbors(node, neighbors);
-    }
-
-    private List<Integer> getAllNeighbors(Integer node) {
-        final EdgeIterator neighborExplorer = graph.createEdgeExplorer(backwardsEdgeFilter).setBaseNode(node);
-        final List<Integer> neighbors = new LinkedList<>();
-        while (neighborExplorer.next()) {
-            neighbors.add(neighborExplorer.getAdjNode());
-        }
-        return neighbors;
-    }
-
-    private void findEdgesToNodeFromAllNeighbors(Integer node, List<Integer> neighbors) {
-        for (Integer neighbor : neighbors) {
-            final EdgeFilter downwardsReverseEdgeFilter = new CombinedEdgeFilter(downwardsEdgeFilter, new InEdgeHelper(node));
-            final EdgeIterator reverseNeighborExplorer = graph.createEdgeExplorer(downwardsReverseEdgeFilter).setBaseNode(neighbor);
-            while (reverseNeighborExplorer.next()) {
-                EdgeIteratorState edge = reverseNeighborExplorer.detach(false);
-                nodesFoundToExploreNext.add(edge.getBaseNode());
-                markedEdges.add(edge);
+            if (downwardsEdgeNonVisited.accept(incidentEdge)) {
+                nodesFoundToExploreNext.add(incidentEdge.getBaseNode());
+                markedEdges.add(incidentEdge);
             }
         }
     }
@@ -85,8 +71,8 @@ public class TargetSetReverseUpwardPathsExplorer {
 
         @Override
         public boolean accept(EdgeIteratorState edgeState) {
-            int adjNode = edgeState.getAdjNode();
-            Boolean visited = nodesVisited.get(adjNode);
+            int baseNode = edgeState.getBaseNode();
+            Boolean visited = nodesVisited.get(baseNode);
             return visited == null || visited == false;
         }
     }
@@ -101,20 +87,6 @@ public class TargetSetReverseUpwardPathsExplorer {
             final int adjRank = graph.getLevel(adjNode);
 
             return baseRank > adjRank;
-        }
-    }
-
-    class InEdgeHelper implements EdgeFilter {
-        private final int expectedAdjNode;
-
-        InEdgeHelper(int expectedAdjNode) {
-            this.expectedAdjNode = expectedAdjNode;
-        }
-
-
-        @Override
-        public boolean accept(EdgeIteratorState edgeState) {
-            return edgeState.getAdjNode() == expectedAdjNode;
         }
     }
 

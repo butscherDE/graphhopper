@@ -99,4 +99,6 @@ public interface CHGraph extends Graph {
     Iterator<EdgeIteratorState> getOutgoingEdges(final int baseNode);
 
     Iterator<EdgeIteratorState> getIngoingEdges(final int adjNode);
+
+    void prepareAdjacencyLists();
 }

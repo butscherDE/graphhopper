@@ -80,16 +80,6 @@ public class TargetSetReverseUpwardPathsExplorerTest {
     }
 
     @Test
-    public void testInEdgeHelper() {
-        final TargetSetReverseUpwardPathsExplorer targetExplorer = getTargetExplorerInstance();
-        final EdgeFilter inEdgeHelper = targetExplorer.new InEdgeHelper(1);
-
-        assertTrue(inEdgeHelper.accept(GRAPH_MOCKER.getEdge(0,1)));
-        assertFalse(inEdgeHelper.accept(GRAPH_MOCKER.getEdge(1,0)));
-        assertFalse(inEdgeHelper.accept(GRAPH_MOCKER.getEdge(1,2)));
-    }
-
-    @Test
     public void getUpwardsEdges() {
         final TargetSetReverseUpwardPathsExplorer targetExplorer = getTargetExplorerInstance();
         final List<EdgeIteratorState> expectedUpwardsEdges = getUpwardsEdges(targetExplorer);
