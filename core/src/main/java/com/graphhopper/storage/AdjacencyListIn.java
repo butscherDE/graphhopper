@@ -1,5 +1,7 @@
 package com.graphhopper.storage;
 
+import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
@@ -7,29 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdjacencyListIn extends AdjacencyList {
-    public AdjacencyListIn(final EdgeIterator edgeIterator) {
-        createFrom(edgeIterator);
+    public AdjacencyListIn(final EdgeIterator edgeIterator, final Weighting weighting) {
+        super(edgeIterator, weighting);
     }
 
-    private void createFrom(final EdgeIterator edgeIterator) {
-        while (edgeIterator.next()) {
-            final int adjNode = edgeIterator.getAdjNode();
-
-            addAdjacencyListIfNotPresent(adjNode);
-            addEdgeToAdjacency(edgeIterator, adjNode);
-        }
+    @Override
+    int getNodeToAddAdjacencyTo(EdgeIteratorState edge) {
+        return edge.getAdjNode();
     }
-
-    private void addAdjacencyListIfNotPresent(int adjNode) {
-        if (adjacency.get(adjNode) == null) {
-            adjacency.put(adjNode, new ArrayList<EdgeIteratorState>());
-        }
-    }
-
-    private void addEdgeToAdjacency(EdgeIterator edgeIterator, int adjNode) {
-        final List<EdgeIteratorState> adjNodesAdjacency = adjacency.get(adjNode);
-        adjNodesAdjacency.add(edgeIterator.detach(false));
-    }
-
-
 }

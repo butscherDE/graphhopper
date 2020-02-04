@@ -13,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 
 public class AdjacencyListOutTest {
     private final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
-    private final static AdjacencyListOut ADJLIST = new AdjacencyListOut(GRAPH_MOCKER.graph.getAllEdges());
+    private final static AdjacencyListOut ADJLIST = new AdjacencyListOut(GRAPH_MOCKER.graph.getAllEdges(), GRAPH_MOCKER.weighting);
 
     @Test
     public void adjacencyListOf0() {
@@ -52,7 +52,7 @@ public class AdjacencyListOutTest {
     @Test
     public void uniDirectionalNeighborsOf1() {
         final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
-        final AdjacencyListOut adjList = new AdjacencyListOut(graphMocker.graph.getAllEdges());
+        final AdjacencyListOut adjList = new AdjacencyListOut(graphMocker.graph.getAllEdges(), graphMocker.weighting);
         final List<EdgeIteratorState> expectedAdj = Arrays.asList(graphMocker.getEdge(1, 2));
         final List<EdgeIteratorState> actualAdj = adjList.getNeighbors(1);
 

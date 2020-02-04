@@ -15,13 +15,14 @@ import static org.junit.Assert.assertFalse;
 
 public class AdjacencyListInTest {
     private final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
-    private final static AdjacencyListIn ADJLIST = new AdjacencyListIn(GRAPH_MOCKER.graph.getAllEdges());
+    private final static AdjacencyListIn ADJLIST = new AdjacencyListIn(GRAPH_MOCKER.graph.getAllEdges(), GRAPH_MOCKER.weighting);
 
     @Test
     public void adjacencyListOf0() {
-        final List<EdgeIteratorState> expectedAdj = Arrays.asList(GRAPH_MOCKER.getEdge(0, 1),
-                GRAPH_MOCKER.getEdge(0, 7),
-                GRAPH_MOCKER.getEdge(0, 19));
+        final List<EdgeIteratorState> expectedAdj = Arrays.asList(
+                GRAPH_MOCKER.getEdge(1,0),
+                GRAPH_MOCKER.getEdge(7,0),
+                GRAPH_MOCKER.getEdge(19, 0));
 
         final List<EdgeIteratorState> actualAdj = ADJLIST.getNeighbors(0);
 
@@ -36,9 +37,10 @@ public class AdjacencyListInTest {
 
     @Test
     public void adjacencyIteratorOf0() {
-        final List<EdgeIteratorState> expectedAdj = Arrays.asList(GRAPH_MOCKER.getEdge(0, 1),
-                GRAPH_MOCKER.getEdge(0, 7),
-                GRAPH_MOCKER.getEdge(0, 19));
+        final List<EdgeIteratorState> expectedAdj = Arrays.asList(
+                GRAPH_MOCKER.getEdge(1,0),
+                GRAPH_MOCKER.getEdge(7,0),
+                GRAPH_MOCKER.getEdge(19, 0));
 
         final Iterator<EdgeIteratorState> actualAdj = ADJLIST.getIterator(0);
 
@@ -54,7 +56,7 @@ public class AdjacencyListInTest {
     @Test
     public void uniDirectionalNeighborsOf1() {
         final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
-        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph.getAllEdges());
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph.getAllEdges(), graphMocker.weighting);
         final List<EdgeIteratorState> expectedAdj = Arrays.asList(graphMocker.getEdge(0, 1));
         final List<EdgeIteratorState> actualAdj = adjList.getNeighbors(1);
 
