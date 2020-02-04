@@ -52,7 +52,7 @@ public class AdjacencyListOutTest {
     @Test
     public void uniDirectionalNeighborsOf1() {
         final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
-        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph.getAllEdges());
+        final AdjacencyListOut adjList = new AdjacencyListOut(graphMocker.graph.getAllEdges());
         final List<EdgeIteratorState> expectedAdj = Arrays.asList(graphMocker.getEdge(1, 2));
         final List<EdgeIteratorState> actualAdj = adjList.getNeighbors(1);
 

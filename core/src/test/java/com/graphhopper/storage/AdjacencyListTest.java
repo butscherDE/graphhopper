@@ -8,7 +8,7 @@ public class AdjacencyListTest {
     public static PolygonRoutingTestGraph getUnidirectionalTestCase() {
         final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
-                new Node(1, 0, 1),
+                new Node(1, Double.MIN_VALUE, 1),
                 new Node(2, 0, 2)};
         final Edge[] edges = new Edge[] {
                 new Edge(0, 1, 1, false),
