@@ -31,6 +31,7 @@ import com.graphhopper.util.shapes.BBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Locale;
 
 import static com.graphhopper.util.Helper.nf;
@@ -66,6 +67,9 @@ public class CHGraphImpl implements CHGraph, Storable<CHGraph> {
     private int shortcutCount = 0;
     private boolean isReadyForContraction;
 
+    private AdjacencyList outAdjacency = null;
+    private AdjacencyList inAdjacency = null;
+
     CHGraphImpl(Weighting w, Directory dir, final BaseGraph baseGraph, boolean edgeBased) {
         if (w == null)
             throw new IllegalStateException("Weighting for CHGraph cannot be null");
@@ -77,6 +81,11 @@ public class CHGraphImpl implements CHGraph, Storable<CHGraph> {
         this.nodesCH = dir.find("nodes_ch_" + name, DAType.getPreferredInt(dir.getDefaultType()));
         this.shortcuts = dir.find("shortcuts_" + name, DAType.getPreferredInt(dir.getDefaultType()));
         this.chEdgeAccess = new CHEdgeAccess(name);
+    }
+
+    public void prepareAdjacencyLists() {
+        this.outAdjacency = new AdjacencyListOut(getAllEdges(), weighting);
+        this.inAdjacency = new AdjacencyListOut(getAllEdges(), weighting);
     }
 
     public final Weighting getWeighting() {
@@ -231,6 +240,18 @@ public class CHGraphImpl implements CHGraph, Storable<CHGraph> {
     @Override
     public boolean isReadyForContraction() {
         return isReadyForContraction;
+    }
+
+    @Override
+    public Iterator<EdgeIteratorState> getOutgoingEdges(int baseNode) {
+        assert outAdjacency != null : "Call prepareAdjacencyLists() first.";
+        return outAdjacency.getIterator(baseNode);
+    }
+
+    @Override
+    public Iterator<EdgeIteratorState> getIngoingEdges(int adjNode) {
+        assert inAdjacency != null : "Call prepareAdjacencyLists() first.";
+        return inAdjacency.getIterator(adjNode);
     }
 
     @Override

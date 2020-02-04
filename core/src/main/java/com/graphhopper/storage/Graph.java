@@ -23,6 +23,8 @@ import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.shapes.BBox;
 
+import java.util.Iterator;
+
 /**
  * An interface to represent a (geo) graph - suited for efficient storage as it can be requested via
  * indices called node IDs. To get the lat,lon point you need to set up a LocationIndex instance.
@@ -124,5 +126,4 @@ public interface Graph {
      * @return the graph extension like a TurnCostExtension
      */
     GraphExtension getExtension();
-
 }

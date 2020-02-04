@@ -43,7 +43,7 @@ public class PolygonAroundRoutingTemplateTest {
 
         System.out.println(paths.get(0).getDistance());
         showAllEdgesWithIDs(routingTemplate);
-        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[]{19, 7, 1, 2, 3, 4})), paths.get(0).getNodesInPathOrder());
+        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[]{19,0,1,28,29,3,4})), paths.get(0).getNodesInPathOrder());
     }
 
     private void showAllEdgesWithIDs(final RoutingTemplate template) {

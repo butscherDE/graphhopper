@@ -34,7 +34,7 @@ public class PolygonThroughRoutingTemplateTest {
 
         printPath(paths);
 
-        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[]{0, 7, 44, 46, 54, 55, 49, 32, 12, 13, 5, 6})), paths.get(0).getNodesInPathOrder());
+        assertEquals(new ArrayList<Integer>(Arrays.asList(new Integer[]{0, 7, 44, 46, 47, 48, 31, 9, 4, 5, 6})), paths.get(0).getNodesInPathOrder());
     }
 
     private QueryGraph createQueryGraph(GHRequest request, RoutingTemplate routingTemplate) {

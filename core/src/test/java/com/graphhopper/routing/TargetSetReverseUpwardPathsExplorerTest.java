@@ -187,7 +187,7 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         }
     }
 
-    @Test
+//    @Test
     public void visualizeGraph() {
         GraphHopperStorage graph = GRAPH_MOCKER.graphWithCh;
         NodesAndNeighborDump dump = new NodesAndNeighborDump(graph, getAllNodes(graph));

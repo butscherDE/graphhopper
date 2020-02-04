@@ -36,7 +36,7 @@ public class SortedNeighborsTest {
 
     private PolygonRoutingTestGraph getMultiEdgeTestGraph() {
         final Node[] nodes = new Node[]{
-                new Node(0, 0, 0),
+                new Node(0, Double.MIN_VALUE, 0),
                 new Node(1, 0, 1)
         };
         final Edge[] edges = new Edge[]{
@@ -70,7 +70,7 @@ public class SortedNeighborsTest {
 
     private PolygonRoutingTestGraph getCollinearInEdgesTestGraph() {
         final Node[] nodes = new Node[]{
-                new Node(0, 0, 0),
+                new Node(0, Double.MIN_VALUE, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 2),
                 new Node(3, 0, 3)
@@ -98,7 +98,7 @@ public class SortedNeighborsTest {
     private PolygonRoutingTestGraph getCollinearOutEdgesTestGraph() {
         final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
-                new Node(1, 0, 1),
+                new Node(1, Double.MIN_VALUE, 1),
                 new Node(2, 0, 2),
                 new Node(3, 0, 3)
         };
@@ -123,7 +123,7 @@ public class SortedNeighborsTest {
 
     private PolygonRoutingTestGraph getMultipleNeighborsWithSameCoordinatesTestGraph() {
         final Node[] nodes = new Node[]{
-                new Node(0, 0, 0),
+                new Node(0, Double.MIN_VALUE, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 2),
                 new Node(3, 0, 2)
@@ -149,7 +149,7 @@ public class SortedNeighborsTest {
 
     private PolygonRoutingTestGraph getEqualCoordinateNeighborTestGraph() {
         final Node[] nodes = new Node[]{
-                new Node(0, 0, 0),
+                new Node(0, Double.MIN_VALUE, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 1),
                 new Node(3, 0, 2)
@@ -175,7 +175,7 @@ public class SortedNeighborsTest {
 
     private PolygonRoutingTestGraph getEqualCoordinateNeighborPathTestGraph() {
         final Node[] nodes = new Node[]{
-                new Node(0, 0, 0),
+                new Node(0, Double.MIN_VALUE, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 1),
                 new Node(3, 0, 1),
@@ -206,7 +206,7 @@ public class SortedNeighborsTest {
     private PolygonRoutingTestGraph equalCoordinateImpasseTestGraph() {
         final Node[] nodes = new Node[]{
                 new Node(0, 0, 0),
-                new Node(1, 0, 1),
+                new Node(1, Double.MIN_VALUE, 1),
                 new Node(2, 0, 1)
         };
         final Edge[] edges = new Edge[]{
@@ -229,7 +229,7 @@ public class SortedNeighborsTest {
 
     private PolygonRoutingTestGraph equalCoordinateNeighborPathImpasseTestGraph() {
         final Node[] nodes = new Node[]{
-                new Node(0, 0, 0),
+                new Node(0, Double.MIN_VALUE, 0),
                 new Node(1, 0, 1),
                 new Node(2, 0, 1),
                 new Node(3, 0, 1),

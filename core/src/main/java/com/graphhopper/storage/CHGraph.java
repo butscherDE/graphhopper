@@ -25,6 +25,8 @@ import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIteratorState;
 
+import java.util.Iterator;
+
 /**
  * Extended graph interface which supports Contraction Hierarchies. Ie. storing and retrieving the
  * levels for a node and creating shortcuts, which are additional 'artificial' edges to speedup
@@ -94,4 +96,7 @@ public interface CHGraph extends Graph {
      */
     boolean isReadyForContraction();
 
+    Iterator<EdgeIteratorState> getOutgoingEdges(final int baseNode);
+
+    Iterator<EdgeIteratorState> getIngoingEdges(final int adjNode);
 }
