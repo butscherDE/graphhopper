@@ -37,12 +37,6 @@ public class SourceSetUpwardPathsExplorer extends SetPathExplorer {
         }
     }
 
-    private void addAllSourcessAsVisited() {
-        for (Integer target : startSet) {
-            nodesVisited.put(target, true);
-        }
-    }
-
     private void exploreNeighborhood(Integer node) {
         final Iterator<EdgeIteratorState> neighborExplorer = chGraph.getOutgoingEdges(node);
         while (neighborExplorer.hasNext()) {
