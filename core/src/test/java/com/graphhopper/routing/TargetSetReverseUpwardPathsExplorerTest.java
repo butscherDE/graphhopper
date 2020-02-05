@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class TargetSetReverseUpwardPathsExplorerTest {
     private final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
@@ -55,9 +56,9 @@ public class TargetSetReverseUpwardPathsExplorerTest {
     public void testCHDownwardsEdgeFilter() {
         final TargetSetReverseUpwardPathsExplorer targetExplorer = getTargetExplorerInstance();
 
-        EdgeFilter chDownwards = targetExplorer.new CHUpwardsEdgeFilter();
-        assertTrue(chDownwards.accept(GRAPH_MOCKER.getEdge(0, 1)));
-        assertFalse(chDownwards.accept(GRAPH_MOCKER.getEdge(1,0)));
+        EdgeFilter chDownwards = targetExplorer.new CHDownwardsEdgeFilter();
+        assertFalse(chDownwards.accept(GRAPH_MOCKER.getEdge(0, 1)));
+        assertTrue(chDownwards.accept(GRAPH_MOCKER.getEdge(1,0)));
     }
 
     @Test
@@ -66,10 +67,10 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         final Map<Integer, Boolean> visitedNodes = getVisitedNodesMocker();
         final EdgeFilter onlyNonVisited = targetExplorer.new OnlyNonVisitedNeighborsEdgeFilter(visitedNodes);
 
-        assertTrue(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(0,1)));
-        assertFalse(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(1,0)));
-        assertTrue(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(6,5)));
-        assertFalse(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(5,6)));
+        assertFalse(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(0,1)));
+        assertTrue(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(1,0)));
+        assertFalse(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(6,5)));
+        assertTrue(onlyNonVisited.accept(GRAPH_MOCKER.getEdge(5,6)));
     }
 
     private Map<Integer, Boolean> getVisitedNodesMocker() {
@@ -101,7 +102,15 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         System.out.println(actualUpwardsEdges);
 
         assertEquals(expectedUpwardsEdges.size(), actualUpwardsEdges.size());
-        assertTrue(actualUpwardsEdges.containsAll(expectedUpwardsEdges));
+        final Iterator<EdgeIteratorState> expectedIterator = expectedUpwardsEdges.iterator();
+        final Iterator<EdgeIteratorState> actualIterator = actualUpwardsEdges.iterator();
+        for (int i = 0; i < expectedUpwardsEdges.size(); i++) {
+            final EdgeIteratorState expectedEdge = expectedIterator.next();
+            final EdgeIteratorState actualEdge = actualIterator.next();
+            String message = expectedEdge.toString() + " : " + actualEdge.toString();
+            assertEquals(message, expectedEdge.getBaseNode(), actualEdge.getBaseNode());
+            assertEquals(message, expectedEdge.getAdjNode(), actualEdge.getAdjNode());
+        }
     }
 
     private List<EdgeIteratorState> getUpwardsEdges(TargetSetReverseUpwardPathsExplorer targetExplorer) {
@@ -111,7 +120,6 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         final Stack<Integer> nodesToExplore = getStartingNodeSet();
 
         exploreUpwardsEdges(chFilter, upwardsEdges, nodesToExplore);
-
         pruneDuplicates(upwardsEdges);
 
         return upwardsEdges;
@@ -119,22 +127,30 @@ public class TargetSetReverseUpwardPathsExplorerTest {
 
     private Stack<Integer> getStartingNodeSet() {
         final Stack<Integer> nodesToExplore = new Stack<>();
-//        nodesToExplore.push(6);
-//        nodesToExplore.push(25);
-//        nodesToExplore.push(20);
+        nodesToExplore.push(6);
+        nodesToExplore.push(25);
+        nodesToExplore.push(20);
         nodesToExplore.push(0);
         return nodesToExplore;
     }
 
     private void exploreUpwardsEdges(EdgeFilter chFilter, LinkedList<EdgeIteratorState> upwardsEdges, Stack<Integer> nodesToExplore) {
+        final List<Integer> exploredNodes = new LinkedList<>();
         while (!nodesToExplore.isEmpty()) {
             final int currentNode = nodesToExplore.pop();
+            exploredNodes.add(currentNode);
 
-            final EdgeIterator neighborExplorer = GRAPH_MOCKER.graph.createEdgeExplorer(chFilter).setBaseNode(currentNode);
-            while (neighborExplorer.next()) {
-                int adjNode = neighborExplorer.getAdjNode();
-                upwardsEdges.add(neighborExplorer.detach(true));
-                nodesToExplore.push(adjNode);
+            CHGraph graph = GRAPH_MOCKER.graphWithCh.getCHGraph();
+            final Iterator<EdgeIteratorState> neighborExplorer = graph.getIngoingEdges(currentNode);
+            while (neighborExplorer.hasNext()) {
+                final EdgeIteratorState incidentEdge = neighborExplorer.next();
+                if (!chFilter.accept(incidentEdge)) {
+                    int baseNode = incidentEdge.getBaseNode();
+                    upwardsEdges.add(incidentEdge);
+                    if (!exploredNodes.contains(baseNode)) {
+                        nodesToExplore.push(baseNode);
+                    }
+                }
             }
         }
     }
@@ -159,7 +175,7 @@ public class TargetSetReverseUpwardPathsExplorerTest {
 
     private TargetSetReverseUpwardPathsExplorer getTargetExplorerInstance() {
         CHGraph chGraph = GRAPH_MOCKER.graphWithCh.getCHGraph();
-        LinkedHashSet<Integer> targets = new LinkedHashSet<>(Arrays.asList(/*6, 25, 20, */0));
+        LinkedHashSet<Integer> targets = new LinkedHashSet<>(Arrays.asList(6, 25, 20, 0));
         return new TargetSetReverseUpwardPathsExplorer(chGraph, targets);
     }
 
@@ -167,7 +183,7 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         private final EdgeFilter cHDownwardsEdgeFilter;
 
         private CHUpwardsEdgeFilter(final TargetSetReverseUpwardPathsExplorer targetExplorer) {
-            cHDownwardsEdgeFilter = targetExplorer.new CHUpwardsEdgeFilter();
+            cHDownwardsEdgeFilter = targetExplorer.new CHDownwardsEdgeFilter();
         }
 
 

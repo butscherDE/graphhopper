@@ -13,10 +13,9 @@ public class TargetSetReverseUpwardPathsExplorer {
     private LinkedHashSet<Integer> nodesFoundToExploreNext;
     private final Map<Integer, Boolean> nodesVisited = new HashMap<>();
     private final OnlyNonVisitedNeighborsEdgeFilter nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
-    private final CHUpwardsEdgeFilter upwardsEdgeFilter = new CHUpwardsEdgeFilter();
-    private final CombinedEdgeFilter upwardsEdgeNonVisited = new CombinedEdgeFilter(nonVisited, upwardsEdgeFilter);
+    private final CHDownwardsEdgeFilter downwardsEdgeFilter = new CHDownwardsEdgeFilter();
+    private final CombinedEdgeFilter downwardsEdgeNonVisited = new CombinedEdgeFilter(downwardsEdgeFilter, downwardsEdgeFilter);
     private List<EdgeIteratorState> markedEdges;
-    private Map<Integer, Boolean> newNodesVisited;
 
 
     public TargetSetReverseUpwardPathsExplorer(CHGraph graph, Set<Integer> targets) {
@@ -34,29 +33,32 @@ public class TargetSetReverseUpwardPathsExplorer {
     private void prepareMarkedEdgeData() {
         markedEdges = new LinkedList<>();
         nodesToExplore = new LinkedHashSet<>(targets);
+        for (Integer target : targets) {
+            nodesVisited.put(target, true);
+        }
 
         while (nodesToExplore.size() > 0) {
             nodesFoundToExploreNext = new LinkedHashSet<>();
 
-            newNodesVisited = new HashMap<>();
             for (Integer node : nodesToExplore) {
                 exploreNeighborhood(node);
             }
 
-            nodesVisited.putAll(newNodesVisited);
             nodesToExplore = nodesFoundToExploreNext;
         }
     }
 
     private void exploreNeighborhood(Integer node) {
-        newNodesVisited.put(node, true);
-
         final Iterator<EdgeIteratorState> neighborExplorer = graph.getIngoingEdges(node);
         while (neighborExplorer.hasNext()) {
             final EdgeIteratorState incidentEdge = neighborExplorer.next();
 
-            if (upwardsEdgeNonVisited.accept(incidentEdge)) {
-                nodesFoundToExploreNext.add(incidentEdge.getBaseNode());
+            if (downwardsEdgeNonVisited.accept(incidentEdge)) {
+                int baseNode = incidentEdge.getBaseNode();
+                if (nonVisited.accept(incidentEdge)) {
+                    nodesFoundToExploreNext.add(baseNode);
+                    nodesVisited.put(baseNode, true);
+                }
                 markedEdges.add(incidentEdge);
             }
         }
@@ -71,13 +73,13 @@ public class TargetSetReverseUpwardPathsExplorer {
 
         @Override
         public boolean accept(EdgeIteratorState edgeState) {
-            int adjNode = edgeState.getAdjNode();
-            Boolean visited = nodesVisited.get(adjNode);
+            int baseNode = edgeState.getBaseNode();
+            Boolean visited = nodesVisited.get(baseNode);
             return visited == null || visited == false;
         }
     }
 
-    class CHUpwardsEdgeFilter implements EdgeFilter {
+    class CHDownwardsEdgeFilter implements EdgeFilter {
         @Override
         public boolean accept(EdgeIteratorState edgeState) {
             final int baseNode = edgeState.getBaseNode();
@@ -86,7 +88,7 @@ public class TargetSetReverseUpwardPathsExplorer {
             final int baseRank = graph.getLevel(baseNode);
             final int adjRank = graph.getLevel(adjNode);
 
-            return baseRank <= adjRank;
+            return baseRank > adjRank;
         }
     }
 
