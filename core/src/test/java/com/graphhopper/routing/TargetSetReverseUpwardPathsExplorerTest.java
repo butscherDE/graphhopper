@@ -1,58 +1,15 @@
 package com.graphhopper.routing;
 
-import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.CHGraph;
-import com.graphhopper.storage.Graph;
-import com.graphhopper.storage.GraphHopperStorage;
-import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
-import com.graphhopper.util.graphvisualizer.SwingGraphGUI;
 import org.junit.Test;
 
 import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class TargetSetReverseUpwardPathsExplorerTest {
-    private final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
-
-    @Test
-    public void testIfCHCreationWorked() {
-        final GraphHopperStorage ghs = GRAPH_MOCKER.graphWithCh;
-        final CHGraph chGraph = ghs.getCHGraph();
-
-        final List<Integer> allNodes = getAllNodes(chGraph);
-
-        printAllNodesWithRankWellAligned(chGraph, allNodes);
-    }
-
-    private List<Integer> getAllNodes(Graph chGraph) {
-        final EdgeIterator allEdges = chGraph.getAllEdges();
-        final Set<Integer> allNodes = new LinkedHashSet<>();
-        while(allEdges.next()) {
-            allNodes.add(allEdges.getBaseNode());
-            allNodes.add(allEdges.getAdjNode());
-        }
-        final List<Integer> nodesAsList = new ArrayList<>(allNodes);
-        Collections.sort(nodesAsList);
-        return nodesAsList;
-    }
-
-    private void printAllNodesWithRankWellAligned(CHGraph chGraph, List<Integer> allNodes) {
-        for (Integer node : allNodes) {
-            int log = (int) Math.log10(node) + 1;
-            final int nodeDigits = log >= 0 ? log : 1;
-
-            System.out.print(node + ":");
-            for (int i = nodeDigits; i < 5; i++) {
-                System.out.print(" ");
-            }
-            System.out.println(chGraph.getLevel(node));
-        }
-    }
-
+public class TargetSetReverseUpwardPathsExplorerTest extends SetPathExplorerTest {
     @Test
     public void testCHDownwardsEdgeFilter() {
         final TargetSetReverseUpwardPathsExplorer targetExplorer = getTargetExplorerInstance();
@@ -146,52 +103,16 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         return upwardsEdges;
     }
 
-    private Stack<Integer> getStartingNodeSet() {
-        final Stack<Integer> nodesToExplore = new Stack<>();
-        nodesToExplore.push(6);
-        nodesToExplore.push(25);
-        nodesToExplore.push(20);
-        nodesToExplore.push(0);
-        return nodesToExplore;
+    Iterator<EdgeIteratorState> getNeighborExplorer(int currentNode, CHGraph graph) {
+        return graph.getIngoingEdges(currentNode);
     }
 
-    private void exploreUpwardsEdges(EdgeFilter chFilter, LinkedList<EdgeIteratorState> upwardsEdges, Stack<Integer> nodesToExplore) {
-        final List<Integer> exploredNodes = new LinkedList<>();
-        while (!nodesToExplore.isEmpty()) {
-            final int currentNode = nodesToExplore.pop();
-            exploredNodes.add(currentNode);
-
-            CHGraph graph = GRAPH_MOCKER.graphWithCh.getCHGraph();
-            final Iterator<EdgeIteratorState> neighborExplorer = graph.getIngoingEdges(currentNode);
-            while (neighborExplorer.hasNext()) {
-                final EdgeIteratorState incidentEdge = neighborExplorer.next();
-                if (!chFilter.accept(incidentEdge)) {
-                    int baseNode = incidentEdge.getBaseNode();
-                    upwardsEdges.add(incidentEdge);
-                    if (!exploredNodes.contains(baseNode)) {
-                        nodesToExplore.push(baseNode);
-                    }
-                }
-            }
-        }
+    int getExploreNode(EdgeIteratorState incidentEdge) {
+        return incidentEdge.getBaseNode();
     }
 
-    private void pruneDuplicates(LinkedList<EdgeIteratorState> upwardsEdges) {
-        for (int i = upwardsEdges.size() - 1; i >= 0; i--) {
-            final EdgeIteratorState edgeToPossiblyPrune = upwardsEdges.get(i);
-            int firstIndex = -1;
-            for (final EdgeIteratorState possibleDuplicate : upwardsEdges) {
-                firstIndex++;
-                if (edgeToPossiblyPrune.getEdge() == possibleDuplicate.getEdge() &&
-                        edgeToPossiblyPrune.getAdjNode() == possibleDuplicate.getAdjNode()) {
-                    break;
-                }
-            }
-
-            if (firstIndex < i) {
-                upwardsEdges.remove(i);
-            }
-        }
+    boolean isEdgeAccepted(EdgeFilter chFilter, EdgeIteratorState incidentEdge) {
+        return !chFilter.accept(incidentEdge);
     }
 
     private TargetSetReverseUpwardPathsExplorer getTargetExplorerInstance() {
@@ -211,20 +132,6 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         @Override
         public boolean accept(EdgeIteratorState edgeState) {
             return !cHDownwardsEdgeFilter.accept(edgeState);
-        }
-    }
-
-//    @Test
-    public void visualizeGraph() {
-        GraphHopperStorage graph = GRAPH_MOCKER.graphWithCh;
-        NodesAndNeighborDump dump = new NodesAndNeighborDump(graph, getAllNodes(graph));
-        dump.dump();
-        SwingGraphGUI swingGraphGUI = new SwingGraphGUI(dump.getNodes(), dump.getEdges());
-        swingGraphGUI.visualizeGraph();
-        try {
-//            Thread.sleep(60000);
-        } catch (Exception e) {
-
         }
     }
 }
