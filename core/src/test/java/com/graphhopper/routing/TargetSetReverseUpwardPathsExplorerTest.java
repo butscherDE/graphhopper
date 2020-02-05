@@ -2,7 +2,9 @@ package com.graphhopper.routing;
 
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.EdgeFilter;
-import com.graphhopper.storage.*;
+import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.graphvisualizer.NodesAndNeighborDump;
@@ -12,7 +14,6 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
 
 public class TargetSetReverseUpwardPathsExplorerTest {
     private final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
@@ -86,31 +87,39 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         final List<EdgeIteratorState> expectedUpwardsEdges = getUpwardsEdges(targetExplorer);
         final List<EdgeIteratorState> actualUpwardsEdges = targetExplorer.getMarkedEdges();
 
-        Comparator<EdgeIteratorState> edgeComparator = new Comparator<EdgeIteratorState>() {
-            @Override
-            public int compare(EdgeIteratorState o1, EdgeIteratorState o2) {
-                int baseNodeDif = o1.getBaseNode() - o2.getBaseNode();
-                int adjNodeDif = o1.getAdjNode() - o2.getAdjNode();
-
-                return baseNodeDif != 0 ? baseNodeDif : adjNodeDif;
-            }
-        };
-        Collections.sort(expectedUpwardsEdges, edgeComparator);
-        Collections.sort(actualUpwardsEdges, edgeComparator);
+        sortFoundEdgesByBaseAndAdjNodeId(expectedUpwardsEdges, actualUpwardsEdges);
 
         System.out.println(expectedUpwardsEdges);
         System.out.println(actualUpwardsEdges);
 
+        assertFoundAllUpwardsEdges(expectedUpwardsEdges, actualUpwardsEdges);
+    }
+
+    private void sortFoundEdgesByBaseAndAdjNodeId(List<EdgeIteratorState> expectedUpwardsEdges, List<EdgeIteratorState> actualUpwardsEdges) {
+        Comparator<EdgeIteratorState> edgeComparator = (o1, o2) -> {
+            int baseNodeDif = o1.getBaseNode() - o2.getBaseNode();
+            int adjNodeDif = o1.getAdjNode() - o2.getAdjNode();
+
+            return baseNodeDif != 0 ? baseNodeDif : adjNodeDif;
+        };
+        Collections.sort(expectedUpwardsEdges, edgeComparator);
+        Collections.sort(actualUpwardsEdges, edgeComparator);
+    }
+
+    private void assertFoundAllUpwardsEdges(List<EdgeIteratorState> expectedUpwardsEdges, List<EdgeIteratorState> actualUpwardsEdges) {
         assertEquals(expectedUpwardsEdges.size(), actualUpwardsEdges.size());
+
         final Iterator<EdgeIteratorState> expectedIterator = expectedUpwardsEdges.iterator();
         final Iterator<EdgeIteratorState> actualIterator = actualUpwardsEdges.iterator();
         for (int i = 0; i < expectedUpwardsEdges.size(); i++) {
-            final EdgeIteratorState expectedEdge = expectedIterator.next();
-            final EdgeIteratorState actualEdge = actualIterator.next();
-            String message = expectedEdge.toString() + " : " + actualEdge.toString();
-            assertEquals(message, expectedEdge.getBaseNode(), actualEdge.getBaseNode());
-            assertEquals(message, expectedEdge.getAdjNode(), actualEdge.getAdjNode());
+            assertEdgesEqual(expectedIterator.next(), actualIterator.next());
         }
+    }
+
+    private void assertEdgesEqual(EdgeIteratorState expectedEdge, EdgeIteratorState actualEdge) {
+        String message = expectedEdge.toString() + " : " + actualEdge.toString();
+        assertEquals(message, expectedEdge.getBaseNode(), actualEdge.getBaseNode());
+        assertEquals(message, expectedEdge.getAdjNode(), actualEdge.getAdjNode());
     }
 
     private List<EdgeIteratorState> getUpwardsEdges(TargetSetReverseUpwardPathsExplorer targetExplorer) {
