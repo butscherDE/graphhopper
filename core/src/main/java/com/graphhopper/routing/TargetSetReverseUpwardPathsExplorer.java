@@ -52,14 +52,23 @@ public class TargetSetReverseUpwardPathsExplorer {
         while (neighborExplorer.hasNext()) {
             final EdgeIteratorState incidentEdge = neighborExplorer.next();
 
-            if (chDownwardsEdgeFilter.accept(incidentEdge)) {
-                int baseNode = incidentEdge.getBaseNode();
-                if (nonVisited.accept(incidentEdge)) {
-                    nodesFoundToExploreNext.add(baseNode);
-                    nodesVisited.put(baseNode, true);
-                }
-                markedEdges.add(incidentEdge);
-            }
+            addEdgeIfDownwards(incidentEdge);
+        }
+    }
+
+    private void addEdgeIfDownwards(EdgeIteratorState incidentEdge) {
+        if (chDownwardsEdgeFilter.accept(incidentEdge)) {
+            markedEdges.add(incidentEdge);
+
+            addBaseNodeToVisitTaskIfNotAlreadyVisited(incidentEdge);
+        }
+    }
+
+    private void addBaseNodeToVisitTaskIfNotAlreadyVisited(EdgeIteratorState incidentEdge) {
+        if (nonVisited.accept(incidentEdge)) {
+            int baseNode = incidentEdge.getBaseNode();
+            nodesFoundToExploreNext.add(baseNode);
+            nodesVisited.put(baseNode, true);
         }
     }
 
