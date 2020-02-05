@@ -13,8 +13,8 @@ public class TargetSetReverseUpwardPathsExplorer {
     private LinkedHashSet<Integer> nodesFoundToExploreNext;
     private final Map<Integer, Boolean> nodesVisited = new HashMap<>();
     private final OnlyNonVisitedNeighborsEdgeFilter nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
-    private final CHDownwardsEdgeFilter downwardsEdgeFilter = new CHDownwardsEdgeFilter();
-    private final CombinedEdgeFilter downwardsEdgeNonVisited = new CombinedEdgeFilter(nonVisited, downwardsEdgeFilter);
+    private final CHUpwardsEdgeFilter upwardsEdgeFilter = new CHUpwardsEdgeFilter();
+    private final CombinedEdgeFilter upwardsEdgeNonVisited = new CombinedEdgeFilter(nonVisited, upwardsEdgeFilter);
     private List<EdgeIteratorState> markedEdges;
     private Map<Integer, Boolean> newNodesVisited;
 
@@ -55,7 +55,7 @@ public class TargetSetReverseUpwardPathsExplorer {
         while (neighborExplorer.hasNext()) {
             final EdgeIteratorState incidentEdge = neighborExplorer.next();
 
-            if (downwardsEdgeNonVisited.accept(incidentEdge)) {
+            if (upwardsEdgeNonVisited.accept(incidentEdge)) {
                 nodesFoundToExploreNext.add(incidentEdge.getBaseNode());
                 markedEdges.add(incidentEdge);
             }
@@ -77,7 +77,7 @@ public class TargetSetReverseUpwardPathsExplorer {
         }
     }
 
-    class CHDownwardsEdgeFilter implements EdgeFilter {
+    class CHUpwardsEdgeFilter implements EdgeFilter {
         @Override
         public boolean accept(EdgeIteratorState edgeState) {
             final int baseNode = edgeState.getBaseNode();
@@ -86,7 +86,7 @@ public class TargetSetReverseUpwardPathsExplorer {
             final int baseRank = graph.getLevel(baseNode);
             final int adjRank = graph.getLevel(adjNode);
 
-            return baseRank > adjRank;
+            return baseRank <= adjRank;
         }
     }
 

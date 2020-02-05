@@ -55,9 +55,9 @@ public class TargetSetReverseUpwardPathsExplorerTest {
     public void testCHDownwardsEdgeFilter() {
         final TargetSetReverseUpwardPathsExplorer targetExplorer = getTargetExplorerInstance();
 
-        EdgeFilter chDownwards = targetExplorer.new CHDownwardsEdgeFilter();
-        assertFalse(chDownwards.accept(GRAPH_MOCKER.getEdge(0, 1)));
-        assertTrue(chDownwards.accept(GRAPH_MOCKER.getEdge(1,0)));
+        EdgeFilter chDownwards = targetExplorer.new CHUpwardsEdgeFilter();
+        assertTrue(chDownwards.accept(GRAPH_MOCKER.getEdge(0, 1)));
+        assertFalse(chDownwards.accept(GRAPH_MOCKER.getEdge(1,0)));
     }
 
     @Test
@@ -167,7 +167,7 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         private final EdgeFilter cHDownwardsEdgeFilter;
 
         private CHUpwardsEdgeFilter(final TargetSetReverseUpwardPathsExplorer targetExplorer) {
-            cHDownwardsEdgeFilter = targetExplorer.new CHDownwardsEdgeFilter();
+            cHDownwardsEdgeFilter = targetExplorer.new CHUpwardsEdgeFilter();
         }
 
 
