@@ -7,7 +7,8 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SourceSetUpwardPathsExplorerTest extends SetPathExplorerTest {
     @Test
@@ -64,43 +65,10 @@ public class SourceSetUpwardPathsExplorerTest extends SetPathExplorerTest {
         assertFoundAllUpwardsEdges(expectedUpwardsEdges, actualUpwardsEdges);
     }
 
-    private void sortFoundEdgesByBaseAndAdjNodeId(List<EdgeIteratorState> expectedUpwardsEdges, List<EdgeIteratorState> actualUpwardsEdges) {
-        Comparator<EdgeIteratorState> edgeComparator = (o1, o2) -> {
-            int baseNodeDif = o1.getBaseNode() - o2.getBaseNode();
-            int adjNodeDif = o1.getAdjNode() - o2.getAdjNode();
-
-            return baseNodeDif != 0 ? baseNodeDif : adjNodeDif;
-        };
-        Collections.sort(expectedUpwardsEdges, edgeComparator);
-        Collections.sort(actualUpwardsEdges, edgeComparator);
-    }
-
-    private void assertFoundAllUpwardsEdges(List<EdgeIteratorState> expectedUpwardsEdges, List<EdgeIteratorState> actualUpwardsEdges) {
-        assertEquals(expectedUpwardsEdges.size(), actualUpwardsEdges.size());
-
-        final Iterator<EdgeIteratorState> expectedIterator = expectedUpwardsEdges.iterator();
-        final Iterator<EdgeIteratorState> actualIterator = actualUpwardsEdges.iterator();
-        for (int i = 0; i < expectedUpwardsEdges.size(); i++) {
-            assertEdgesEqual(expectedIterator.next(), actualIterator.next());
-        }
-    }
-
-    private void assertEdgesEqual(EdgeIteratorState expectedEdge, EdgeIteratorState actualEdge) {
-        String message = expectedEdge.toString() + " : " + actualEdge.toString();
-        assertEquals(message, expectedEdge.getBaseNode(), actualEdge.getBaseNode());
-        assertEquals(message, expectedEdge.getAdjNode(), actualEdge.getAdjNode());
-    }
-
     private List<EdgeIteratorState> getUpwardsEdges(SourceSetUpwardPathsExplorer sourceExplorer) {
         final EdgeFilter chFilter = sourceExplorer.new CHUpwardsEdgeFilter();
 
-        final LinkedList<EdgeIteratorState> upwardsEdges = new LinkedList<>();
-        final Stack<Integer> nodesToExplore = getStartingNodeSet();
-
-        exploreUpwardsEdges(chFilter, upwardsEdges, nodesToExplore);
-        pruneDuplicates(upwardsEdges);
-
-        return upwardsEdges;
+        return getUpwardsEdges(chFilter);
     }
 
     Iterator<EdgeIteratorState> getNeighborExplorer(int currentNode, CHGraph graph) {
@@ -109,10 +77,6 @@ public class SourceSetUpwardPathsExplorerTest extends SetPathExplorerTest {
 
     int getExploreNode(EdgeIteratorState incidentEdge) {
         return incidentEdge.getAdjNode();
-    }
-
-    boolean isEdgeAccepted(EdgeFilter chFilter, EdgeIteratorState incidentEdge) {
-        return chFilter.accept(incidentEdge);
     }
 
     private SourceSetUpwardPathsExplorer getSourceExplorerInstance() {

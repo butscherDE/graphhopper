@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
+
 public abstract class SetPathExplorerTest {
     final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
 
@@ -51,6 +53,43 @@ public abstract class SetPathExplorerTest {
         }
     }
 
+    void sortFoundEdgesByBaseAndAdjNodeId(List<EdgeIteratorState> expectedUpwardsEdges, List<EdgeIteratorState> actualUpwardsEdges) {
+        Comparator<EdgeIteratorState> edgeComparator = (o1, o2) -> {
+            int baseNodeDif = o1.getBaseNode() - o2.getBaseNode();
+            int adjNodeDif = o1.getAdjNode() - o2.getAdjNode();
+
+            return baseNodeDif != 0 ? baseNodeDif : adjNodeDif;
+        };
+        Collections.sort(expectedUpwardsEdges, edgeComparator);
+        Collections.sort(actualUpwardsEdges, edgeComparator);
+    }
+
+    void assertFoundAllUpwardsEdges(List<EdgeIteratorState> expectedUpwardsEdges, List<EdgeIteratorState> actualUpwardsEdges) {
+        assertEquals(expectedUpwardsEdges.size(), actualUpwardsEdges.size());
+
+        final Iterator<EdgeIteratorState> expectedIterator = expectedUpwardsEdges.iterator();
+        final Iterator<EdgeIteratorState> actualIterator = actualUpwardsEdges.iterator();
+        for (int i = 0; i < expectedUpwardsEdges.size(); i++) {
+            assertEdgesEqual(expectedIterator.next(), actualIterator.next());
+        }
+    }
+
+    void assertEdgesEqual(EdgeIteratorState expectedEdge, EdgeIteratorState actualEdge) {
+        String message = expectedEdge.toString() + " : " + actualEdge.toString();
+        assertEquals(message, expectedEdge.getBaseNode(), actualEdge.getBaseNode());
+        assertEquals(message, expectedEdge.getAdjNode(), actualEdge.getAdjNode());
+    }
+
+    List<EdgeIteratorState> getUpwardsEdges(EdgeFilter chFilter) {
+        final LinkedList<EdgeIteratorState> upwardsEdges = new LinkedList<>();
+        final Stack<Integer> nodesToExplore = getStartingNodeSet();
+
+        exploreUpwardsEdges(chFilter, upwardsEdges, nodesToExplore);
+        pruneDuplicates(upwardsEdges);
+
+        return upwardsEdges;
+    }
+
     Stack<Integer> getStartingNodeSet() {
         final Stack<Integer> nodesToExplore = new Stack<>();
         nodesToExplore.push(6);
@@ -85,7 +124,9 @@ public abstract class SetPathExplorerTest {
 
     abstract int getExploreNode(EdgeIteratorState incidentEdge);
 
-    abstract boolean isEdgeAccepted(EdgeFilter edgeFilter, EdgeIteratorState incidentEdge);
+    boolean isEdgeAccepted(EdgeFilter chFilter, EdgeIteratorState incidentEdge) {
+        return chFilter.accept(incidentEdge);
+    }
 
     void pruneDuplicates(LinkedList<EdgeIteratorState> upwardsEdges) {
         for (int i = upwardsEdges.size() - 1; i >= 0; i--) {
