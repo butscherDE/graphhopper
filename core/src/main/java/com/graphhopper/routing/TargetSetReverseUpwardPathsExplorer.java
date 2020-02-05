@@ -4,33 +4,18 @@ import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.CHGraph;
 import com.graphhopper.util.EdgeIteratorState;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class TargetSetReverseUpwardPathsExplorer {
-    private final CHGraph graph;
-    private final Set<Integer> targets;
-    private Stack<Integer> nodesToExplore;
-    private final Map<Integer, Boolean> nodesVisited = new HashMap<>();
+public class TargetSetReverseUpwardPathsExplorer extends SetPathExplorer {
     private final OnlyNonVisitedNeighborsEdgeFilter nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
     private final CHDownwardsEdgeFilter chDownwardsEdgeFilter = new CHDownwardsEdgeFilter();
-    private List<EdgeIteratorState> markedEdges;
 
 
-    public TargetSetReverseUpwardPathsExplorer(CHGraph graph, Set<Integer> targets) {
-        this.graph = graph;
-        this.graph.prepareAdjacencyLists();
-        this.targets = targets;
-
-        this.markedEdges = new LinkedList<>();
-        prepareNodesToExplore(targets);
-        addAllTargetsAsVisited();
-    }
-
-    private void prepareNodesToExplore(Set<Integer> targets) {
-        this.nodesToExplore = new Stack<>();
-        for (Integer target : targets) {
-            this.nodesToExplore.push(target);
-        }
+    public TargetSetReverseUpwardPathsExplorer(CHGraph chGraph, Set<Integer> targets) {
+        super(chGraph, targets);
     }
 
     public List<EdgeIteratorState> getMarkedEdges() {
@@ -52,14 +37,8 @@ public class TargetSetReverseUpwardPathsExplorer {
         }
     }
 
-    private void addAllTargetsAsVisited() {
-        for (Integer target : targets) {
-            nodesVisited.put(target, true);
-        }
-    }
-
     private void exploreNeighborhood(Integer node) {
-        final Iterator<EdgeIteratorState> neighborExplorer = graph.getIngoingEdges(node);
+        final Iterator<EdgeIteratorState> neighborExplorer = chGraph.getIngoingEdges(node);
         while (neighborExplorer.hasNext()) {
             final EdgeIteratorState incidentEdge = neighborExplorer.next();
 
@@ -108,8 +87,8 @@ public class TargetSetReverseUpwardPathsExplorer {
         }
 
         private boolean compareNodesRanks(int baseNode, int adjNode) {
-            final int baseRank = graph.getLevel(baseNode);
-            final int adjRank = graph.getLevel(adjNode);
+            final int baseRank = chGraph.getLevel(baseNode);
+            final int adjRank = chGraph.getLevel(adjNode);
 
             return baseRank > adjRank;
         }

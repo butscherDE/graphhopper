@@ -4,33 +4,18 @@ import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.CHGraph;
 import com.graphhopper.util.EdgeIteratorState;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class SourceSetUpwardPathsExplorer {
-    private final CHGraph graph;
-    private final Set<Integer> sources;
-    private Stack<Integer> nodesToExplore;
-    private final Map<Integer, Boolean> nodesVisited = new HashMap<>();
+public class SourceSetUpwardPathsExplorer extends SetPathExplorer {
     private final OnlyNonVisitedNeighborsEdgeFilter nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
     private final CHUpwardsEdgeFilter chUpwardsEdgeFilter = new CHUpwardsEdgeFilter();
-    private List<EdgeIteratorState> markedEdges;
 
 
-    public SourceSetUpwardPathsExplorer(CHGraph graph, Set<Integer> sources) {
-        this.graph = graph;
-        this.graph.prepareAdjacencyLists();
-        this.sources = sources;
-
-        this.markedEdges = new LinkedList<>();
-        prepareNodesToExplore(sources);
-        addAllTargetsAsVisited();
-    }
-
-    private void prepareNodesToExplore(Set<Integer> targets) {
-        this.nodesToExplore = new Stack<>();
-        for (Integer target : targets) {
-            this.nodesToExplore.push(target);
-        }
+    public SourceSetUpwardPathsExplorer(CHGraph chGraph, Set<Integer> sources) {
+        super(chGraph, sources);
     }
 
     public List<EdgeIteratorState> getMarkedEdges() {
@@ -52,14 +37,14 @@ public class SourceSetUpwardPathsExplorer {
         }
     }
 
-    private void addAllTargetsAsVisited() {
-        for (Integer target : sources) {
+    private void addAllSourcessAsVisited() {
+        for (Integer target : startSet) {
             nodesVisited.put(target, true);
         }
     }
 
     private void exploreNeighborhood(Integer node) {
-        final Iterator<EdgeIteratorState> neighborExplorer = graph.getOutgoingEdges(node);
+        final Iterator<EdgeIteratorState> neighborExplorer = chGraph.getOutgoingEdges(node);
         while (neighborExplorer.hasNext()) {
             final EdgeIteratorState incidentEdge = neighborExplorer.next();
 
@@ -108,8 +93,8 @@ public class SourceSetUpwardPathsExplorer {
         }
 
         private boolean compareNodesRanks(int baseNode, int adjNode) {
-            final int baseRank = graph.getLevel(baseNode);
-            final int adjRank = graph.getLevel(adjNode);
+            final int baseRank = chGraph.getLevel(baseNode);
+            final int adjRank = chGraph.getLevel(adjNode);
 
             return baseRank <= adjRank;
         }
