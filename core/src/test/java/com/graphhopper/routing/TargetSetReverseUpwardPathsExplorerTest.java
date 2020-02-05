@@ -95,6 +95,18 @@ public class TargetSetReverseUpwardPathsExplorerTest {
         assertFoundAllUpwardsEdges(expectedUpwardsEdges, actualUpwardsEdges);
     }
 
+    @Test
+    public void getUpwardsEdgesTwice() {
+        final TargetSetReverseUpwardPathsExplorer targetExplorer = getTargetExplorerInstance();
+        final List<EdgeIteratorState> expectedUpwardsEdges = getUpwardsEdges(targetExplorer);
+        targetExplorer.getMarkedEdges();
+        final List<EdgeIteratorState> actualUpwardsEdges = targetExplorer.getMarkedEdges();
+
+        sortFoundEdgesByBaseAndAdjNodeId(expectedUpwardsEdges, actualUpwardsEdges);
+
+        assertFoundAllUpwardsEdges(expectedUpwardsEdges, actualUpwardsEdges);
+    }
+
     private void sortFoundEdgesByBaseAndAdjNodeId(List<EdgeIteratorState> expectedUpwardsEdges, List<EdgeIteratorState> actualUpwardsEdges) {
         Comparator<EdgeIteratorState> edgeComparator = (o1, o2) -> {
             int baseNodeDif = o1.getBaseNode() - o2.getBaseNode();
