@@ -71,8 +71,8 @@ public class TargetSetReverseUpwardPathsExplorer {
 
         @Override
         public boolean accept(EdgeIteratorState edgeState) {
-            int baseNode = edgeState.getBaseNode();
-            Boolean visited = nodesVisited.get(baseNode);
+            int adjNode = edgeState.getAdjNode();
+            Boolean visited = nodesVisited.get(adjNode);
             return visited == null || visited == false;
         }
     }
