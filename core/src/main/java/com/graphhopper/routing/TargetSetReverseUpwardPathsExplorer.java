@@ -10,7 +10,6 @@ public class TargetSetReverseUpwardPathsExplorer {
     private final CHGraph graph;
     private final Set<Integer> targets;
     private LinkedHashSet<Integer> nodesToExplore;
-    private LinkedHashSet<Integer> nodesFoundToExploreNext;
     private final Map<Integer, Boolean> nodesVisited = new HashMap<>();
     private final OnlyNonVisitedNeighborsEdgeFilter nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
     private final CHDownwardsEdgeFilter chDownwardsEdgeFilter = new CHDownwardsEdgeFilter();
@@ -37,13 +36,9 @@ public class TargetSetReverseUpwardPathsExplorer {
         }
 
         while (nodesToExplore.size() > 0) {
-            nodesFoundToExploreNext = new LinkedHashSet<>();
-
-            for (Integer node : nodesToExplore) {
-                exploreNeighborhood(node);
-            }
-
-            nodesToExplore = nodesFoundToExploreNext;
+            final int node = nodesToExplore.iterator().next();
+            nodesToExplore.remove(node);
+            exploreNeighborhood(node);
         }
     }
 
@@ -67,7 +62,7 @@ public class TargetSetReverseUpwardPathsExplorer {
     private void addBaseNodeToVisitTaskIfNotAlreadyVisited(EdgeIteratorState incidentEdge) {
         if (nonVisited.accept(incidentEdge)) {
             int baseNode = incidentEdge.getBaseNode();
-            nodesFoundToExploreNext.add(baseNode);
+            nodesToExplore.add(baseNode);
             nodesVisited.put(baseNode, true);
         }
     }
