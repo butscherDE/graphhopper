@@ -9,7 +9,7 @@ import java.util.*;
 public class TargetSetReverseUpwardPathsExplorer {
     private final CHGraph graph;
     private final Set<Integer> targets;
-    private LinkedHashSet<Integer> nodesToExplore;
+    private Stack<Integer> nodesToExplore;
     private final Map<Integer, Boolean> nodesVisited = new HashMap<>();
     private final OnlyNonVisitedNeighborsEdgeFilter nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
     private final CHDownwardsEdgeFilter chDownwardsEdgeFilter = new CHDownwardsEdgeFilter();
@@ -22,8 +22,15 @@ public class TargetSetReverseUpwardPathsExplorer {
         this.targets = targets;
 
         this.markedEdges = new LinkedList<>();
-        this.nodesToExplore = new LinkedHashSet<>(targets);
+        prepareNodesToExplore(targets);
         addAllTargetsAsVisited();
+    }
+
+    private void prepareNodesToExplore(Set<Integer> targets) {
+        this.nodesToExplore = new Stack<>();
+        for (Integer target : targets) {
+            this.nodesToExplore.push(target);
+        }
     }
 
     public List<EdgeIteratorState> getMarkedEdges() {
@@ -40,8 +47,7 @@ public class TargetSetReverseUpwardPathsExplorer {
 
     private void prepareMarkedEdgeData() {
         while (nodesToExplore.size() > 0) {
-            final int node = nodesToExplore.iterator().next();
-            nodesToExplore.remove(node);
+            final int node = nodesToExplore.pop();
             exploreNeighborhood(node);
         }
     }
