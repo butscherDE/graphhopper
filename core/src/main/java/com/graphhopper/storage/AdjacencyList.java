@@ -61,7 +61,8 @@ public abstract class AdjacencyList {
         if (incidentEdges != null) {
             return incidentEdges;
         } else {
-            return new ArrayList<EdgeIteratorState>(0);
+            ArrayList<EdgeIteratorState> emptyIncidenceList = new ArrayList<>(0);
+            return emptyIncidenceList;
         }
     }
 

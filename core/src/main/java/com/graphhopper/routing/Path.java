@@ -64,8 +64,8 @@ public class Path {
     private List<String> description;
     protected Weighting weighting;
     private FlagEncoder encoder;
-    private boolean found;
-    private int fromNode = -1;
+    boolean found;
+    int fromNode = -1;
     protected GHIntArrayList edgeIds;
     protected double weight;
     private NodeAccess nodeAccess;
