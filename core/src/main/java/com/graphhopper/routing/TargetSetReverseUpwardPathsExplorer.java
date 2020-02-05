@@ -84,6 +84,10 @@ public class TargetSetReverseUpwardPathsExplorer {
             final int baseNode = edgeState.getBaseNode();
             final int adjNode = edgeState.getAdjNode();
 
+            return compareNodesRanks(baseNode, adjNode);
+        }
+
+        private boolean compareNodesRanks(int baseNode, int adjNode) {
             final int baseRank = graph.getLevel(baseNode);
             final int adjRank = graph.getLevel(adjNode);
 
