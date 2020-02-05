@@ -1,16 +1,12 @@
 package com.graphhopper.storage;
 
-import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AdjacencyListIn extends AdjacencyList {
-    public AdjacencyListIn(final EdgeIterator edgeIterator, final Weighting weighting) {
-        super(edgeIterator, weighting);
+    public AdjacencyListIn(final Graph graph, final EdgeIterator edgeIterator, final Weighting weighting) {
+        super(graph, edgeIterator, weighting);
     }
 
     @Override

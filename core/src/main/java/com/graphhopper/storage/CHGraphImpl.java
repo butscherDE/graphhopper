@@ -85,8 +85,8 @@ public class CHGraphImpl implements CHGraph, Storable<CHGraph> {
 
     public void prepareAdjacencyLists() {
         if (this.outAdjacency == null) {
-            this.outAdjacency = new AdjacencyListOut(getAllEdges(), weighting);
-            this.inAdjacency = new AdjacencyListIn(getAllEdges(), weighting);
+            this.outAdjacency = new AdjacencyListOut(this, getAllEdges(), weighting);
+            this.inAdjacency = new AdjacencyListIn(this, getAllEdges(), weighting);
         }
     }
 

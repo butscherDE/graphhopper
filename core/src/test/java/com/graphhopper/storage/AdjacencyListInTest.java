@@ -1,7 +1,5 @@
 package com.graphhopper.storage;
 
-import com.graphhopper.routing.template.util.Edge;
-import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.util.EdgeIteratorState;
 import org.junit.Test;
@@ -15,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 
 public class AdjacencyListInTest {
     private final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
-    private final static AdjacencyListIn ADJLIST = new AdjacencyListIn(GRAPH_MOCKER.graph.getAllEdges(), GRAPH_MOCKER.weighting);
+    private final static AdjacencyListIn ADJLIST = new AdjacencyListIn(GRAPH_MOCKER.graph, GRAPH_MOCKER.graph.getAllEdges(), GRAPH_MOCKER.weighting);
 
     @Test
     public void adjacencyListOf0() {
@@ -56,7 +54,7 @@ public class AdjacencyListInTest {
     @Test
     public void uniDirectionalNeighborsOf1() {
         final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
-        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph.getAllEdges(), graphMocker.weighting);
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph, graphMocker.graph.getAllEdges(), graphMocker.weighting);
         final List<EdgeIteratorState> expectedAdj = Arrays.asList(graphMocker.getEdge(0, 1));
         final List<EdgeIteratorState> actualAdj = adjList.getNeighbors(1);
 
@@ -67,5 +65,21 @@ public class AdjacencyListInTest {
 
             assertEquals(String.valueOf(i), expectedAdjNode, actualAdjNode);
         }
+    }
+
+    @Test
+    public void neighborsOfNonExistingNode() {
+        final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph, graphMocker.graph.getAllEdges(), graphMocker.weighting);
+
+        assertEquals(0, adjList.getNeighbors(300).size());
+    }
+
+    @Test
+    public void iteratorOfNonExistingNode() {
+        final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph, graphMocker.graph.getAllEdges(), graphMocker.weighting);
+
+        assertFalse(adjList.getIterator(300).hasNext());
     }
 }

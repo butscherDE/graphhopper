@@ -5,8 +5,8 @@ import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
 public class AdjacencyListOut extends AdjacencyList {
-    public AdjacencyListOut(final EdgeIterator edgeIterator, final Weighting weighting) {
-        super(edgeIterator, weighting);
+    public AdjacencyListOut(final Graph graph, final EdgeIterator edgeIterator, final Weighting weighting) {
+        super(graph, edgeIterator, weighting);
     }
 
     int getNodeToAddAdjacencyTo(final EdgeIteratorState edge) {

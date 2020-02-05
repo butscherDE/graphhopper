@@ -8,10 +8,12 @@ import com.graphhopper.util.EdgeIteratorState;
 import java.util.*;
 
 public abstract class AdjacencyList {
+    private final Graph graph;
     final Map<Integer, List<EdgeIteratorState>> adjacency = new HashMap<>();
     final BooleanEncodedValue accessEnc;
 
-    public AdjacencyList(final EdgeIterator edgeIterator, final Weighting weighting) {
+    public AdjacencyList(Graph graph, final EdgeIterator edgeIterator, final Weighting weighting) {
+        this.graph = graph;
         this.accessEnc = weighting.getFlagEncoder().getAccessEnc();
         createFrom(edgeIterator);
     }
@@ -54,7 +56,13 @@ public abstract class AdjacencyList {
     }
 
     public List<EdgeIteratorState> getNeighbors(final int node) {
-        return adjacency.get(node);
+        List<EdgeIteratorState> incidentEdges = adjacency.get(node);
+
+        if (incidentEdges != null) {
+            return incidentEdges;
+        } else {
+            return new ArrayList<EdgeIteratorState>(0);
+        }
     }
 
     public Iterator<EdgeIteratorState> getIterator(final int node) {

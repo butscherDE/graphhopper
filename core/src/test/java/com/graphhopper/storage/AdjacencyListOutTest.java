@@ -13,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 
 public class AdjacencyListOutTest {
     private final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
-    private final static AdjacencyListOut ADJLIST = new AdjacencyListOut(GRAPH_MOCKER.graph.getAllEdges(), GRAPH_MOCKER.weighting);
+    private final static AdjacencyListOut ADJLIST = new AdjacencyListOut(GRAPH_MOCKER.graph, GRAPH_MOCKER.graph.getAllEdges(), GRAPH_MOCKER.weighting);
 
     @Test
     public void adjacencyListOf0() {
@@ -54,7 +54,7 @@ public class AdjacencyListOutTest {
     @Test
     public void uniDirectionalNeighborsOf1() {
         final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
-        final AdjacencyListOut adjList = new AdjacencyListOut(graphMocker.graph.getAllEdges(), graphMocker.weighting);
+        final AdjacencyListOut adjList = new AdjacencyListOut(graphMocker.graph, graphMocker.graph.getAllEdges(), graphMocker.weighting);
         final List<EdgeIteratorState> expectedAdj = Arrays.asList(graphMocker.getEdge(1, 2));
         final List<EdgeIteratorState> actualAdj = adjList.getNeighbors(1);
 
@@ -65,5 +65,21 @@ public class AdjacencyListOutTest {
 
             assertEquals(String.valueOf(i), expectedAdjNode, actualAdjNode);
         }
+    }
+
+    @Test
+    public void neighborsOfNonExistingNode() {
+        final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph, graphMocker.graph.getAllEdges(), graphMocker.weighting);
+
+        assertEquals(0, adjList.getNeighbors(300).size());
+    }
+
+    @Test
+    public void iteratorOfNonExistingNode() {
+        final PolygonRoutingTestGraph graphMocker = AdjacencyListTest.getUnidirectionalTestCase();
+        final AdjacencyListIn adjList = new AdjacencyListIn(graphMocker.graph, graphMocker.graph.getAllEdges(), graphMocker.weighting);
+
+        assertFalse(adjList.getIterator(300).hasNext());
     }
 }
