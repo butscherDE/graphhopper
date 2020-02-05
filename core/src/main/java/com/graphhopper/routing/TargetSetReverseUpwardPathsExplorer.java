@@ -20,25 +20,35 @@ public class TargetSetReverseUpwardPathsExplorer {
         this.graph = graph;
         this.graph.prepareAdjacencyLists();
         this.targets = targets;
+
+        this.markedEdges = new LinkedList<>();
+        this.nodesToExplore = new LinkedHashSet<>(targets);
+        addAllTargetsAsVisited();
     }
 
     public List<EdgeIteratorState> getMarkedEdges() {
-        prepareMarkedEdgeData();
+        if (isMarkedEdgesNotPrepared()) {
+            prepareMarkedEdgeData();
+        }
 
         return markedEdges;
     }
 
-    private void prepareMarkedEdgeData() {
-        markedEdges = new LinkedList<>();
-        nodesToExplore = new LinkedHashSet<>(targets);
-        for (Integer target : targets) {
-            nodesVisited.put(target, true);
-        }
+    private boolean isMarkedEdgesNotPrepared() {
+        return markedEdges.size() == 0;
+    }
 
+    private void prepareMarkedEdgeData() {
         while (nodesToExplore.size() > 0) {
             final int node = nodesToExplore.iterator().next();
             nodesToExplore.remove(node);
             exploreNeighborhood(node);
+        }
+    }
+
+    private void addAllTargetsAsVisited() {
+        for (Integer target : targets) {
+            nodesVisited.put(target, true);
         }
     }
 
