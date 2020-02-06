@@ -4,8 +4,10 @@ import com.graphhopper.routing.profiles.BooleanEncodedValue;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
 import com.graphhopper.routing.profiles.EnumEncodedValue;
 import com.graphhopper.routing.profiles.IntEncodedValue;
+import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.EdgeIterator;
@@ -17,6 +19,7 @@ import java.util.*;
 public class RPHAST {
     private final CHGraph chGraph;
     private final Weighting weighting;
+    private final EdgeFilter edgeFilter;
 
     private Set<Integer> targetSet;
     private List<EdgeIteratorState> upwardsGraphEdges;
@@ -25,9 +28,10 @@ public class RPHAST {
     private Map<Integer, Double> cost = new HashMap<>();
     private Map<Integer, EdgeIteratorState> predecessors = new HashMap<>();
 
-    public RPHAST(final GraphHopperStorage graph, final Weighting weighting) {
+    public RPHAST(final GraphHopperStorage graph, final Weighting weighting, final EdgeFilter edgeFilter) {
         this.chGraph = graph.getCHGraph();
         this.weighting = weighting;
+        this.edgeFilter = edgeFilter;
     }
 
     public void prepareForTargetSet(final Set<Integer> targetSet) {
@@ -36,12 +40,8 @@ public class RPHAST {
         getMarkedTargetEdges();
     }
 
-    public List<EdgeIteratorState> getRestrictedDownwardsGraphEdges() {
-        return restrictedDownwardsGraphEdges;
-    }
-
     private void getMarkedTargetEdges() {
-        TargetSetReverseUpwardPathsExplorer targetExplorer = new TargetSetReverseUpwardPathsExplorer(chGraph, targetSet);
+        TargetSetReverseUpwardPathsExplorer targetExplorer = new TargetSetReverseUpwardPathsExplorer(chGraph, targetSet, edgeFilter);
         restrictedDownwardsGraphEdges = targetExplorer.getMarkedEdges();
         sortDescending(restrictedDownwardsGraphEdges);
     }
@@ -63,26 +63,34 @@ public class RPHAST {
     }
 
     public List<Path> calcPaths(final List<Integer> sourceNodes) {
+        testIfCHCreationWorked();
+        printAllCHGraphEdges();
         if (restrictedDownwardsGraphEdges == null) {
             throw new IllegalStateException("Call prepareForTagetSet first");
         }
 
-        getMarkedSourceEdges(sourceNodes);
-        for (Integer sourceNode : sourceNodes) {
+        final List<Path> paths = new ArrayList<>(sourceNodes.size() * targetSet.size());
+        for (final int sourceNode : sourceNodes) {
+            getMarkedSourceEdges(Collections.singletonList(sourceNode));
+
             cost.put(sourceNode, 0.0);
             predecessors.put(sourceNode, new NonExistentEdge(sourceNode));
+
+            exploreGraph(upwardsGraphEdges);
+            exploreGraph(restrictedDownwardsGraphEdges);
+
+            paths.addAll(backtrackPathForEachTarget());
+
+            // TODO we do not need to throw away all data.
+            cost.clear();
+            predecessors.clear();
         }
-
-        exploreGraph(upwardsGraphEdges);
-        exploreGraph(restrictedDownwardsGraphEdges);
-
-        final List<Path> paths = backtrackPathForEachTarget();
 
         return paths;
     }
 
     private void getMarkedSourceEdges(final List<Integer> sourceNodes) {
-        SourceSetUpwardPathsExplorer sourceExplorer = new SourceSetUpwardPathsExplorer(chGraph, new LinkedHashSet<>(sourceNodes));
+        SourceSetUpwardPathsExplorer sourceExplorer = new SourceSetUpwardPathsExplorer(chGraph, new LinkedHashSet<>(sourceNodes), edgeFilter);
         upwardsGraphEdges = sourceExplorer.getMarkedEdges();
         sortNonDescending(upwardsGraphEdges);
     }
@@ -99,8 +107,8 @@ public class RPHAST {
         });
     }
 
-    private void exploreGraph(List<EdgeIteratorState> restrictedDownwardsGraphEdges) {
-        for (EdgeIteratorState currentEdge : restrictedDownwardsGraphEdges) {
+    private void exploreGraph(List<EdgeIteratorState> edgeList) {
+        for (EdgeIteratorState currentEdge : edgeList) {
             int baseNode = currentEdge.getBaseNode();
             int adjNode = currentEdge.getAdjNode();
 
@@ -140,10 +148,52 @@ public class RPHAST {
         return new PathSimpleized(chGraph, weighting, backtrackedEdges, cost.get(node));
     }
 
-    private class NonExistentEdge implements EdgeIteratorState {
+
+    // TODO Delete the following methods
+    public void testIfCHCreationWorked() {
+        final List<Integer> allNodes = getAllNodes(chGraph);
+        Collections.sort(allNodes, Comparator.comparingInt(chGraph::getLevel));
+
+        printAllNodesWithRankWellAligned(chGraph, allNodes);
+    }
+
+    private List<Integer> getAllNodes(Graph chGraph) {
+        final EdgeIterator allEdges = chGraph.getAllEdges();
+        final Set<Integer> allNodes = new LinkedHashSet<>();
+        while(allEdges.next()) {
+            allNodes.add(allEdges.getBaseNode());
+            allNodes.add(allEdges.getAdjNode());
+        }
+        final List<Integer> nodesAsList = new ArrayList<>(allNodes);
+        Collections.sort(nodesAsList);
+        return nodesAsList;
+    }
+
+    private void printAllNodesWithRankWellAligned(CHGraph chGraph, List<Integer> allNodes) {
+        for (Integer node : allNodes) {
+            int log = (int) Math.log10(node) + 1;
+            final int nodeDigits = log >= 0 ? log : 1;
+
+            System.out.print(node + ":");
+            for (int i = nodeDigits; i < 5; i++) {
+                System.out.print(" ");
+            }
+            System.out.println(chGraph.getLevel(node));
+        }
+    }
+
+    public void printAllCHGraphEdges() {
+        final EdgeIterator allEdges = chGraph.getAllEdges();
+
+        while(allEdges.next()) {
+            System.out.println(allEdges.toString());
+        }
+    }
+
+    static class NonExistentEdge implements EdgeIteratorState {
         private final int adjNode;
 
-        private NonExistentEdge(int adjNode) {
+        NonExistentEdge(int adjNode) {
             this.adjNode = adjNode;
         }
 

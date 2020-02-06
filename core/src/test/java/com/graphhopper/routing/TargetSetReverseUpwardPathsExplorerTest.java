@@ -79,10 +79,19 @@ public class TargetSetReverseUpwardPathsExplorerTest extends SetPathExplorerTest
         return incidentEdge.getBaseNode();
     }
 
+    @Override
+    SetPathExplorer getInstance(EdgeFilter edgeFilter) {
+        return getTargetExplorerInstance(edgeFilter);
+    }
+
     private TargetSetReverseUpwardPathsExplorer getTargetExplorerInstance() {
+        return getTargetExplorerInstance(EdgeFilter.ALL_EDGES);
+    }
+
+    private TargetSetReverseUpwardPathsExplorer getTargetExplorerInstance(EdgeFilter edgeFilter) {
         CHGraph chGraph = GRAPH_MOCKER.graphWithCh.getCHGraph();
         LinkedHashSet<Integer> targets = new LinkedHashSet<>(Arrays.asList(6, 25, 20, 0));
-        return new TargetSetReverseUpwardPathsExplorer(chGraph, targets);
+        return new TargetSetReverseUpwardPathsExplorer(chGraph, targets, edgeFilter);
     }
 
     private class CHUpwardsEdgeFilter implements EdgeFilter {

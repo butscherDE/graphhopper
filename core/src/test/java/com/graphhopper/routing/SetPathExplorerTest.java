@@ -14,9 +14,24 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public abstract class SetPathExplorerTest {
     final static PolygonRoutingTestGraph GRAPH_MOCKER = PolygonRoutingTestGraph.DEFAULT_INSTANCE;
+
+    @Test
+    public void edgeFilterWorking() {
+        final EdgeFilter filterOutAllNode1IncidentEdges = edgeState -> !(edgeState.getBaseNode() == 1 || edgeState.getAdjNode() == 1);
+
+        SetPathExplorer instance = getInstance(filterOutAllNode1IncidentEdges);
+        List<EdgeIteratorState> edges = instance.getMarkedEdges();
+
+        for (EdgeIteratorState edge : edges) {
+            System.out.println(edge);
+            assertNotEquals(1, edge.getBaseNode());
+            assertNotEquals(1, edge.getAdjNode());
+        }
+    }
 
     @Test
     public void testIfCHCreationWorked() {
@@ -24,6 +39,7 @@ public abstract class SetPathExplorerTest {
         final CHGraph chGraph = ghs.getCHGraph();
 
         final List<Integer> allNodes = getAllNodes(chGraph);
+        Collections.sort(allNodes, Comparator.comparingInt(chGraph::getLevel));
 
         printAllNodesWithRankWellAligned(chGraph, allNodes);
     }
@@ -159,4 +175,6 @@ public abstract class SetPathExplorerTest {
 
         }
     }
+
+    abstract SetPathExplorer getInstance(EdgeFilter edgeFilter);
 }

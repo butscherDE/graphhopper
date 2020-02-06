@@ -452,4 +452,24 @@ public class Path {
     public boolean isNonEmpty() {
         return this.edgeIds.size() > 0;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Path path = (Path) o;
+        return Double.compare(path.distance, distance) == 0 &&
+                reverseOrder == path.reverseOrder &&
+                time == path.time &&
+                endNode == path.endNode &&
+                found == path.found &&
+                fromNode == path.fromNode &&
+                Double.compare(path.weight, weight) == 0 &&
+                Objects.equals(edgeIds, path.edgeIds);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(endNode, fromNode);
+    }
 }

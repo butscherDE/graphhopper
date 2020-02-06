@@ -9,6 +9,7 @@ import java.util.*;
 public abstract class SetPathExplorer {
     final CHGraph chGraph;
     final Set<Integer> startSet;
+    private final EdgeFilter edgeFilter;
     EdgeFilter nonVisited;
     EdgeFilter chFilter;
 
@@ -17,9 +18,10 @@ public abstract class SetPathExplorer {
     final Map<Integer, Boolean> nodesVisited = new HashMap<>();
 
 
-    public SetPathExplorer(final CHGraph chGraph, Set<Integer> startSet) {
+    public SetPathExplorer(final CHGraph chGraph, Set<Integer> startSet, EdgeFilter edgeFilter) {
         this.chGraph = chGraph;
         this.startSet = startSet;
+        this.edgeFilter = edgeFilter;
 
         this.chGraph.prepareAdjacencyLists();
         this.markedEdges = new LinkedList<>();
@@ -71,7 +73,7 @@ public abstract class SetPathExplorer {
     abstract Iterator<EdgeIteratorState> getIncidentEdgeIterator(int node);
 
     private void addEdgeBasedOnFilter(EdgeIteratorState incidentEdge) {
-        if (chFilter.accept(incidentEdge)) {
+        if (chFilter.accept(incidentEdge) && edgeFilter.accept(incidentEdge)) {
             markedEdges.add(incidentEdge);
 
             addNodeToVisitIfNotAlreadyVisited(incidentEdge);

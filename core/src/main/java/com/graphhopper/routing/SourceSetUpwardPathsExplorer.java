@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class SourceSetUpwardPathsExplorer extends SetPathExplorer {
-    public SourceSetUpwardPathsExplorer(CHGraph chGraph, Set<Integer> sources) {
-        super(chGraph, sources);
+    public SourceSetUpwardPathsExplorer(CHGraph chGraph, Set<Integer> sources, EdgeFilter edgeFilter) {
+        super(chGraph, sources, edgeFilter);
         nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
         chFilter = new CHUpwardsEdgeFilter();
     }

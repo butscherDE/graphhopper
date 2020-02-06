@@ -14,6 +14,10 @@ public class PathSimpleized extends Path {
             this.edgeIds.add(edge.getEdge());
         }
 
+        this.distance = 0;
+        for (EdgeIteratorState edge : edges) {
+            this.distance += edge.getDistance();
+        }
         this.fromNode = edges.get(0).getBaseNode();
         this.endNode = edges.get(edges.size() - 1).getAdjNode();
         this.weight = weight;

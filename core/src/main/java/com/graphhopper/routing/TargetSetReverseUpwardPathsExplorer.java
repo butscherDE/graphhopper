@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class TargetSetReverseUpwardPathsExplorer extends SetPathExplorer {
-    public TargetSetReverseUpwardPathsExplorer(CHGraph chGraph, Set<Integer> targets) {
-        super(chGraph, targets);
+    public TargetSetReverseUpwardPathsExplorer(CHGraph chGraph, Set<Integer> targets, EdgeFilter edgeFilter) {
+        super(chGraph, targets, edgeFilter);
         nonVisited = new OnlyNonVisitedNeighborsEdgeFilter(nodesVisited);
         chFilter = new CHDownwardsEdgeFilter();
     }
