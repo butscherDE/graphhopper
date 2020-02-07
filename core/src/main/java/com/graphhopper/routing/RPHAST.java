@@ -1,5 +1,6 @@
 package com.graphhopper.routing;
 
+import com.graphhopper.routing.ch.PreparationWeighting;
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
 import com.graphhopper.routing.profiles.EnumEncodedValue;
@@ -10,6 +11,7 @@ import com.graphhopper.storage.CHGraph;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.IntsRef;
+import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.PointList;
@@ -19,6 +21,7 @@ import java.util.*;
 public class RPHAST {
     private final CHGraph chGraph;
     private final Weighting weighting;
+    private final Weighting chWeighting;
     private final EdgeFilter edgeFilter;
 
     private Set<Integer> targetSet;
@@ -31,6 +34,7 @@ public class RPHAST {
     public RPHAST(final GraphHopperStorage graph, final Weighting weighting, final EdgeFilter edgeFilter) {
         this.chGraph = graph.getCHGraph();
         this.weighting = weighting;
+        this.chWeighting = new PreparationWeighting(weighting);
         this.edgeFilter = edgeFilter;
     }
 
@@ -63,8 +67,8 @@ public class RPHAST {
     }
 
     public List<Path> calcPaths(final List<Integer> sourceNodes) {
-        testIfCHCreationWorked();
-        printAllCHGraphEdges();
+//        testIfCHCreationWorked();
+//        printAllCHGraphEdges();
         if (restrictedDownwardsGraphEdges == null) {
             throw new IllegalStateException("Call prepareForTagetSet first");
         }
@@ -118,7 +122,7 @@ public class RPHAST {
 
             final double currentCostOfAdjNode = cost.get(adjNode);
             int previousEdgeId = predecessors.get(baseNode).getEdge();
-            double costWithCurrentEdge = weighting.calcWeight(currentEdge, false, previousEdgeId) + cost.get(baseNode);
+            double costWithCurrentEdge = calcWeight(currentEdge, baseNode, previousEdgeId);
             if (costWithCurrentEdge < currentCostOfAdjNode) {
                 cost.put(adjNode, costWithCurrentEdge);
                 predecessors.put(adjNode, currentEdge);
@@ -126,9 +130,21 @@ public class RPHAST {
         }
     }
 
+    private double calcWeight(EdgeIteratorState currentEdge, int baseNode, int previousEdgeId) {
+        final double edgeCost;
+        if (currentEdge instanceof CHEdgeIteratorState) {
+            edgeCost = chWeighting.calcWeight(currentEdge, false, previousEdgeId);
+        } else {
+            edgeCost = weighting.calcWeight(currentEdge, false, previousEdgeId);
+        }
+
+        return edgeCost + cost.get(baseNode);
+    }
+
     private List<Path> backtrackPathForEachTarget() {
         final List<Path> paths = new ArrayList<>(targetSet.size());
         for (Integer target : targetSet) {
+            System.out.println(target);
             paths.add(backtrackPath(target));
         }
         return paths;

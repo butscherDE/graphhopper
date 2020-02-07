@@ -2,6 +2,7 @@ package com.graphhopper.storage;
 
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
 import com.graphhopper.routing.weighting.Weighting;
+import com.graphhopper.storage.index.VisitedManager;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
@@ -11,37 +12,47 @@ public abstract class AdjacencyList {
     private final Graph graph;
     final Map<Integer, List<EdgeIteratorState>> adjacency = new HashMap<>();
     final BooleanEncodedValue accessEnc;
+    final VisitedManager visitedManager;
 
     public AdjacencyList(Graph graph, final EdgeIterator edgeIterator, final Weighting weighting) {
         this.graph = graph;
         this.accessEnc = weighting.getFlagEncoder().getAccessEnc();
-        createFrom(edgeIterator);
+        this.visitedManager = new VisitedManager(graph);
+        createFrom(graph.getAllEdges());
+//        createFrom(edgeIterator);
     }
 
     private void createFrom(final EdgeIterator edgeIterator) {
-        while (edgeIterator.next()) {
-            addEdge(edgeIterator);
+        final Set<Integer> allNodes = new LinkedHashSet<>();
+        while(edgeIterator.next()) {
+            allNodes.add(edgeIterator.getBaseNode());
+            allNodes.add(edgeIterator.getAdjNode());
+        }
 
-            if (isBidirectional(edgeIterator)) {
-                addReversedEdge(edgeIterator);
+        for (Integer node : allNodes) {
+            final EdgeIterator incidentEdges = graph.createEdgeExplorer().setBaseNode(node);
+            while (incidentEdges.next()) {
+                addEdge(incidentEdges);
+                addReverseEdge(incidentEdges);
             }
         }
     }
 
-    private boolean isBidirectional(EdgeIterator edgeIterator) {
-        return edgeIterator.detach(true).get(accessEnc);
-    }
-
-    private void addReversedEdge(EdgeIterator edgeIterator) {
-        final EdgeIteratorState reverseEdge = edgeIterator.detach(true);
-        addEdge(reverseEdge);
-    }
-
     private void addEdge(final EdgeIteratorState edge) {
-        final int nodeToAddAdjacencyTo = getNodeToAddAdjacencyTo(edge);
+        if (edge.get(accessEnc) && !visitedManager.isEdgeSettled(edge)) {
+            final int nodeToAddAdjacencyTo = getNodeToAddAdjacencyTo(edge);
 
-        addAdjacencyListIfNotPresent(nodeToAddAdjacencyTo);
-        addEdgeToAdjacency(edge, nodeToAddAdjacencyTo);
+            addAdjacencyListIfNotPresent(nodeToAddAdjacencyTo);
+            addEdgeToAdjacency(edge, nodeToAddAdjacencyTo);
+            visitedManager.settleEdge(edge);
+        }
+    }
+
+    private void addReverseEdge(final EdgeIteratorState edge) {
+        final EdgeIteratorState reverseEdge = edge.detach(true);
+        if (reverseEdge.get(accessEnc)) {
+            addEdge(reverseEdge);
+        }
     }
 
     private void addAdjacencyListIfNotPresent(int nodeToAddAdjacencyTo) {

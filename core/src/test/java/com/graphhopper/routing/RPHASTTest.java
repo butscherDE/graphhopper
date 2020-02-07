@@ -1,13 +1,16 @@
 package com.graphhopper.routing;
 
+import com.graphhopper.routing.ch.PreparationWeighting;
 import com.graphhopper.routing.template.util.Edge;
 import com.graphhopper.routing.template.util.Node;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.Graph;
 import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIterator;
+import com.graphhopper.util.EdgeIteratorState;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,6 +39,7 @@ public class RPHASTTest {
     public void weightingLearningTest() {
         final CHGraph chGraph = GRAPH_MOCKER.graphWithCh.getCHGraph();
         final Weighting weighting = GRAPH_MOCKER.weighting;
+        final Weighting prepWeighting = new PreparationWeighting(weighting);
 
         CHEdgeIteratorState edge1to2 = chGraph.getEdgeIteratorState(3, 2);
         CHEdgeIteratorState edge1to3 = chGraph.getEdgeIteratorState(174, 3);
@@ -46,9 +50,9 @@ public class RPHASTTest {
         CHEdgeIteratorState edge29to3 = chGraph.getEdgeIteratorState(12, 3);
 
         double weight1to2 = weighting.calcWeight(edge1to2, false, new RPHAST.NonExistentEdge(1).getEdge());
-        double weight1to3 = weighting.calcWeight(edge1to3, false, new RPHAST.NonExistentEdge(1).getEdge());
+        double weight1to3 = prepWeighting.calcWeight(edge1to3, false, new RPHAST.NonExistentEdge(1).getEdge());
         double weight1to28 = weighting.calcWeight(edge1to28, false, new RPHAST.NonExistentEdge(1).getEdge());
-        double weight1to29 = weighting.calcWeight(edge1to29, false, new RPHAST.NonExistentEdge(1).getEdge());
+        double weight1to29 = prepWeighting.calcWeight(edge1to29, false, new RPHAST.NonExistentEdge(1).getEdge());
         double weight2to3 = weighting.calcWeight(edge2to3, false, new RPHAST.NonExistentEdge(2).getEdge());
         double weight28to29 = weighting.calcWeight(edge28to29, false, new RPHAST.NonExistentEdge(29).getEdge());
         double weight29to3 = weighting.calcWeight(edge29to3, false, new RPHAST.NonExistentEdge(29).getEdge());
@@ -77,7 +81,70 @@ public class RPHASTTest {
 
         // Shortcuts shall have equal costs to the edges they were built from
         assertEquals(weight1to2 + weight2to3, weight1to3, 0);
-        assertEquals(weight1to28 + weight28to29, weight1to29, 0);
+        assertEquals(weight1to28 + weight28to29, weight1to29, 0.001);
+    }
+
+    @Test
+    public void shortcutLearningTest() {
+        final Weighting weighting = new PreparationWeighting(GRAPH_MOCKER.weighting);
+        final EdgeIterator incidenceExplorer = GRAPH_MOCKER.graphWithCh.getCHGraph().createEdgeExplorer().setBaseNode(1);
+        while (incidenceExplorer.getAdjNode() != 29) {
+            incidenceExplorer.next();
+        }
+
+        final double weight1to29_1 = weighting.calcWeight(incidenceExplorer, false, EdgeIterator.NO_EDGE);
+        final double weight1to29_2 = weighting.calcWeight(incidenceExplorer.detach(false), false, EdgeIterator.NO_EDGE);
+        final double weight1to29_3 = weighting.calcWeight(incidenceExplorer.detach(true), false, EdgeIterator.NO_EDGE);
+
+        assertEquals(weight1to29_1, weight1to29_2, 0);
+        assertEquals(weight1to29_1, weight1to29_3, 0);
+
+        int edgeId = incidenceExplorer.getEdge();
+        int detachedEdgeId = incidenceExplorer.detach(false).getEdge();
+        int detachedReveredEdgeID = incidenceExplorer.detach(true).getEdge();
+
+        assertEquals(edgeId, detachedEdgeId);
+        assertEquals(edgeId, detachedReveredEdgeID);
+    }
+
+    @Test
+    public void shortcutLearningTest2() {
+        final Weighting weighting = GRAPH_MOCKER.weighting;
+        final Weighting prepWeighting = new PreparationWeighting(weighting);
+        final Graph graph = GRAPH_MOCKER.graphWithCh.getCHGraph();
+        final EdgeIterator incidenceExplorer = graph.createEdgeExplorer().setBaseNode(1);
+        EdgeIteratorState edge1to28 = null;
+        EdgeIteratorState edge1to29 = null;
+        while (incidenceExplorer.next()) {
+            if (incidenceExplorer.getAdjNode() == 28) {
+                edge1to28 = incidenceExplorer.detach(false);
+            }
+            if (incidenceExplorer.getAdjNode() == 29) {
+                edge1to29 = incidenceExplorer.detach(false);
+            }
+        }
+
+        EdgeIteratorState edge28to29 = getEdge28to29(graph);
+
+        final double weight1to28 = weighting.calcWeight(edge1to28, false, EdgeIterator.NO_EDGE);
+        final double weight28to29 = weighting.calcWeight(edge28to29, false, EdgeIterator.NO_EDGE);
+        final double weight1to29 = prepWeighting.calcWeight(edge1to29, false, EdgeIterator.NO_EDGE);
+
+        assertEquals(7, edge1to28.getEdge());
+        assertEquals(73, edge28to29.getEdge());
+        assertEquals(183, edge1to29.getEdge());
+        assertEquals(weight1to28 + weight28to29, weight1to29, 0.001);
+    }
+
+    private EdgeIteratorState getEdge28to29(final Graph graph) {
+        final EdgeIterator incidenceExplorer2 = graph.createEdgeExplorer().setBaseNode(28);
+        EdgeIteratorState edge28to29 = null;
+        while (incidenceExplorer2.next()) {
+            if (incidenceExplorer2.getAdjNode() == 29) {
+                edge28to29 = incidenceExplorer2.detach(false);
+            }
+        }
+        return edge28to29;
     }
 
     @Test
@@ -141,14 +208,11 @@ public class RPHASTTest {
     }
 
     @Test
-    public void queryValidSourceTargetPathDistances() {
-        final int[] expectedEdgesPath0to6 = new int[] {0, 3, 8, 15, 19};
-        final int[] expectedEdgesPath0to5 = new int[4];
-        System.arraycopy(expectedEdgesPath0to6, 0, expectedEdgesPath0to5, 0, 4);
-        final int[] expectedDistancesPath1to5 = new int[3];
-        System.arraycopy(expectedEdgesPath0to6, 1, expectedEdgesPath0to5, 0, 3);
-        final int[] expectedDistancesPath1to6 = new int[4];
-        System.arraycopy(expectedEdgesPath0to6, 1, expectedEdgesPath0to5, 0, 4);
+    public void queryValidSourceTargetPathEdgeIds() {
+        final int[] expectedEdgesPath0to6 = new int[] {0, 174, 11, 15, 19};
+        final int[] expectedEdgesPath0to5 = new int[] {0, 174, 11, 15};
+        final int[] expectedDistancesPath1to5 = new int[] {174, 11, 15};
+        final int[] expectedDistancesPath1to6 = new int[] {174, 11, 15, 19};
 
 
         final List<Integer> sourceList = Arrays.asList(0, 1);

@@ -18,9 +18,9 @@ public class AdjacencyListOutTest {
     @Test
     public void adjacencyListOf0() {
         final List<EdgeIteratorState> expectedAdj = Arrays.asList(
-                GRAPH_MOCKER.getEdge(0,1),
+                GRAPH_MOCKER.getEdge(0,19),
                 GRAPH_MOCKER.getEdge(0,7),
-                GRAPH_MOCKER.getEdge(0,19));
+                GRAPH_MOCKER.getEdge(0,1));
 
         final List<EdgeIteratorState> actualAdj = ADJLIST.getNeighbors(0);
 
@@ -36,9 +36,9 @@ public class AdjacencyListOutTest {
     @Test
     public void adjacencyIteratorOf0() {
         final List<EdgeIteratorState> expectedAdj = Arrays.asList(
-                GRAPH_MOCKER.getEdge(0,1),
+                GRAPH_MOCKER.getEdge(0,19),
                 GRAPH_MOCKER.getEdge(0,7),
-                GRAPH_MOCKER.getEdge(0,19));
+                GRAPH_MOCKER.getEdge(0,1));
 
         final Iterator<EdgeIteratorState> actualAdj = ADJLIST.getIterator(0);
 
