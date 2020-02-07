@@ -285,4 +285,40 @@ public class RPHASTTest {
         };
         return new PolygonRoutingTestGraph(nodes, edges);
     }
+
+    @Test
+    public void equalSets() {
+        final List<Integer> sourceList = Arrays.asList(0,6);
+        final Set<Integer> targetSet = new LinkedHashSet<>(sourceList);
+
+        final PolygonRoutingTestGraph graphMocker = getDisconnectedGraphMocker();
+        final RPHAST rphast = new RPHAST(graphMocker.graphWithCh, graphMocker.weighting, EdgeFilter.ALL_EDGES);
+        rphast.prepareForTargetSet(targetSet);
+
+        final List<Path> paths = rphast.calcPaths(sourceList);
+        assertEquals(Double.MAX_VALUE, paths.get(0).getWeight(), 0);
+    }
+
+    @Test
+    public void performance() {
+        final Set<Integer> targetSet = getAllNodes();
+        final List<Integer> sourceList = new LinkedList<>(targetSet);
+        final RPHAST rphast = new RPHAST(GRAPH_MOCKER.graphWithCh, GRAPH_MOCKER.weighting, EdgeFilter.ALL_EDGES);
+
+        rphast.prepareForTargetSet(targetSet);
+
+        final List<Path> paths = rphast.calcPaths(sourceList);
+    }
+
+    private Set<Integer> getAllNodes() {
+        final EdgeIterator allEdges = GRAPH_MOCKER.graphWithCh.getAllEdges();
+        final Set<Integer> nodes = new LinkedHashSet<>();
+
+        while(allEdges.next()) {
+            nodes.add(allEdges.getBaseNode());
+            nodes.add(allEdges.getAdjNode());
+        }
+
+        return nodes;
+    }
 }

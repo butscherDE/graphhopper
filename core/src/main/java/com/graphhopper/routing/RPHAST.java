@@ -163,7 +163,6 @@ public class RPHAST {
     private List<Path> backtrackPathForEachTarget() {
         final List<Path> paths = new ArrayList<>(targetSet.size());
         for (Integer target : targetSet) {
-            System.out.println(target);
             paths.add(backtrackPath(target));
         }
         return paths;
