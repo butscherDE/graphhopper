@@ -8,9 +8,11 @@ import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.CHGraph;
 import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
+import com.graphhopper.util.StopWatch;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -320,5 +322,36 @@ public class RPHASTTest {
         }
 
         return nodes;
+    }
+
+    @Test
+    public void compareClassic() {
+        final List<Integer> sourceList = Arrays.asList(0,1,2,7,8,45,44,43,42,41,40,39,19,21,20,22,23,24,38,37,46,53);
+        final Set<Integer> targetSet = new LinkedHashSet<>(Arrays.asList(5,6,10,11,200,202,32,12,13,14,33,15,16,109,17,26,27,18));
+        GraphHopperStorage graph = GRAPH_MOCKER.graphWithCh;
+        Weighting weighting = GRAPH_MOCKER.weighting;
+        final RPHAST rphast = new RPHAST(graph, weighting, EdgeFilter.ALL_EDGES);
+
+        int numPaths = sourceList.size() * targetSet.size();
+        StopWatch sw1 = new StopWatch("RPHAST on " + numPaths + " paths").start();
+        rphast.prepareForTargetSet(targetSet);
+        final List<Path> paths = rphast.calcPaths(sourceList);
+        System.out.println(sw1.stop().toString());
+
+        final List<Path> paths2 = new LinkedList<>();
+        StopWatch sw2 = new StopWatch("Dijkstra Bi CH on " + numPaths + " paths").start();
+        for (Integer source : sourceList) {
+            for (Integer target : targetSet) {
+                final RoutingAlgorithm dijkstra = new DijkstraBidirectionCHNoSOD(graph.getCHGraph(), weighting);
+                paths2.add(dijkstra.calcPath(source, target));
+            }
+        }
+        System.out.println(sw2.stop().toString());
+
+        for (int i = 0; i < paths.size(); i++) {
+            assertEquals(paths.get(i).getWeight(), paths2.get(i).getWeight(), 0.1);
+        }
+
+        // TODO dijkstra bi dir gives wrong route on 24 -> 4
     }
 }
