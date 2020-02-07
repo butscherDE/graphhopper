@@ -80,10 +80,8 @@ public class RPHAST {
             cost.put(sourceNode, 0.0);
             predecessors.put(sourceNode, new NonExistentEdge(sourceNode));
 
-            exploreGraph(upwardsGraphEdges);
-            exploreGraph(restrictedDownwardsGraphEdges);
+            findPathsForThisSource(paths);
 
-            paths.addAll(backtrackPathForEachTarget());
 
             // TODO we do not need to throw away all data.
             cost.clear();
@@ -109,6 +107,27 @@ public class RPHAST {
 
             return Integer.compare(edge1AdjNodeRank, edge2AdjNodeRank);
         });
+    }
+
+    private void findPathsForThisSource(List<Path> paths) {
+        try {
+            exploreUpThenDownGraph(paths);
+        } catch (NullPointerException sourceDoesntExistException) {
+            addInvalidPaths(paths);
+        }
+    }
+
+    private void exploreUpThenDownGraph(List<Path> paths) {
+        exploreGraph(upwardsGraphEdges);
+        exploreGraph(restrictedDownwardsGraphEdges);
+
+        paths.addAll(backtrackPathForEachTarget());
+    }
+
+    private void addInvalidPaths(List<Path> paths) {
+        for (int i = 0; i < targetSet.size(); i++) {
+            paths.add(getInvalidPath());
+        }
     }
 
     private void exploreGraph(List<EdgeIteratorState> edgeList) {
