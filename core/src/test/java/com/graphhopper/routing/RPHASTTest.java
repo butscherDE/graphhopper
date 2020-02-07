@@ -235,22 +235,6 @@ public class RPHASTTest {
         }
     }
 
-    private double getPath0to5Distance() {
-        double distance = 0;
-
-        distance += GRAPH_MOCKER.getEdge(0,1).getDistance();
-        distance += GRAPH_MOCKER.getEdge(1,2).getDistance();
-        distance += GRAPH_MOCKER.getEdge(2,3).getDistance();
-        distance += GRAPH_MOCKER.getEdge(3,4).getDistance();
-        distance += GRAPH_MOCKER.getEdge(4,5).getDistance();
-
-        return distance;
-    }
-
-    private double getPath0to6Distance() {
-        return getPath0to5Distance() + GRAPH_MOCKER.getEdge(5,6).getDistance();
-    }
-
     @Test
     public void queryNonExistentTarget() {
         final List<Integer> sourceList = Collections.singletonList(0);

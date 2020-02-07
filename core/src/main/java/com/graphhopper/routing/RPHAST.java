@@ -151,6 +151,16 @@ public class RPHAST {
     }
 
     private Path backtrackPath(final int node) {
+
+        try {
+            return getBacktrackedPath(node);
+        } catch (NullPointerException noPathFoundException) {
+            return getInvalidPath();
+        }
+
+    }
+
+    private Path getBacktrackedPath(int node) {
         int currentNode = node;
         final LinkedList<EdgeIteratorState> backtrackedEdges = new LinkedList<>();
 
@@ -161,7 +171,11 @@ public class RPHAST {
             currentEdge = predecessors.get(currentNode);
         }
 
-        return new PathSimpleized(chGraph, weighting, backtrackedEdges, cost.get(node));
+        return new PathSimpleized(chGraph, weighting, backtrackedEdges, cost.get(node), true);
+    }
+
+    private Path getInvalidPath() {
+        return new PathSimpleized(chGraph, weighting, new LinkedList<>(), Double.MAX_VALUE, false);
     }
 
 
