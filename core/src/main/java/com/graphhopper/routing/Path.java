@@ -128,7 +128,7 @@ public class Path {
     /**
      * @return the first node of this Path.
      */
-    private int getFromNode() {
+    public int getFromNode() {
         if (fromNode < 0)
             throw new IllegalStateException("Call extract() before retrieving fromNode");
 
@@ -141,6 +141,10 @@ public class Path {
     public Path setFromNode(int from) {
         fromNode = from;
         return this;
+    }
+
+    public int getEndNode() {
+        return endNode;
     }
 
     public int getEdgeCount() {

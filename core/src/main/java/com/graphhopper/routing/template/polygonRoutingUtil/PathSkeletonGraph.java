@@ -12,8 +12,8 @@ public abstract class PathSkeletonGraph implements EdgeFilter, Iterable<Integer>
     final Polygon regionOfInterest;
     final LocationIndex index;
     final NodeAccess nodeAccess;
-    private Integer entryNode;
-    private Integer exitNode;
+    private List<Integer> entryNode = Collections.emptyList();
+    private List<Integer> exitNode = Collections.emptyList();
     final Map<Integer, Boolean> nodeContainedHashFunction = new HashMap<>();
     final List<Integer> nodesContainedList = new ArrayList<>();
 
@@ -24,26 +24,40 @@ public abstract class PathSkeletonGraph implements EdgeFilter, Iterable<Integer>
     }
 
     public void prepareForEntryExitNodes(final int entryNode, final int exitNode) {
+        prepareForEntryExitNodes(Collections.singletonList(entryNode), Collections.singletonList(exitNode));
+    }
+
+    public void prepareForEntryExitNodes(final List<Integer> entryNode, final List<Integer> exitNode) {
         unacceptLastEntryExitPoints();
         replaceEntryExitPoint(entryNode, exitNode);
         addNewEntryExitPointAsAcceptable();
     }
 
     private void unacceptLastEntryExitPoints() {
-        if (this.entryNode != null) {
-            this.nodeContainedHashFunction.replace(this.entryNode, false);
-            this.nodeContainedHashFunction.replace(this.exitNode, false);
+        for (int i = 0; i < entryNode.size(); i++) {
+            final int entryNode = this.entryNode.get(i);
+            final int exitNode = this.exitNode.get(i);
+
+            if (this.entryNode != null) {
+                this.nodeContainedHashFunction.replace(entryNode, false);
+                this.nodeContainedHashFunction.replace(exitNode, false);
+            }
         }
     }
 
-    private void replaceEntryExitPoint(int entryNode, int exitNode) {
+    private void replaceEntryExitPoint(List<Integer> entryNode, List<Integer> exitNode) {
         this.entryNode = entryNode;
         this.exitNode = exitNode;
     }
 
     private void addNewEntryExitPointAsAcceptable() {
-        this.nodeContainedHashFunction.put(this.entryNode, true);
-        this.nodeContainedHashFunction.put(this.exitNode, true);
+        for (int i = 0; i < entryNode.size(); i++) {
+            final int entryNode = this.entryNode.get(i);
+            final int exitNode = this.exitNode.get(i);
+
+            this.nodeContainedHashFunction.put(entryNode, true);
+            this.nodeContainedHashFunction.put(exitNode, true);
+        }
     }
 
     @Override

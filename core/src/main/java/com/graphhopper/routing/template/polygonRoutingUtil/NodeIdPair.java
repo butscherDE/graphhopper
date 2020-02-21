@@ -28,4 +28,12 @@ public class NodeIdPair {
     public int hashCode() {
         return Objects.hash(a, b);
     }
+
+    @Override
+    public String toString() {
+        return "NodeIdPair{" +
+                "a=" + a +
+                ", b=" + b +
+                '}';
+    }
 }

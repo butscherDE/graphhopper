@@ -189,11 +189,11 @@ public class RPHAST {
             currentEdge = predecessors.get(currentNode);
         }
 
-        return PathSimpleized.create(chGraph, weighting, backtrackedEdges, source, target, cost.get(target), true);
+        return PathSimpled.create(chGraph, weighting, backtrackedEdges, source, target, cost.get(target), true);
     }
 
     private Path getInvalidPath() {
-        return PathSimpleized.create(chGraph, weighting, new LinkedList<>(), -1, -1, Double.MAX_VALUE, false);
+        return PathSimpled.create(chGraph, weighting, new LinkedList<>(), 0, 0, Double.MAX_VALUE, false);
     }
 
 
