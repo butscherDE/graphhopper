@@ -7,7 +7,7 @@ import com.graphhopper.util.EdgeIteratorState;
 import java.util.List;
 
 public class PathSimpleized extends Path {
-    public PathSimpleized(Graph graph, Weighting weighting, List<EdgeIteratorState> edges, final double weight, final boolean found) {
+    private PathSimpleized(Graph graph, Weighting weighting, List<EdgeIteratorState> edges, final double weight, final boolean found) {
         super(graph, weighting);
 
         for (EdgeIteratorState edge : edges) {
@@ -29,6 +29,20 @@ public class PathSimpleized extends Path {
         this.weight = weight;
 
         setFound(found);
+    }
+
+    private PathSimpleized(Graph graph, Weighting weighting, int source, int target, final double weight,
+                           final boolean found) {
+        super(graph, weighting);
+    }
+
+    public static PathSimpleized create(Graph graph, Weighting weighting, List<EdgeIteratorState> edges, int source,
+                                        int target, final double weight, final boolean found) {
+        if (edges.size() > 0) {
+            return new PathSimpleized(graph, weighting, edges, weight, found);
+        } else {
+            return new PathSimpleized(graph, weighting, source, target, weight, found);
+        }
     }
 
     @Override

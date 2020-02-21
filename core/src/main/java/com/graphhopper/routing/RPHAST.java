@@ -80,7 +80,7 @@ public class RPHAST {
             cost.put(sourceNode, 0.0);
             predecessors.put(sourceNode, new NonExistentEdge(sourceNode));
 
-            findPathsForThisSource(paths);
+            findPathsForThisSource(sourceNode, paths);
 
 
             // TODO we do not need to throw away all data.
@@ -109,19 +109,19 @@ public class RPHAST {
         });
     }
 
-    private void findPathsForThisSource(List<Path> paths) {
+    private void findPathsForThisSource(final int source, List<Path> paths) {
         try {
-            exploreUpThenDownGraph(paths);
+            exploreUpThenDownGraph(source, paths);
         } catch (NullPointerException sourceDoesntExistException) {
             addInvalidPaths(paths);
         }
     }
 
-    private void exploreUpThenDownGraph(List<Path> paths) {
+    private void exploreUpThenDownGraph(final int source, List<Path> paths) {
         exploreGraph(upwardsGraphEdges);
         exploreGraph(restrictedDownwardsGraphEdges);
 
-        paths.addAll(backtrackPathForEachTarget());
+        paths.addAll(backtrackPathForEachTarget(source));
     }
 
     private void addInvalidPaths(List<Path> paths) {
@@ -160,26 +160,26 @@ public class RPHAST {
         return edgeCost + cost.get(baseNode);
     }
 
-    private List<Path> backtrackPathForEachTarget() {
+    private List<Path> backtrackPathForEachTarget(final int source) {
         final List<Path> paths = new ArrayList<>(targetSet.size());
         for (Integer target : targetSet) {
-            paths.add(backtrackPath(target));
+            paths.add(backtrackPath(source, target));
         }
         return paths;
     }
 
-    private Path backtrackPath(final int node) {
+    private Path backtrackPath(final int source, final int target) {
 
         try {
-            return getBacktrackedPath(node);
+            return getBacktrackedPath(source, target);
         } catch (NullPointerException noPathFoundException) {
             return getInvalidPath();
         }
 
     }
 
-    private Path getBacktrackedPath(int node) {
-        int currentNode = node;
+    private Path getBacktrackedPath(int source, int target) {
+        int currentNode = target;
         final LinkedList<EdgeIteratorState> backtrackedEdges = new LinkedList<>();
 
         EdgeIteratorState currentEdge = predecessors.get(currentNode);
@@ -189,11 +189,11 @@ public class RPHAST {
             currentEdge = predecessors.get(currentNode);
         }
 
-        return new PathSimpleized(chGraph, weighting, backtrackedEdges, cost.get(node), true);
+        return PathSimpleized.create(chGraph, weighting, backtrackedEdges, source, target, cost.get(target), true);
     }
 
     private Path getInvalidPath() {
-        return new PathSimpleized(chGraph, weighting, new LinkedList<>(), Double.MAX_VALUE, false);
+        return PathSimpleized.create(chGraph, weighting, new LinkedList<>(), -1, -1, Double.MAX_VALUE, false);
     }
 
 

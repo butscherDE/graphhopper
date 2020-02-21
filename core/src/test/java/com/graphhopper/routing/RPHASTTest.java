@@ -290,26 +290,24 @@ public class RPHASTTest {
 
     @Test
     public void equalSets() {
-        final List<Integer> sourceList = Arrays.asList(0,6);
+        final int[] expectedEdgesPath0to0 = new int[] {};
+        final int[] expectedEdgesPath0to6 = new int[] {0, 174, 11, 15, 19};
+        final int[] expectedDistancesPath6to0 = new int[] {19, 15, 11, 174, 0};
+        final int[] expectedDistancesPath6to6 = new int[] {};
+
+
+        final List<Integer> sourceList = Arrays.asList(0, 6);
         final Set<Integer> targetSet = new LinkedHashSet<>(sourceList);
 
-        final PolygonRoutingTestGraph graphMocker = getDisconnectedGraphMocker();
-        final RPHAST rphast = new RPHAST(graphMocker.graphWithCh, graphMocker.weighting, EdgeFilter.ALL_EDGES);
-        rphast.prepareForTargetSet(targetSet);
-
-        final List<Path> paths = rphast.calcPaths(sourceList);
-        assertEquals(Double.MAX_VALUE, paths.get(0).getWeight(), 0);
-    }
-
-    @Test
-    public void performance() {
-        final Set<Integer> targetSet = getAllNodes();
-        final List<Integer> sourceList = new LinkedList<>(targetSet);
         final RPHAST rphast = new RPHAST(GRAPH_MOCKER.graphWithCh, GRAPH_MOCKER.weighting, EdgeFilter.ALL_EDGES);
-
         rphast.prepareForTargetSet(targetSet);
 
         final List<Path> paths = rphast.calcPaths(sourceList);
+        System.out.println(paths);
+        assertPath(expectedEdgesPath0to0, paths.get(0));
+        assertPath(expectedEdgesPath0to6, paths.get(1));
+        assertPath(expectedDistancesPath6to0, paths.get(2));
+        assertPath(expectedDistancesPath6to6, paths.get(3));
     }
 
     private Set<Integer> getAllNodes() {
