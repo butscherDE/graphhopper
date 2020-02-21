@@ -15,7 +15,7 @@ public class RPHASTManyToMany extends MultiRouting {
 
     public RPHASTManyToMany(PathSkeletonGraph pathSkeletonGraph, List<Integer> nodesToBuildRoutesWith, GraphHopperStorage graph, final AlgorithmOptions algorithmOptions) {
         this.pathSkeletonGraph = pathSkeletonGraph;
-        this.pathSkeletonGraph.prepareForEntryExitNodes(nodesToBuildRoutesWith, nodesToBuildRoutesWith);
+//        this.pathSkeletonGraph.prepareForEntryExitNodes(nodesToBuildRoutesWith, nodesToBuildRoutesWith);
         this.nodesToBuildRoutesWith = nodesToBuildRoutesWith;
         this.rphast = new RPHAST(graph, algorithmOptions.getWeighting(), pathSkeletonGraph);
     }

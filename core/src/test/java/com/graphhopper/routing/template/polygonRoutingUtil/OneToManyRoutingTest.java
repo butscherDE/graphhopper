@@ -62,7 +62,7 @@ public class OneToManyRoutingTest {
     @Test
     public void validate28to29() {
         final List<Integer> nodesInPathOrder = this.retrieveFoundPathsNode(28, 29);
-        final List<Integer> firstPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 29}));
+        final List<Integer> firstPathOption = new ArrayList<>(Arrays.asList(new Integer[] {28, 47, 48, 29}));
 
         validatePath(nodesInPathOrder, firstPathOption);
     }

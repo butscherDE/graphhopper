@@ -17,6 +17,10 @@ public class RegionOfInterestRoutingGraph extends PathSkeletonGraph {
         buildHashFunction();
     }
 
+    @Override
+    public void prepareForEntryExitNodes(final List<Integer> entryNode, final List<Integer> exitNode) {
+    }
+
     private void buildHashFunction() {
         final BBox regionOfInterestBoundingBox = this.regionOfInterest.getMinimalBoundingBox();
         final NodesInPolygonFindingVisitor allNodesFindingVisitor = new NodesInPolygonFindingVisitor(regionOfInterest, nodeAccess);

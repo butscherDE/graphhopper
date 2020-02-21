@@ -2,6 +2,7 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.template.util.PolygonRoutingTestGraph;
+import com.graphhopper.util.shapes.Polygon;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -16,11 +17,17 @@ public class RPHASTManyToManyTest {
     @BeforeClass
     public static void setUp() {
         final List<Integer> sourceDestinations = prepareSourceDestination();
-        final RegionOfInterestRoutingGraph nodesToConsiderForRouting = new OneToManyRoutingTest().prepareInteriorGraph();
+        final RegionOfInterestRoutingGraph nodesToConsiderForRouting = prepareInteriorGraph();
         final AlgorithmOptions algorithmOptions = graphMocker.algorithmOptions;
 
         rphast = new RPHASTManyToMany(nodesToConsiderForRouting, sourceDestinations, graphMocker.graphWithCh, algorithmOptions);
         rphast.findPathBetweenAllNodePairs();
+    }
+
+    static RegionOfInterestRoutingGraph prepareInteriorGraph() {
+        final Polygon regionOfInterest = new Polygon(new double[] {19, 19, 8, 8}, new double[] {14, 24, 24, 14});
+
+        return new RegionOfInterestRphastRoutingGraph(regionOfInterest, graphMocker.locationIndex, graphMocker.nodeAccess);
     }
 
     private static List<Integer> prepareSourceDestination() {
@@ -36,7 +43,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate28to29() {
-        final List<Integer> firstPathOption = createPathCandidate(28, 29);
+        final List<Integer> firstPathOption = createPathCandidate(28, 47, 48, 29);
 
         validatePath(firstPathOption);
     }
@@ -65,7 +72,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate29To28() {
-        final List<Integer> firstPathOption = createPathCandidate(29, 28);
+        final List<Integer> firstPathOption = createPathCandidate(29, 48, 47, 28);
 
         validatePath(firstPathOption);
     }
@@ -79,7 +86,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate29To30() {
-        final List<Integer> firstPathOption = createPathCandidate(29, 30);
+        final List<Integer> firstPathOption = createPathCandidate(29, 48, 30);
 
         validatePath(firstPathOption);
     }
@@ -107,7 +114,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate30To29() {
-        final List<Integer> firstPathOption = createPathCandidate(30, 29);
+        final List<Integer> firstPathOption = createPathCandidate(30, 48, 29);
 
         validatePath(firstPathOption);
     }
@@ -121,14 +128,14 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate30To32() {
-        final List<Integer> firstPathOption = createPathCandidate(30, 48, 49, 32);
+        final List<Integer> firstPathOption = createPathCandidate(30, 49, 32);
 
         validatePath(firstPathOption);
     }
 
     @Test
     public void validate30To40() {
-        final List<Integer> firstPathOption = createPathCandidate(30, 48, 55, 57, 52, 40);
+        final List<Integer> firstPathOption = createPathCandidate(30, 57, 52, 40);
 
         validatePath(firstPathOption);
     }
@@ -149,7 +156,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate32To30() {
-        final List<Integer> firstPathOption = createPathCandidate(32, 49, 48, 30);
+        final List<Integer> firstPathOption = createPathCandidate(32, 49, 30);
 
         validatePath(firstPathOption);
     }
@@ -163,7 +170,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate32To40() {
-        final List<Integer> firstPathOption = createPathCandidate(32, 49, 56, 57, 52, 40);
+        final List<Integer> firstPathOption = createPathCandidate(32, 49, 56, 52, 40);
 
         validatePath(firstPathOption);
     }
@@ -184,14 +191,14 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate40To30() {
-        final List<Integer> firstPathOption = createPathCandidate(40, 52, 57, 55, 48, 30);
+        final List<Integer> firstPathOption = createPathCandidate(40, 52, 57, 30);
 
         validatePath(firstPathOption);
     }
 
     @Test
     public void validate40To32() {
-        final List<Integer> firstPathOption = createPathCandidate(40, 52, 57, 56, 49, 32);
+        final List<Integer> firstPathOption = createPathCandidate(40, 52, 56, 49, 32);
 
         validatePath(firstPathOption);
     }

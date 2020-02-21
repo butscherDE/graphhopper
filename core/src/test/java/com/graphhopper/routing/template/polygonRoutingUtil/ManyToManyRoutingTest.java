@@ -50,7 +50,7 @@ public class ManyToManyRoutingTest {
 
     @Test
     public void validate28to29() {
-        final List<Integer> firstPathOption = createPathCandidate(28, 29);
+        final List<Integer> firstPathOption = createPathCandidate(28, 47, 48, 29);
 
         validatePath(firstPathOption);
     }
@@ -79,7 +79,7 @@ public class ManyToManyRoutingTest {
 
     @Test
     public void validate29To28() {
-        final List<Integer> firstPathOption = createPathCandidate(29, 28);
+        final List<Integer> firstPathOption = createPathCandidate(29, 48, 47, 28);
 
         validatePath(firstPathOption);
     }
@@ -93,7 +93,7 @@ public class ManyToManyRoutingTest {
 
     @Test
     public void validate29To30() {
-        final List<Integer> firstPathOption = createPathCandidate(29, 30);
+        final List<Integer> firstPathOption = createPathCandidate(29, 48, 30);
 
         validatePath(firstPathOption);
     }
@@ -121,7 +121,7 @@ public class ManyToManyRoutingTest {
 
     @Test
     public void validate30To29() {
-        final List<Integer> firstPathOption = createPathCandidate(30, 29);
+        final List<Integer> firstPathOption = createPathCandidate(30, 48, 29);
 
         validatePath(firstPathOption);
     }

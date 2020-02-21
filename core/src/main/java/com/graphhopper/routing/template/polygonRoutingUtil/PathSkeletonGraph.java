@@ -64,19 +64,27 @@ public abstract class PathSkeletonGraph implements EdgeFilter, Iterable<Integer>
     public boolean accept(EdgeIteratorState edgeState) {
         final Integer baseNode = edgeState.getBaseNode();
         final Integer adjNode = edgeState.getAdjNode();
-        final Boolean baseNodeInGraph = nodeContainedHashFunction.get(baseNode);
-        final Boolean adjNodeInGraph = nodeContainedHashFunction.get(adjNode);
+        final Boolean baseNodeInGraph = isNodeInGraph(nodeContainedHashFunction.get(baseNode));
+        final Boolean adjNodeInGraph = isNodeInGraph(nodeContainedHashFunction.get(adjNode));
 
-        boolean result = areBothNodesInRoutingGraph(baseNodeInGraph, adjNodeInGraph);
+        boolean result = accept(baseNodeInGraph, adjNodeInGraph);
 
         return result;
+    }
+
+    public boolean accept(final boolean baseNodeInGraph, final boolean adjNodeInGraph) {
+        int i = 0;
+        i += baseNodeInGraph ? 1 : 0;
+        i += adjNodeInGraph ? 1 : 0;
+
+        return i >= 1;
     }
 
     private boolean areBothNodesInRoutingGraph(Boolean baseNodeInGraph, Boolean adjNodeInGraph) {
         boolean result = true;
 
-        result &= isNodeInGraph(baseNodeInGraph);
-        result &= isNodeInGraph(adjNodeInGraph);
+        result &= baseNodeInGraph;
+        result &= adjNodeInGraph;
         return result;
     }
 

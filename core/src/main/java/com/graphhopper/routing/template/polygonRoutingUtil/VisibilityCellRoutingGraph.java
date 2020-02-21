@@ -18,6 +18,11 @@ public class VisibilityCellRoutingGraph extends PathSkeletonGraph {
         buildHashFunction();
     }
 
+    @Override
+    public boolean accept(final boolean baseNodeInGraph, final boolean adjNodeInGraph) {
+        return baseNodeInGraph && adjNodeInGraph;
+    }
+
     private void buildHashFunction() {
         for (VisibilityCell visibilityCell : visibilityCells) {
             final BBox visibilityCellBoundingBox = visibilityCell.getMinimalBoundingBox();

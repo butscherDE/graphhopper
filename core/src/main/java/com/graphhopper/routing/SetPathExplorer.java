@@ -29,9 +29,9 @@ public abstract class SetPathExplorer {
         addAllStartNodesAsVisited();
     }
 
-    private void prepareNodesToExplore(Set<Integer> startNodes) {
+    private void prepareNodesToExplore(Set<Integer> startSet) {
         this.nodesToExplore = new Stack<>();
-        for (Integer startNode : startNodes) {
+        for (Integer startNode : startSet) {
             this.nodesToExplore.push(startNode);
         }
     }
@@ -81,12 +81,4 @@ public abstract class SetPathExplorer {
     }
 
     abstract void addNodeToVisitIfNotAlreadyVisited(EdgeIteratorState incidentEdge);
-
-//    private void addBaseNodeToVisitTaskIfNotAlreadyVisited(EdgeIteratorState incidentEdge) {
-//        if (nonVisited.accept(incidentEdge)) {
-//            int baseNode = incidentEdge.getBaseNode();
-//            nodesToExplore.add(baseNode);
-//            nodesVisited.put(baseNode, true);
-//        }
-//    }
 }
