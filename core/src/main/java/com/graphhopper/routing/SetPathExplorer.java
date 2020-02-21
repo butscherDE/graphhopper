@@ -29,10 +29,10 @@ public abstract class SetPathExplorer {
         addAllStartNodesAsVisited();
     }
 
-    private void prepareNodesToExplore(Set<Integer> targets) {
+    private void prepareNodesToExplore(Set<Integer> startNodes) {
         this.nodesToExplore = new Stack<>();
-        for (Integer target : targets) {
-            this.nodesToExplore.push(target);
+        for (Integer startNode : startNodes) {
+            this.nodesToExplore.push(startNode);
         }
     }
 
