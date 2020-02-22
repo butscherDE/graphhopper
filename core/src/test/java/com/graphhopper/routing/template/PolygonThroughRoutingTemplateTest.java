@@ -38,7 +38,7 @@ public class PolygonThroughRoutingTemplateTest {
     }
 
     private QueryGraph createQueryGraph(GHRequest request, RoutingTemplate routingTemplate) {
-        final QueryGraph queryGraph = new QueryGraph(this.graphMocker.graph);
+        final QueryGraph queryGraph = new QueryGraph(this.graphMocker.graphWithCh);
         List<QueryResult> results = routingTemplate.lookup(request.getPoints(), this.graphMocker.flagEncoder);
         queryGraph.lookup(results);
         return queryGraph;

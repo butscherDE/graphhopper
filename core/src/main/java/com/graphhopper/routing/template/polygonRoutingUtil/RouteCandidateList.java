@@ -49,7 +49,8 @@ public class RouteCandidateList<T extends RouteCandidate> {
         return paths;
     }
 
-    private List<Path> addPathsBasedOnIntersectionStatus(int nOfFirstElements, QueryGraph queryGraph, AlgorithmOptions algorithmOptions, int endOfCandidates,
+    private List<Path> addPathsBasedOnIntersectionStatus(int nOfFirstElements, QueryGraph queryGraph,
+                                                         AlgorithmOptions algorithmOptions, int endOfCandidates,
                                                          boolean addSelfIntersecting) {
         List<Path> paths = new ArrayList<>(nOfFirstElements);
         int indexIntoCandidates = endOfCandidates;

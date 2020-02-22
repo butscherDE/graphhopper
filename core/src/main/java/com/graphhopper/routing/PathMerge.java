@@ -1,5 +1,6 @@
 package com.graphhopper.routing;
 
+import com.graphhopper.coll.GHIntArrayList;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeIteratorState;
@@ -66,5 +67,9 @@ public class PathMerge extends Path {
 
     private boolean lastAndFirstNodeEqual(EdgeIteratorState lastEdgeOfThisPath, List<EdgeIteratorState> otherPathEdges) {
         return lastEdgeOfThisPath.getAdjNode() == otherPathEdges.get(0).getBaseNode();
+    }
+
+    public GHIntArrayList getEdgeIds() {
+        return edgeIds;
     }
 }

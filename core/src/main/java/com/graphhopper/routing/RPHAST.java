@@ -8,9 +8,9 @@ import com.graphhopper.routing.profiles.IntEncodedValue;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.CHGraph;
-import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.IntsRef;
+import com.graphhopper.storage.ShortcutUnpacker;
 import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
@@ -113,7 +113,7 @@ public class RPHAST {
         try {
             exploreUpThenDownGraph(source, paths);
         } catch (NullPointerException sourceDoesntExistException) {
-            addInvalidPaths(paths);
+            addInvalidPaths(source, paths);
         }
     }
 
@@ -124,9 +124,9 @@ public class RPHAST {
         paths.addAll(backtrackPathForEachTarget(source));
     }
 
-    private void addInvalidPaths(List<Path> paths) {
-        for (int i = 0; i < targetSet.size(); i++) {
-            paths.add(getInvalidPath());
+    private void addInvalidPaths(final int source, List<Path> paths) {
+        for (Integer target : targetSet) {
+            paths.add(getInvalidPath(source, target));
         }
     }
 
@@ -169,17 +169,26 @@ public class RPHAST {
     }
 
     private Path backtrackPath(final int source, final int target) {
-
         try {
             return getBacktrackedPath(source, target);
         } catch (NullPointerException noPathFoundException) {
-            return getInvalidPath();
+            return getInvalidPath(source, target);
         }
+    }
 
+    private Path getInvalidPath(final int source, final int target) {
+        return PathSimpled.create(chGraph, weighting, Collections.emptyList(), source, target, Double.MAX_VALUE, false);
     }
 
     private Path getBacktrackedPath(int source, int target) {
         int currentNode = target;
+        final List<EdgeIteratorState> backtrackedEdgesWithShortcuts = getBacktrackedEdgesWithShortcuts(currentNode);
+        final List<EdgeIteratorState> backtrackedEdges = getBaseEdgesFromShortcuttingPath(backtrackedEdgesWithShortcuts);
+
+        return PathSimpled.create(chGraph, weighting, backtrackedEdges, source, target, cost.get(target), true);
+    }
+
+    private LinkedList<EdgeIteratorState> getBacktrackedEdgesWithShortcuts(int currentNode) {
         final LinkedList<EdgeIteratorState> backtrackedEdges = new LinkedList<>();
 
         EdgeIteratorState currentEdge = predecessors.get(currentNode);
@@ -188,54 +197,20 @@ public class RPHAST {
             currentNode = currentEdge.getBaseNode();
             currentEdge = predecessors.get(currentNode);
         }
-
-        return PathSimpled.create(chGraph, weighting, backtrackedEdges, source, target, cost.get(target), true);
+        return backtrackedEdges;
     }
 
-    private Path getInvalidPath() {
-        return PathSimpled.create(chGraph, weighting, new LinkedList<>(), 0, 0, Double.MAX_VALUE, false);
-    }
+    public List<EdgeIteratorState> getBaseEdgesFromShortcuttingPath(final List<EdgeIteratorState> edges) {
+        final EdgeRecordingVisitor edgeRecordingVisitor = new EdgeRecordingVisitor();
+        final ShortcutUnpacker shortcutUnpacker = new ShortcutUnpacker(chGraph, edgeRecordingVisitor, false);
 
-
-    // TODO Delete the following methods
-    public void testIfCHCreationWorked() {
-        final List<Integer> allNodes = getAllNodes(chGraph);
-        Collections.sort(allNodes, Comparator.comparingInt(chGraph::getLevel));
-
-        printAllNodesWithRankWellAligned(chGraph, allNodes);
-    }
-
-    private List<Integer> getAllNodes(Graph chGraph) {
-        final EdgeIterator allEdges = chGraph.getAllEdges();
-        final Set<Integer> allNodes = new LinkedHashSet<>();
-        while(allEdges.next()) {
-            allNodes.add(allEdges.getBaseNode());
-            allNodes.add(allEdges.getAdjNode());
+        int lastEdge = EdgeIterator.NO_EDGE;
+        for (EdgeIteratorState edge : edges) {
+            shortcutUnpacker.visitOriginalEdgesFwd(edge.getEdge(), edge.getAdjNode(), false, lastEdge);
+            edgeRecordingVisitor.getLastEdgeId();
         }
-        final List<Integer> nodesAsList = new ArrayList<>(allNodes);
-        Collections.sort(nodesAsList);
-        return nodesAsList;
-    }
 
-    private void printAllNodesWithRankWellAligned(CHGraph chGraph, List<Integer> allNodes) {
-        for (Integer node : allNodes) {
-            int log = (int) Math.log10(node) + 1;
-            final int nodeDigits = log >= 0 ? log : 1;
-
-            System.out.print(node + ":");
-            for (int i = nodeDigits; i < 5; i++) {
-                System.out.print(" ");
-            }
-            System.out.println(chGraph.getLevel(node));
-        }
-    }
-
-    public void printAllCHGraphEdges() {
-        final EdgeIterator allEdges = chGraph.getAllEdges();
-
-        while(allEdges.next()) {
-            System.out.println(allEdges.toString());
-        }
+        return edgeRecordingVisitor.getEdges();
     }
 
     static class NonExistentEdge implements EdgeIteratorState {
@@ -408,6 +383,23 @@ public class RPHAST {
         @Override
         public EdgeIteratorState copyPropertiesFrom(EdgeIteratorState e) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private class EdgeRecordingVisitor implements ShortcutUnpacker.Visitor {
+        final LinkedList<EdgeIteratorState> edges = new LinkedList<>();
+
+        @Override
+        public void visit(EdgeIteratorState edge, boolean reverse, int prevOrNextEdgeId) {
+            edges.add(edge);
+        }
+
+        public List<EdgeIteratorState> getEdges() {
+            return edges;
+        }
+
+        public int getLastEdgeId() {
+            return edges.getLast().getEdge();
         }
     }
 }

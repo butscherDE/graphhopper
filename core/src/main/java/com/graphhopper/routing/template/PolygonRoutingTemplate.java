@@ -9,7 +9,10 @@ import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
-import com.graphhopper.util.*;
+import com.graphhopper.util.EdgeIterator;
+import com.graphhopper.util.PathMerger;
+import com.graphhopper.util.StopWatch;
+import com.graphhopper.util.Translation;
 import com.graphhopper.util.shapes.GHPoint;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -27,9 +30,9 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     RoutingAlgorithmFactory algoFactory;
     RouteCandidateList<RouteCandidate> routeCandidates;
 
-    private ManyToManyRouting pathSkeletonRouter;
+    private MultiRouting pathSkeletonRouter;
     private final FlagEncoder flagEncoder;
-    private LOTNodeExtractor lotNodes;
+    LOTNodeExtractor lotNodes;
     PathSkeletonGraph pathSkeletonEdgeFilter;
     private Set<Integer> polygonEntryExitPoints;
 
@@ -153,12 +156,14 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         final StopWatch swPathSkeleton = new StopWatch("Generate path skeleton");
         swPathSkeleton.start();
 
-        this.pathSkeletonRouter = new ManyToManyRouting(pathSkeletonEdgeFilter, lotNodes.getAllLotNodes(), this.graph, queryResults, this.algoFactory, this.algorithmOptions);
+        this.pathSkeletonRouter = getPathSkeletonRouter(queryResults);
         this.pathSkeletonRouter.findPathBetweenAllNodePairs();
 
         swPathSkeleton.stop();
         return swPathSkeleton;
     }
+
+    public abstract MultiRouting getPathSkeletonRouter(List<QueryResult> queryResults);
 
     private StopWatch findLotNodesAndMeasureTime(List<Integer> viaPointNodeIds) {
         final StopWatch swLOTNodes = new StopWatch("LOT node generation");
