@@ -73,7 +73,9 @@ public abstract class SetPathExplorer {
     abstract Iterator<EdgeIteratorState> getIncidentEdgeIterator(int node);
 
     private void addEdgeBasedOnFilter(EdgeIteratorState incidentEdge) {
-        if (chFilter.accept(incidentEdge) && edgeFilter.accept(incidentEdge)) {
+        boolean chAcceptance = chFilter.accept(incidentEdge);
+        boolean edgeFilterAcceptance = edgeFilter.accept(incidentEdge);
+        if (chAcceptance && edgeFilterAcceptance) {
             markedEdges.add(incidentEdge);
 
             addNodeToVisitIfNotAlreadyVisited(incidentEdge);

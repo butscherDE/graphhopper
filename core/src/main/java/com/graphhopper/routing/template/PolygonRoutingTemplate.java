@@ -85,12 +85,14 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     private void extractBestPathCandidate() {
-        // TODO Maybe more? Dont know what happens in the gui then.
         this.routeCandidates.sortByGainAscending();
         printAllCandidatesInSortedOrder();
-        deleteBestN(0);
         final List<Path> bestPath = this.routeCandidates.getFirstAsPathList(1, this.graph, this.algorithmOptions);
         this.pathList.addAll(bestPath);
+
+        if (pathList.size() <= 0) {
+            throw new IllegalStateException("No suitable path was found");
+        }
     }
 
     private void printAllCandidatesInSortedOrder() {
@@ -103,13 +105,6 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
         }
 
         System.out.println(sb.toString());
-    }
-
-    // TODO used for experimenting delete when no more needed.
-    private void deleteBestN(final int n) {
-        for (int i = 0; i < n; i++) {
-            this.routeCandidates.remove(this.routeCandidates.size() - 1);
-        }
     }
 
     @Override
@@ -240,23 +235,24 @@ public abstract class PolygonRoutingTemplate extends ViaRoutingTemplate {
     }
 
     private void buildRouteCandidatesForCurrentPoint(final int currentViaPoint, final int nextViaPoint) {
+        final Path directRoute = this.getNewRoutingAlgorithm().calcPath(currentViaPoint, nextViaPoint);
+
         final List<Integer> currentPointLotNodes = lotNodes.getLotNodesFor(currentViaPoint);
         final List<Integer> nextPointLotNodes = lotNodes.getLotNodesFor(nextViaPoint);
 
         for (final int LOTNodeL : currentPointLotNodes) {
             for (final int LOTNodeLPrime : nextPointLotNodes) {
                 if (LOTNodeL != LOTNodeLPrime) {
-                    this.routeCandidates.add(buildCandidatePath(currentViaPoint, nextViaPoint, LOTNodeL, LOTNodeLPrime));
+                    this.routeCandidates.add(buildCandidatePath(currentViaPoint, nextViaPoint, LOTNodeL, LOTNodeLPrime, directRoute));
                 }
             }
         }
     }
 
-    private RouteCandidate buildCandidatePath(int currentPointID, int nextPointID, int lotNodeL, int lotNodeLPrime) {
+    private RouteCandidate buildCandidatePath(int currentPointID, int nextPointID, int lotNodeL, int lotNodeLPrime, Path directRoute) {
         final Path startToDetourEntry = this.lotNodes.getLotNodePathFor(currentPointID, lotNodeL);
         final Path detourEntryToDetourExit = this.pathSkeletonRouter.getPathByFromEndNodeID(lotNodeL, lotNodeLPrime);
         final Path detourExitToEnd = this.lotNodes.getLotNodePathFor(lotNodeLPrime, nextPointID);
-        final Path directRoute = this.getNewRoutingAlgorithm().calcPath(currentPointID, nextPointID);
 
         final RouteCandidate routeCandidate = new RouteCandidate(currentPointID, nextPointID, lotNodeL, lotNodeLPrime, startToDetourEntry, detourEntryToDetourExit,
                                                                  detourExitToEnd, directRoute);

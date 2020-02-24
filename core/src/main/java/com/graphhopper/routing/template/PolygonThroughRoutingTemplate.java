@@ -7,6 +7,8 @@ import com.graphhopper.routing.template.polygonRoutingUtil.PathSkeletonGraph;
 import com.graphhopper.routing.template.polygonRoutingUtil.RPHASTManyToMany;
 import com.graphhopper.routing.template.polygonRoutingUtil.RegionOfInterestRoutingGraph;
 import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
@@ -23,8 +25,16 @@ public class PolygonThroughRoutingTemplate extends PolygonRoutingTemplate {
 
     @Override
     public MultiRouting getPathSkeletonRouter(List<QueryResult> queryResults) {
-        return new RPHASTManyToMany(pathSkeletonEdgeFilter, lotNodes.getAllLotNodes(),
-                (GraphHopperStorage) this.graph.getMainGraph(), this.algorithmOptions);
+        final Graph graph = this.graph.getMainGraph();
+        if (graph instanceof GraphHopperStorage) {
+            return new RPHASTManyToMany(pathSkeletonEdgeFilter, lotNodes.getAllLotNodes(),
+                    (GraphHopperStorage) this.graph.getMainGraph(), this.algorithmOptions);
+        } else if (graph instanceof CHGraph) {
+            return new RPHASTManyToMany(pathSkeletonEdgeFilter, lotNodes.getAllLotNodes(),
+                    (CHGraph) this.graph.getMainGraph(), this.algorithmOptions);
+        } else {
+            throw new IllegalArgumentException("No implementation found where a CH Graph can be retrieved from.");
+        }
     }
 
     PathSkeletonGraph getPathSkeletonEdgeFilter() {

@@ -32,7 +32,11 @@ public class RPHAST {
     private Map<Integer, EdgeIteratorState> predecessors = new HashMap<>();
 
     public RPHAST(final GraphHopperStorage graph, final Weighting weighting, final EdgeFilter edgeFilter) {
-        this.chGraph = graph.getCHGraph();
+        this(graph.getCHGraph(), weighting, edgeFilter);
+    }
+
+    public RPHAST(final CHGraph graph, final Weighting weighting, final EdgeFilter edgeFilter) {
+        this.chGraph = graph;
         this.weighting = weighting;
         this.chWeighting = new PreparationWeighting(weighting);
         this.edgeFilter = edgeFilter;

@@ -1,6 +1,9 @@
 package com.graphhopper.routing.template.polygonRoutingUtil;
 
-import com.graphhopper.routing.*;
+import com.graphhopper.routing.AlgorithmOptions;
+import com.graphhopper.routing.Path;
+import com.graphhopper.routing.PathMerge;
+import com.graphhopper.routing.QueryGraph;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +16,6 @@ public class RouteCandidate implements Comparable<RouteCandidate> {
     Path detourEntryToDetourExit;
     Path detourExitToEnd;
     Path directRouteStartEnd;
-    RoutingAlgorithm routingAlgorithm;
     final int startNodeID, endNodeID, polygonEntryNodeID, polygonExitNodeID;
     PathMerge mergedPath = null;
 

@@ -10,7 +10,6 @@ import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.StopWatch;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Takes a set of polygon entry exit points as well as a set of via routing points and extracts the local optimal touch nodes for each via point.
@@ -173,6 +172,11 @@ public class LOTNodeExtractor {
     }
 
     public int size() {
-        return this.viaPointToLOTNodes.size();
+        int count = 0;
+        for (Integer viaNode : viaPointToLOTNodes.keySet()) {
+            count += viaPointToLOTNodes.get(viaNode).size();
+        }
+
+        return count;
     }
 }

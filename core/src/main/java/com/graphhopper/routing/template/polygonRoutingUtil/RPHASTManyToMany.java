@@ -3,6 +3,7 @@ package com.graphhopper.routing.template.polygonRoutingUtil;
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.RPHAST;
+import com.graphhopper.storage.CHGraph;
 import com.graphhopper.storage.GraphHopperStorage;
 
 import java.util.LinkedHashSet;
@@ -14,8 +15,11 @@ public class RPHASTManyToMany extends MultiRouting {
     private final RPHAST rphast;
 
     public RPHASTManyToMany(PathSkeletonGraph pathSkeletonGraph, List<Integer> nodesToBuildRoutesWith, GraphHopperStorage graph, final AlgorithmOptions algorithmOptions) {
+        this(pathSkeletonGraph, nodesToBuildRoutesWith, graph.getCHGraph(), algorithmOptions);
+    }
+
+    public RPHASTManyToMany(PathSkeletonGraph pathSkeletonGraph, List<Integer> nodesToBuildRoutesWith, CHGraph graph, final AlgorithmOptions algorithmOptions) {
         this.pathSkeletonGraph = pathSkeletonGraph;
-//        this.pathSkeletonGraph.prepareForEntryExitNodes(nodesToBuildRoutesWith, nodesToBuildRoutesWith);
         this.nodesToBuildRoutesWith = nodesToBuildRoutesWith;
         this.rphast = new RPHAST(graph, algorithmOptions.getWeighting(), pathSkeletonGraph);
     }

@@ -70,7 +70,6 @@ public class RouteCandidateList<T extends RouteCandidate> {
     // Do it in a skyline problem pruning fashion
     public void pruneDominatedCandidateRoutes() {
         this.sortRouteCandidatesToTimeInROIDescending();
-
         int currentPruningCandidateIndex = 1;
         while (indexInCandidateBounds(currentPruningCandidateIndex)) {
             RouteCandidate currentPruningCandidate = this.candidates.get(currentPruningCandidateIndex);
