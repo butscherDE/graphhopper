@@ -1,6 +1,5 @@
 package com.graphhopper.routing.template.polygonRoutingUtil;
 
-import com.carrotsearch.hppc.cursors.IntCursor;
 import com.graphhopper.routing.*;
 
 import java.util.HashMap;
@@ -75,7 +74,7 @@ public class RouteCandidate implements Comparable<RouteCandidate> {
     public boolean isDetourSelfIntersecting(final QueryGraph queryGraph, final AlgorithmOptions algoOpts) {
         mergePathIfNotDone(queryGraph, algoOpts);
 
-        return checkForRedundantEdges();
+        return checkForRedundantNodes();
     }
 
     private void mergePathIfNotDone(QueryGraph queryGraph, AlgorithmOptions algoOpts) {
@@ -84,12 +83,12 @@ public class RouteCandidate implements Comparable<RouteCandidate> {
         }
     }
 
-    private boolean checkForRedundantEdges() {
-        Map<Integer, Boolean> foundEdges = new HashMap<>(this.mergedPath.getEdgeCount());
+    private boolean checkForRedundantNodes() {
+        Map<Integer, Boolean> foundNodes = new HashMap<>(this.mergedPath.getEdgeCount());
 
-        for (final IntCursor edgeIds : this.mergedPath.getEdgeIds()) {
-            if (foundEdges.get(edgeIds.value) == null) {
-                foundEdges.put(edgeIds.value, true);
+        for (final int nodeId : this.mergedPath.getNodesInPathOrder()) {
+            if (foundNodes.get(nodeId) == null) {
+                foundNodes.put(nodeId, true);
             } else {
                 return true;
             }

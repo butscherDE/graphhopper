@@ -128,14 +128,14 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate30To32() {
-        final List<Integer> firstPathOption = createPathCandidate(30, 49, 32);
+        final List<Integer> firstPathOption = createPathCandidate(30, 48, 49, 32);
 
         validatePath(firstPathOption);
     }
 
     @Test
     public void validate30To40() {
-        final List<Integer> firstPathOption = createPathCandidate(30, 57, 52, 40);
+        final List<Integer> firstPathOption = createPathCandidate(30, 48, 55, 57, 52, 40);
 
         validatePath(firstPathOption);
     }
@@ -156,7 +156,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate32To30() {
-        final List<Integer> firstPathOption = createPathCandidate(32, 49, 30);
+        final List<Integer> firstPathOption = createPathCandidate(32, 49, 48, 30);
 
         validatePath(firstPathOption);
     }
@@ -170,7 +170,7 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate32To40() {
-        final List<Integer> firstPathOption = createPathCandidate(32, 49, 56, 52, 40);
+        final List<Integer> firstPathOption = createPathCandidate(32, 49, 56, 57, 52, 40);
 
         validatePath(firstPathOption);
     }
@@ -191,14 +191,14 @@ public class RPHASTManyToManyTest {
 
     @Test
     public void validate40To30() {
-        final List<Integer> firstPathOption = createPathCandidate(40, 52, 57, 30);
+        final List<Integer> firstPathOption = createPathCandidate(40, 52, 57, 55, 48, 30);
 
         validatePath(firstPathOption);
     }
 
     @Test
     public void validate40To32() {
-        final List<Integer> firstPathOption = createPathCandidate(40, 52, 56, 49, 32);
+        final List<Integer> firstPathOption = createPathCandidate(40, 52, 57, 56, 49, 32);
 
         validatePath(firstPathOption);
     }
