@@ -11,10 +11,7 @@ import com.graphhopper.storage.CHGraph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.storage.ShortcutUnpacker;
-import com.graphhopper.util.CHEdgeIteratorState;
-import com.graphhopper.util.EdgeIterator;
-import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.util.PointList;
+import com.graphhopper.util.*;
 
 import java.util.*;
 
@@ -39,7 +36,8 @@ public class RPHAST {
         this.chGraph = graph;
         this.weighting = weighting;
         this.chWeighting = new PreparationWeighting(weighting);
-        this.edgeFilter = edgeFilter;
+//        this.edgeFilter = edgeFilter;
+        this.edgeFilter = EdgeFilter.ALL_EDGES;
     }
 
     public void prepareForTargetSet(final Set<Integer> targetSet) {
@@ -76,6 +74,8 @@ public class RPHAST {
         if (restrictedDownwardsGraphEdges == null) {
             throw new IllegalStateException("Call prepareForTagetSet first");
         }
+
+        System.out.println("Num source nodes: " + sourceNodes.size());
 
         final List<Path> paths = new ArrayList<>(sourceNodes.size() * targetSet.size());
         for (final int sourceNode : sourceNodes) {
@@ -122,10 +122,16 @@ public class RPHAST {
     }
 
     private void exploreUpThenDownGraph(final int source, List<Path> paths) {
+        StopWatch swUpward = new StopWatch("upward").start();
         exploreGraph(upwardsGraphEdges);
+        System.out.println(swUpward.stop().toString());
+        StopWatch swDownward = new StopWatch("downward").start();
         exploreGraph(restrictedDownwardsGraphEdges);
+        System.out.println(swDownward.stop().toString());
 
+        StopWatch swBacktrack = new StopWatch("backtrack").start();
         paths.addAll(backtrackPathForEachTarget(source));
+        System.out.println(swBacktrack.stop().toString());
     }
 
     private void addInvalidPaths(final int source, List<Path> paths) {
@@ -166,9 +172,11 @@ public class RPHAST {
 
     private List<Path> backtrackPathForEachTarget(final int source) {
         final List<Path> paths = new ArrayList<>(targetSet.size());
+        StopWatch swBacktrack = new StopWatch("Overall Backtrack " + targetSet.size()).start();
         for (Integer target : targetSet) {
             paths.add(backtrackPath(source, target));
         }
+        System.out.println(swBacktrack.stop().toString());
         return paths;
     }
 

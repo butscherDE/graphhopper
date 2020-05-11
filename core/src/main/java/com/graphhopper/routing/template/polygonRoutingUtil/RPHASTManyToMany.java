@@ -5,6 +5,7 @@ import com.graphhopper.routing.Path;
 import com.graphhopper.routing.RPHAST;
 import com.graphhopper.storage.CHGraph;
 import com.graphhopper.storage.GraphHopperStorage;
+import com.graphhopper.util.StopWatch;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,7 +27,9 @@ public class RPHASTManyToMany extends MultiRouting {
 
     @Override
     void calculatePaths() {
+        StopWatch sw1 = new StopWatch("Target Set preparation").start();
         rphast.prepareForTargetSet(new LinkedHashSet<>(nodesToBuildRoutesWith));
+        System.out.println(sw1.stop().toString());
 
         final List<Path> paths = rphast.calcPaths(nodesToBuildRoutesWith);
 

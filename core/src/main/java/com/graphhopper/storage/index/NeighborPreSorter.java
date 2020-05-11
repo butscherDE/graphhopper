@@ -2,9 +2,11 @@ package com.graphhopper.storage.index;
 
 import com.graphhopper.storage.Graph;
 import com.graphhopper.util.EdgeIterator;
-import com.graphhopper.util.EdgeIteratorState;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class NeighborPreSorter {
     private final Graph graph;
@@ -32,45 +34,8 @@ public class NeighborPreSorter {
     private void createSortedNeighbors() {
         final Set<Integer> allNodes = getAllNodes();
 
-//        testMemKill(allNodes);
-//        testMemKill2(allNodes);
-//        System.out.println("#!#!#!");
-//        try {
-//            Thread.sleep(10_000);
-//        } catch (Exception e) {
-//
-//        }
-
         addSortedNeighbors(allNodes);
     }
-
-//    private List<EdgeIteratorState> allEdges = new LinkedList<>();
-//    private void testMemKill(final Set<Integer> allNodes) {
-//        for (Integer allNode : allNodes) {
-//            final EdgeIterator neighbors = graph.createEdgeExplorer().setBaseNode(allNode);
-//            while(neighbors.next()) {
-//                allEdges.add(neighbors.detach(false));
-//                final double lat = graph.getNodeAccess().getLat(neighbors.getAdjNode());
-//                final double lon = graph.getNodeAccess().getLon(neighbors.getAdjNode());
-//            }
-//        }
-//    }
-
-//    private List<Integer> id = new LinkedList<>();
-//    private List<Integer> base = new LinkedList<>();
-//    private List<Integer> adj = new LinkedList<>();
-//    private void testMemKill2(final Set<Integer> allNodes) {
-//        for (Integer allNode : allNodes) {
-//            final EdgeIterator neighbors = graph.createEdgeExplorer().setBaseNode(allNode);
-//            while(neighbors.next()) {
-//                final EdgeIteratorState edge = neighbors.detach(false);
-//
-//                id.add(edge.getEdge());
-//                base.add(edge.getBaseNode());
-//                adj.add(edge.getAdjNode());
-//            }
-//        }
-//    }
 
     private Set<Integer> getAllNodes() {
         final Set<Integer> allNodes = new LinkedHashSet<>();
